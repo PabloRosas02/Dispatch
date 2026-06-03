@@ -40,3 +40,15 @@ __screenshots__/
 
 test-results/
 playwright-report/
+
+# Enviorement
+.env 
+.env.*.local
+.env.local
+*.env 
+
+# Docker
+/docker_data/
+/db-data/
+.docker_data/
+
