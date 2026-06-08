@@ -15,13 +15,15 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
 
 FROM base AS build
-RUN npm ci
+RUN npm install --frozen-lockfile
 COPY . .
+RUN npm ci
 RUN npm run build
 
-FROM build AS production
+FROM node:${NODE_VERSION}-alpine AS production
+WORKDIR /app
 ENV NODE_ENV=production
 RUN npm install -g serve
 COPY --from=build /app/dist ./dist
 EXPOSE 3000
-CMD ["npm", "run", "preview"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
