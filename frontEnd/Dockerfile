@@ -1,6 +1,5 @@
 
 ARG NODE_VERSION=20
-ARG NODE_ENV=production
 
 # BUILD
 FROM node:${NODE_VERSION}-alpine AS base
