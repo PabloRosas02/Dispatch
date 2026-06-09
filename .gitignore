@@ -45,7 +45,8 @@ playwright-report/
 .env 
 .env.*.local
 .env.local
-*.env 
+*.env
+.env*
 
 # Docker
 /docker_data/
