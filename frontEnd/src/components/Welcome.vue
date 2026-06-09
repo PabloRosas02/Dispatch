@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted} from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { EffectCoverflow } from 'swiper/modules'
+import { useRouter } from 'vue-router'
+
 
 // Estilos obligatorios de Swiper
 import 'swiper/css'
@@ -19,13 +21,39 @@ import imgIlegales from '@/assets/cards/K_ILEGALES.png'
 import imgCreator from '@/assets/cards/K_CREATOR.png'
 
 const imageCards = ref([
-  { url: imgLEO, alt: 'L.E.O' },
-  { url: imgSAMS, alt: 'SAMS' },
-  { url: imgSAFD, alt: 'SAFD' },
-  { url: imgCiviles, alt: 'Proyectos Civiles' },
-  { url: imgIlegales, alt: 'Ilegales' },
-  { url: imgCreator, alt: 'Content Creator' },
+  { id: 'leo', url: imgLEO, alt: 'L.E.O' },
+  { id: 'sams', url: imgSAMS, alt: 'SAMS' },
+  { id: 'safd', url: imgSAFD, alt: 'SAFD' },
+  { id: 'civiles', url: imgCiviles, alt: 'Proyectos Civiles' },
+  { id: 'ilegales', url: imgIlegales, alt: 'Ilegales' },
+  { id: 'creator', url: imgCreator, alt: 'Content Creator' },
 ])
+
+const router = useRouter();
+const swiperInstance = ref(null);
+
+const onSwiper = (swiper) => {
+  swiperInstance.value = swiper;
+}
+
+const onSlideChange = (swiper) => {
+  localStorage.setItem('kinsfolk_last_slide', swiper.activeIndex);
+}
+
+onMounted (() => {
+  const savedIndex = localStorage.getItem('kinsfolk_last_slide');
+  if(savedIndex != null && swiperInstance.value){
+    swiperInstance.value.slideTo(parseInt(savedIndex,10),0);
+  }
+});
+
+const openRoleDetail = (roleId) => {
+  router.push({
+    name: 'role-detail',
+    params: {id: roleId}
+  });
+};
+
 </script>
 
 <style scoped>
@@ -129,6 +157,13 @@ const imageCards = ref([
   display: block;
 }
 
+.slide-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
 .discord-section {
   margin-top: 20px;
   display: flex;
@@ -200,17 +235,27 @@ const imageCards = ref([
           modifier: 1.2,
           slideShadows: true,
         }"
+        @swiper="onSwiper"
+        @slideChange="onSlideChange"
         :modules="modules"
         class="cards-swiper"
       >
-        <swiper-slide v-for="(card, index) in imageCards" :key="index" class="card-slide">
-          <img :src="card.url" :alt="card.alt" class="card-image" />
+        <swiper-slide 
+          v-for="(card, index) in imageCards" 
+          :key="index"
+          class = "card-slide">
+          <img :src = "card.url"
+               :alt = "card.alt"
+               class="card-image"
+               @click="openRoleDetail(card.id)"
+               style="cursor: pointer;"
+          />
         </swiper-slide>
       </swiper>
     </div>
     <div class="discord-section">
       <a
-        href="https://discord.gg/x8WvKhTH"
+        href="https://discord.gg/a6TSrUpwr" 
         target="_blank"
         rel="noopener noreferrer"
         class="discord-button"

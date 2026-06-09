@@ -1,9 +1,14 @@
 <template>
-  <HomeView />
+  <RouterView v-slot="{ Component }">
+    <KeepAlive include="HomeView">
+      <component :is="Component" />
+    </KeepAlive>
+  </RouterView>
 </template>
 
 <script setup>
-import HomeView from './views/HomeView.vue'
+// Importamos el componente nativo de Vue Router
+import { RouterView } from 'vue-router'
 </script>
 
 <style>
@@ -25,7 +30,7 @@ body,
   box-sizing: inherit;
 }
 
-/* Estilo opcional para personalizar la barra de desplazamiento (Scrollbar) con tus colores */
+/* Estilo para personalizar la barra de desplazamiento (Scrollbar) con tus colores */
 ::-webkit-scrollbar {
   width: 10px;
 }
