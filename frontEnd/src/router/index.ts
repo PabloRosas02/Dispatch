@@ -12,6 +12,11 @@ const router = createRouter({
       name: 'role-detail',
       component: () => import('../views/RoleDetailView.vue'),
     },
+    {
+      path: '/reglas/:serverId',
+      name: 'rules-detail',
+      component: ()=> import ('../views/RulesPageView.vue'),
+    },
   ],
 })
 
