@@ -14,9 +14,9 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
 
 FROM base AS build
-RUN npm install --frozen-lockfile
-COPY . .
+RUN npm install --package-lock-only
 RUN npm ci
+COPY . .
 RUN npm run build
 
 FROM node:${NODE_VERSION}-alpine AS production
