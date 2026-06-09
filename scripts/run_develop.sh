@@ -1,5 +1,3 @@
 #/bin/bash/sh
 
-docker compose build
-
-docker compose up
+docker compose --profile dev up --build

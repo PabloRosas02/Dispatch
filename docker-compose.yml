@@ -1,18 +1,36 @@
 name: family-page
 
+x-frontend-base-build: &frontend-base-build
+  context: ./frontEnd
+  dockerfile: Dockerfile
+  args:
+    NODE_VERSION: ${NODE_VERSION}
+
+x-frontend-base: &frontend-base
+  env_file:
+    - ./.env
+  restart: unless-stopped
+
 services:
-  frontend:
+
+  frontend-dev:
+    profiles: ["dev"]
     build:
-      context: ./frontEnd
-      dockerfile: Dockerfile
-      target: ${BUILD_TARGET}
-      args:
-        NODE_VERSION: ${NODE_VERSION}
-        BUILD_TARGET: ${BUILD_TARGET}
+      <<: *frontend-base-build
+      target: development
     ports:
         - "5173:5173"
+    volumes:
+      - ./frontEnd:/app
+      - /app/node_modules
+    <<: *frontend-base
+
+  frontend-prod:
+    profiles: ["prod"]
+    build:
+      <<: *frontend-base-build
+      target: production
+    ports:
         - "${EXTERNAL_PORT_FD}:3000"
-    restart: unless-stopped
-    env_file:
-      - ./.env
+    <<: *frontend-base
 

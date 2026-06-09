@@ -1,6 +1,5 @@
 
 ARG NODE_VERSION=20
-ARG NODE_ENV=production
 
 # BUILD
 FROM node:${NODE_VERSION}-alpine AS base
@@ -15,13 +14,15 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
 
 FROM base AS build
+RUN npm install --package-lock-only
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM build AS production
+FROM node:${NODE_VERSION}-alpine AS production
+WORKDIR /app
 ENV NODE_ENV=production
 RUN npm install -g serve
 COPY --from=build /app/dist ./dist
 EXPOSE 3000
-CMD ["npm", "run", "preview"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
