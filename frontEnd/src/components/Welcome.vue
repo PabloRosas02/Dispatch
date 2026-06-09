@@ -59,13 +59,6 @@ const openRoleDetail = (roleId) => {
 <style scoped>
 /* Aplicamos tu paleta usando variables locales */
 .hero-container {
-  --color-primary: #060f16;
-  --color-secondary: #63a6da;
-  --color-accent: #ecaf44;
-  --color-complementary: #efbc95;
-  --color-light: #f3e9dc;
-
-  background-color: var(--color-primary);
   min-height: 100vh;
   width: 100%;
   display: flex;
@@ -240,8 +233,8 @@ const openRoleDetail = (roleId) => {
         :modules="modules"
         class="cards-swiper"
       >
-        <swiper-slide 
-          v-for="(card, index) in imageCards" 
+        <swiper-slide
+          v-for="(card, index) in imageCards"
           :key="index"
           class = "card-slide">
           <img :src = "card.url"
@@ -255,7 +248,7 @@ const openRoleDetail = (roleId) => {
     </div>
     <div class="discord-section">
       <a
-        href="https://discord.gg/a6TSrUpwr" 
+        href="https://discord.gg/a6TSrUpwr"
         target="_blank"
         rel="noopener noreferrer"
         class="discord-button"
