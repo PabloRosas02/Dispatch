@@ -17,6 +17,16 @@ const router = createRouter({
       name: 'rules-detail',
       component: ()=> import ('../views/RulesPageView.vue'),
     },
+    {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: ()=> import ('../components/NotFound.vue'),
+    // Optional: Pass specific error details directly via props
+    props: {
+      title: 'Page Not Found',
+      description: 'La direccion URL no existe.',
+    }
+  }
   ],
 })
 
