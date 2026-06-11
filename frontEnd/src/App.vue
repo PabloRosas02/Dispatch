@@ -1,4 +1,5 @@
 <template>
+  <LoadingScreen />
   <RouterView v-slot="{ Component }">
     <KeepAlive include="HomeView">
       <component :is="Component" />
@@ -9,6 +10,8 @@
 <script setup>
 // Importamos el componente nativo de Vue Router
 import { RouterView } from 'vue-router'
+// Importamos tu pantalla de carga basada en el logo
+import LoadingScreen from './components/LoadingScreen.vue'
 </script>
 
 <style>
