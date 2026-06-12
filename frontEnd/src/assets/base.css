@@ -1,4 +1,4 @@
-@import url('https://googleapis.com');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
   --color-primary: #060f16;
@@ -7,10 +7,6 @@
   --color-complementary: #efbc95;
   --color-light: #f3e9dc;
 
-}
-
-/* semantic color variables for this project */
-:root {
   --color-background: var(--color-primary);
   --color-border: var(--color-complementary);
   --color-border-hover: var(--color-light);
@@ -22,7 +18,9 @@
 *,
 *::before,
 *::after {
+  padding: 0;
   margin: 0;
+  box-sizing: border-box;
   font-weight: normal;
 }
 
@@ -30,8 +28,10 @@ body {
   background-color: var(--color-primary);
   color: var(--color-text);
   box-sizing: border-box;
-  font-family:'Poppins',sans-serif;
+  font-family:'Poppins', sans-serif;
+  font-style: normal;
   font-size: 15px;
+  line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -39,4 +39,7 @@ body {
 
 h1, h2, h3, h4, h5, h6, .title .subtitle{
   font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-heading);
 }
