@@ -14,7 +14,7 @@
 
     <div class="page-header">
       <h1 class="server-title">Reglamento para el servidor {{ serverData.title }}</h1>
-      <p class="server-subtitle">{{ serverData.subtitle }}</p>
+      <h2 class="server-subtitle">{{ serverData.subtitle }}</h2>
       <div class="title-decoration">
         <span class="line"></span>
         <span class="dot"></span>
@@ -28,7 +28,7 @@
         :key="sIndex"
         class="rules-section"
       >
-        <h2 class="section-title">{{ section.title }}</h2>
+        <h3 class="section-title">{{ section.title }}</h3>
         <div class="rules-list">
           <RuleCard
             v-for="(rule, rIndex) in section.rules"
