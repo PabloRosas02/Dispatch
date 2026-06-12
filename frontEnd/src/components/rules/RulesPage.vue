@@ -128,7 +128,7 @@ defineProps<{
   color: var(--color-heading);
   margin-bottom: 1.5rem;
   padding-left: 1rem;
-  border-left: 4px solid var(--server-color);
+  border-left: 4px solid var(--color-complementary);
 }
 
 .rules-list {
