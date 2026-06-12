@@ -18,5 +18,6 @@ export interface RPServer {
   description: string;
   image: string;
   discordLink: string;
+  color: string;
   sections: RuleSection[];
 }
