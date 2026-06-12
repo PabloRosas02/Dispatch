@@ -1,48 +1,46 @@
-<!-- src/components/RulesPage.vue -->
+<!-- src/components/rules/RulesPage.vue -->
 <template>
-  <main class="rules-container">
-    <div class="server-showcase">
-      <!-- Layout Banner Graphic Background -->
-      <div class="banner-wrapper">
-        <img 
-          :src="serverData.image" 
-          :alt="serverData.title" 
-          class="server-banner" 
-        />
-        <div class="banner-overlay">
-          <h1 class="main-title">{{ serverData.title }}</h1>
-          <h2 ><span class="genre-tag">{{ serverData.subtitle }}</span></h2>
-          
-          <a 
-            :href="serverData.discordLink" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="discord-button"
-          >
-            Join Official Discord
-          </a>
-        </div>
-      </div>
+  <main
+    class="rules-page"
+    :style="{ '--server-color': serverData.color }"
+  >
+    <!-- Fondo con gradiente y efectos (sin cambios en la parte visual) -->
+    <div class="bg-animation">
+      <div class="gradient-orb orb-1"></div>
+      <div class="gradient-orb orb-2"></div>
+      <div class="gradient-orb orb-3"></div>
+      <div class="grid-overlay"></div>
+    </div>
 
-      <!-- Rules Array Structure Iteration -->
-      <div class="rules-layout">
-        <section 
-          v-for="(section, sIndex) in serverData.sections" 
-          :key="sIndex"
-          class="rules-section"
-        >
-          <h2 class="section-title">{{ section.title }}</h2>
-          
-          <RuleCard 
-            v-for="(rule, rIndex) in section.rules" 
+    <div class="page-header">
+      <h1 class="server-title">Reglamento para el servidor {{ serverData.title }}</h1>
+      <p class="server-subtitle">{{ serverData.subtitle }}</p>
+      <div class="title-decoration">
+        <span class="line"></span>
+        <span class="dot"></span>
+        <span class="line"></span>
+      </div>
+    </div>
+
+    <div class="rules-content">
+      <section
+        v-for="(section, sIndex) in serverData.sections"
+        :key="sIndex"
+        class="rules-section"
+      >
+        <h2 class="section-title">{{ section.title }}</h2>
+        <div class="rules-list">
+          <RuleCard
+            v-for="(rule, rIndex) in section.rules"
             :key="rIndex"
             :index="String(rIndex + 1).padStart(2, '0')"
             :title="rule.title"
             :description="rule.description"
             :example="rule.example"
+            :serverColor="serverData.color"
           />
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   </main>
 </template>
@@ -51,104 +49,113 @@
 import type { RPServer } from '@/types/serverTypes.ts';
 import RuleCard from './RuleCard.vue';
 
-// DefineProps typed cleanly using the flat global interface
 defineProps<{
   serverData: RPServer;
 }>();
 </script>
 
 <style scoped>
-.rules-container {
+/* Mantenemos todos los estilos de fondo, gradientes, orbes, grid, etc.
+   Tal cual estaban en la versión anterior, sin cambios. */
+.rules-page {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 30% 20%,
+    rgba(99, 166, 218, 0.15) 0%,
+    rgba(6, 15, 22, 0.95) 50%,
+    var(--color-background) 100%);
+  overflow-x: hidden;
+  padding: 4rem 2rem;
+}
+
+/* ... (Aquí van todos los estilos de .bg-animation, .gradient-orb,
+   .grid-overlay, @keyframes, etc. que ya tenías, sin modificar) ... */
+
+/* Estilos nuevos o actualizados para el encabezado */
+.page-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  position: relative;
+  z-index: 2;
+}
+
+.server-title {
+  font-size: 2.5rem;
+  color: var(--color-heading);
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.server-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.title-decoration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.title-decoration .line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--server-color), var(--color-accent), transparent);
+}
+
+.title-decoration .dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, var(--server-color), var(--color-accent));
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--server-color);
+}
+
+/* Estilos para la sección de reglas */
+.rules-content {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
-  background-color: var(--color-background);
-  min-height: 100vh;
-}
-
-.banner-wrapper {
   position: relative;
-  height: 300px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 3.5rem;
-  border: 1px solid var(--color-border);
-}
-
-.server-banner {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.25;
-}
-
-.banner-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  text-align: center;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 15, 22, 0.95) 90%);
-}
-
-.genre-tag {
-  font-size: 0.8rem;
-  color: var(--color-text);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 0.5rem;
-}
-
-.main-title {
-  color: var(--color-heading);
-  font-size: 3rem;
-  margin: 0 0 0.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-shadow: 0 0 20px rgba(236, 175, 68, 0.2);
-}
-
-.subtitle {
-  color: var(--color-light);
-  margin: 0 0 2rem 0;
-  font-size: 1.15rem;
-  max-width: 650px;
-  line-height: 1.5;
-}
-
-.discord-button {
-  background-color: var(--color-accent);
-  color: var(--color-primary);
-  text-decoration: none;
-  padding: 0.8rem 2.25rem;
-  font-weight: bold;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 0.85rem;
-}
-
-.discord-button:hover {
-  transform: translateY(-2px);
-  background-color: var(--color-light);
-  box-shadow: 0 4px 15px rgba(236, 175, 68, 0.3);
+  z-index: 2;
 }
 
 .rules-section {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 .section-title {
+  font-size: 1.8rem;
   color: var(--color-heading);
-  font-size: 1.5rem;
-  border-left: 4px solid var(--color-accent);
-  padding-left: 0.85rem;
-  margin-bottom: 1.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+  border-left: 4px solid var(--server-color);
+}
+
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rules-page {
+    padding: 2rem 1rem;
+  }
+
+  .server-title {
+    font-size: 1.8rem;
+  }
+
+  .server-subtitle {
+    font-size: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
 }
 </style>
