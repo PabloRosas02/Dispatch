@@ -60,10 +60,7 @@ defineProps<{
 .rules-page {
   position: relative;
   min-height: 100vh;
-  background: radial-gradient(ellipse at 30% 20%,
-    rgba(99, 166, 218, 0.15) 0%,
-    rgba(6, 15, 22, 0.95) 50%,
-    var(--color-background) 100%);
+  background: linear-gradient(135deg, var(--server-color) 0%, var(--color-background) 100%), var(--color-background);
   overflow-x: hidden;
   padding: 4rem 2rem;
 }
