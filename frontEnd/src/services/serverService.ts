@@ -56,7 +56,7 @@ export function useServerService() {
   }
 
   function getServerColorById(id: string): string {
-    const server:ServerType.ServerColor | undefined = rpServers.find(server => server.id === id);
+    const server:ServerType.RPServer | undefined = rpServers.find(server => server.id === id);
 
     if(server){
       return server.color

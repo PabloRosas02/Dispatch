@@ -29,7 +29,7 @@ const { getServerFromRouteParam } = useServerService();
 const bLoading = ref<boolean>(true);
 
 onMounted(() => {
-  activeServerData.value = getServerFromRouteParam(route.params.serverId);
+  activeServerData.value = getServerFromRouteParam(route.params.serverId as string);
   bLoading.value = false;
 });
 </script>
