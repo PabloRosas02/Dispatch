@@ -67,7 +67,6 @@ const openRoleDetail = (roleId) => {
   justify-content: flex-start;
   padding: 40px 20px;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Estilos de la Bienvenida */
