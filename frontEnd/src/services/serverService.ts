@@ -13,12 +13,13 @@ export const rpServers = <ServerType.RPServer[]>([
     id: "leo",
     title: "L.E.O ROL",
     subtitle: "LAW ENFORCEMENT & ORDER'",
-    description: 
+    description:
     "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. \
     Diseñado con paneles tácticos intuitivos que garantizan una respuesta inmediata y optimización del flujo operativo de \
     Kinsfolk.",
     image: imgLEO,
     discordLink: "https://discord.gg/",
+    color: '#1b2d4a',
     sections: [
       {
         title: 'Core Directives',
@@ -54,7 +55,17 @@ export function useServerService() {
     return rpServers.find(server => server.id === id);
   }
 
-  function getServerFromRouteParam(serverIdParam: string | string[]): 
+  function getServerColorById(id: string): string {
+    const server:ServerType.ServerColor | undefined = rpServers.find(server => server.id === id);
+
+    if(server){
+      return server.color
+    }
+
+    return 'linear-gradient(135deg, #1b2d4a 0%, #060F16 100%)';
+  }
+
+  function getServerFromRouteParam(serverIdParam: string | string[]):
   ServerType.RPServer | undefined {
     console.log(serverIdParam);
     const rawId = Array.isArray(serverIdParam) ? serverIdParam[0] : serverIdParam;
@@ -65,6 +76,7 @@ export function useServerService() {
   return {
     updateServers,
     getServerById,
+    getServerColorById,
     getServerFromRouteParam,
   };
 }
