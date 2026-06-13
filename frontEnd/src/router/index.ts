@@ -8,7 +8,7 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
-      path: '/roles/:id',
+      path: '/roles/:serverId',
       name: 'role-detail',
       component: () => import('../views/RoleDetailView.vue'),
     },

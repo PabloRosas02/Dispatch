@@ -45,7 +45,7 @@ const handleSwiperClick = (swiper) => {
 
   // Extraemos el ID del atributo "data-id" que pusimos en el HTML
   const cardId = clickedSlide.getAttribute('data-id')
-  
+
   // Verificamos si la tarjeta clickeada ya se encuentra en la posición central
   const isCentered = clickedSlide.classList.contains('swiper-slide-active')
 
@@ -64,7 +64,7 @@ const handleSwiperClick = (swiper) => {
 const openRoleDetail = (roleId) => {
   router.push({
     name: 'role-detail',
-    params: { id: roleId }
+    params: { serverId: roleId }
   })
 }
 </script>
