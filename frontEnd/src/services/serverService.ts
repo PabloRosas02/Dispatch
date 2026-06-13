@@ -43,7 +43,27 @@ export const rpServers = <ServerType.RPServer[]>([
     filename: 'SAMS.svg',
     color: '#591919',
     discordLink: 'https://discord.gg/YpvBDNRn',
-    sections: []
+    sections: [
+      {
+        title: 'Core Directives',
+        rules: [
+          { title: 'Metagaming', description: 'Using external stream or discord info in-game.', example: 'Stream-sniping a rival gang raid.' },
+          { title: 'Value of Life', description: 'You must value your life under gunpoint.', example: 'Running away while a gun is held to your head.' }
+        ]
+      },
+      {
+        title: 'Augment Etiquette',
+        rules: [
+          { title: 'Powergaming Mods', description: 'Implants must have physical drawbacks.', example: 'Having an un-hackable, bulletproof skull.' }
+        ]
+      },
+      {
+        title: 'Netrunning',
+        rules: [
+          { title: 'Deep Dive Consent', description: 'Brain-wiping another character requires OOC consent.', example: 'Permanently deleting a player character\'s memories without asking.' }
+        ]
+      },
+    ],
   },
   {
     id: 'safd',
@@ -53,7 +73,27 @@ export const rpServers = <ServerType.RPServer[]>([
     filename: 'SAFD.svg',
     color: '#824316',
     discordLink: 'https://discord.gg/3KQ3JwSw',
-    sections: []
+    sections: [
+      {
+        title: 'Core Directives',
+        rules: [
+          { title: 'Metagaming', description: 'Using external stream or discord info in-game.', example: 'Stream-sniping a rival gang raid.' },
+          { title: 'Value of Life', description: 'You must value your life under gunpoint.', example: 'Running away while a gun is held to your head.' }
+        ]
+      },
+      {
+        title: 'Augment Etiquette',
+        rules: [
+          { title: 'Powergaming Mods', description: 'Implants must have physical drawbacks.', example: 'Having an un-hackable, bulletproof skull.' }
+        ]
+      },
+      {
+        title: 'Netrunning',
+        rules: [
+          { title: 'Deep Dive Consent', description: 'Brain-wiping another character requires OOC consent.', example: 'Permanently deleting a player character\'s memories without asking.' }
+        ]
+      },
+    ],
   },
   {
     id: 'civiles',
@@ -63,7 +103,27 @@ export const rpServers = <ServerType.RPServer[]>([
     filename: 'Proyectos civiles.svg',
     color: '#133a2d',
     discordLink: 'https://discord.gg/KfN8vKhZ7',
-    sections: []
+    sections: [
+      {
+        title: 'Core Directives',
+        rules: [
+          { title: 'Metagaming', description: 'Using external stream or discord info in-game.', example: 'Stream-sniping a rival gang raid.' },
+          { title: 'Value of Life', description: 'You must value your life under gunpoint.', example: 'Running away while a gun is held to your head.' }
+        ]
+      },
+      {
+        title: 'Augment Etiquette',
+        rules: [
+          { title: 'Powergaming Mods', description: 'Implants must have physical drawbacks.', example: 'Having an un-hackable, bulletproof skull.' }
+        ]
+      },
+      {
+        title: 'Netrunning',
+        rules: [
+          { title: 'Deep Dive Consent', description: 'Brain-wiping another character requires OOC consent.', example: 'Permanently deleting a player character\'s memories without asking.' }
+        ]
+      },
+    ],
   },
   {
     id: 'ilegales',
@@ -73,7 +133,27 @@ export const rpServers = <ServerType.RPServer[]>([
     filename: 'Ilegales.svg',
     color: '#2c2d30',
     discordLink: 'https://discord.gg/BECZxnSWS',
-    sections: []
+    sections: [
+      {
+        title: 'Core Directives',
+        rules: [
+          { title: 'Metagaming', description: 'Using external stream or discord info in-game.', example: 'Stream-sniping a rival gang raid.' },
+          { title: 'Value of Life', description: 'You must value your life under gunpoint.', example: 'Running away while a gun is held to your head.' }
+        ]
+      },
+      {
+        title: 'Augment Etiquette',
+        rules: [
+          { title: 'Powergaming Mods', description: 'Implants must have physical drawbacks.', example: 'Having an un-hackable, bulletproof skull.' }
+        ]
+      },
+      {
+        title: 'Netrunning',
+        rules: [
+          { title: 'Deep Dive Consent', description: 'Brain-wiping another character requires OOC consent.', example: 'Permanently deleting a player character\'s memories without asking.' }
+        ]
+      },
+    ],
   },
   {
     id: 'creator',
@@ -83,7 +163,27 @@ export const rpServers = <ServerType.RPServer[]>([
     filename: 'Content Creator.svg',
     color: '#571c75',
     discordLink: 'https://discord.gg/e4GhgKx5s',
-    sections: []
+    sections: [
+      {
+        title: 'Core Directives',
+        rules: [
+          { title: 'Metagaming', description: 'Using external stream or discord info in-game.', example: 'Stream-sniping a rival gang raid.' },
+          { title: 'Value of Life', description: 'You must value your life under gunpoint.', example: 'Running away while a gun is held to your head.' }
+        ]
+      },
+      {
+        title: 'Augment Etiquette',
+        rules: [
+          { title: 'Powergaming Mods', description: 'Implants must have physical drawbacks.', example: 'Having an un-hackable, bulletproof skull.' }
+        ]
+      },
+      {
+        title: 'Netrunning',
+        rules: [
+          { title: 'Deep Dive Consent', description: 'Brain-wiping another character requires OOC consent.', example: 'Permanently deleting a player character\'s memories without asking.' }
+        ]
+      },
+    ],
   }
 ]);
 
