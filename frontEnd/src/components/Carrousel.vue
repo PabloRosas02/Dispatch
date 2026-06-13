@@ -1,58 +1,66 @@
-<script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { EffectCoverflow } from 'swiper/modules'
-import { useRouter } from 'vue-router'
+<script setup lang='ts'>
+import { ref, onMounted, computed } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { useRouter } from 'vue-router';
+import type { RPServer } from '../types/serverTypes.ts';
+import type { Swiper as SwiperClass } from 'swiper';
+import { useServerService } from '../services/serverService.ts';
 
-// Estilos obligatorios de Swiper
+// Estilos base de Swiper
 import 'swiper/css'
-import 'swiper/css/effect-coverflow'
 
-const modules = [EffectCoverflow]
 const router = useRouter()
-const swiperInstance = ref(null)
+const swiperInstance = ref<SwiperClass>()
+const { getAllServers, getSvgUrl } = useServerService();
 
-// Importación de las imágenes para las tarjetas
-import imgLEO from '@/assets/cards/K_LEO.png'
-import imgSAMS from '@/assets/cards/K_SAMS.png'
-import imgSAFD from '@/assets/cards/K_SAFD.png'
-import imgCiviles from '@/assets/cards/K_CIVILES.png'
-import imgIlegales from '@/assets/cards/K_ILEGALES.png'
-import imgCreator from '@/assets/cards/K_CREATOR.png'
+const baseCards = getAllServers();
 
-const imageCards = ref([
-  { id: 'leo', url: imgLEO, alt: 'L.E.O' },
-  { id: 'sams', url: imgSAMS, alt: 'SAMS' },
-  { id: 'safd', url: imgSAFD, alt: 'SAFD' },
-  { id: 'civiles', url: imgCiviles, alt: 'Proyectos Civiles' },
-  { id: 'ilegales', url: imgIlegales, alt: 'Ilegales' },
-  { id: 'creator', url: imgCreator, alt: 'Content Creator' },
-])
+const duplicatedCards = computed(() => [...baseCards, ...baseCards])
 
-const onSwiper = (swiper) => {
-  swiperInstance.value = swiper
+const onSwiper = (swiper: SwiperClass) => {
+  swiperInstance.value = swiper;
 }
 
-const onSlideChange = (swiper) => {
-  localStorage.setItem('kinsfolk_last_slide', swiper.activeIndex)
+const onSlideChange = (swiper: SwiperClass) => {
+  localStorage.setItem('kinsfolk_last_slide', `${swiper.activeIndex}`);
 }
 
-onMounted(async () => {
-  const savedIndex = localStorage.getItem('kinsfolk_last_slide')
-  if (savedIndex != null) {
-    await nextTick()
-    setTimeout(() => {
-      if (swiperInstance.value) {
-        swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
-      }
-    }, 100)
+onMounted(() => {
+  let savedIndex  = localStorage.getItem('kinsfolk_last_slide')
+  if (savedIndex != null && swiperInstance.value) {
+    swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
   }
 })
 
-const openRoleDetail = (roleId) => {
+const handleSwiperClick = (swiper: SwiperClass) => {
+  const clickedSlide = swiper.clickedSlide;
+  if (!clickedSlide) return; // Si hacen clic en un espacio vacío, no hace nada
+
+  // Extraemos el ID del atributo "data-id" que pusimos en el HTML
+  const cardId:string | null = clickedSlide.getAttribute('data-id');
+
+  // Verificamos si la tarjeta clickeada ya se encuentra en la posición central
+  const isCentered = clickedSlide.classList.contains('swiper-slide-active')
+
+  if (!isCentered) {
+    // Está a la izquierda o derecha. Swiper la moverá al centro automáticamente,
+    // y esperamos 350ms a que termine la animación para abrir la página.
+    setTimeout(() => {
+      openRoleDetail(cardId)
+    }, 350)
+  } else{
+    //Ya está en el centro, abre la página de inmediato.
+    openRoleDetail(cardId)
+  }
+}
+
+const openRoleDetail = (roleId: string | null ) => {
+  if(roleId == null){
+    return;
+  }
   router.push({
     name: 'role-detail',
-    params: { id: roleId }
+    params: { serverId: roleId }
   })
 }
 </script>
@@ -60,37 +68,27 @@ const openRoleDetail = (roleId) => {
 <template>
   <div class="carousel-section">
     <swiper
-      :effect="'coverflow'"
-      :grabCursor="true"
+      v-if='baseCards.length > 0'
       :centeredSlides="true"
-      :slidesPerView="'auto'"
+      :slidesPerView="5"
       :loop="true"
+      :spaceBetween="-45"
       :watchSlidesProgress="true"
-      :coverflowEffect="{
-        rotate: 25,
-        stretch: -30,
-        depth: 120,
-        modifier: 1.2,
-        slideShadows: true,
-      }"
-      :slideToClickedSlide="false"  
-      :preventClicks="false"        
-      :preventClicksPropagation="false" 
+      :slideToClickedSlide="true"
       @swiper="onSwiper"
       @slideChange="onSlideChange"
-      :modules="modules"
+      @click="handleSwiperClick"
       class="cards-swiper"
     >
       <swiper-slide
-        v-for="(card, index) in imageCards"
-        :key="index"
+        v-for="(card, index) in duplicatedCards"
+        :key="card.id + '-' + index"
+        :data-id="card.id"
         class="card-slide"
-        @click="openRoleDetail(card.id)"
-        style="cursor: pointer;"
       >
-        <img 
-          :src="card.url"
-          :alt="card.alt"
+        <img
+          :src="getSvgUrl(card.id)"
+          :alt="card.title"
           class="card-image"
         />
       </swiper-slide>
@@ -99,34 +97,57 @@ const openRoleDetail = (roleId) => {
 </template>
 
 <style scoped>
-/* Estilos específicos del área del Carrusel */
 .carousel-section {
   width: 100%;
   max-width: 1100px;
-  margin-top: 20px;
+  margin: 20px auto 0 auto;
+  overflow: hidden; /* Muestra estrictamente 5 imágenes a la vez */
 }
 
 .cards-swiper {
   width: 100%;
-  padding-top: 30px;
+  padding-top: 40px;
   padding-bottom: 60px;
 }
 
 .card-slide {
-  width: 300px;
-  height: 300px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(243, 233, 220, 0.1);
-  transition: border-color 0.3s ease;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-  will-change: transform;
+  cursor: pointer;
+  transition: transform 0.45s ease, opacity 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
+  opacity: 0.45;
+  transform: scale(0.74) rotate(-4.5deg);
+  z-index: 2;
+}
+
+.card-slide.swiper-slide-prev {
+  opacity: 0.8;
+  transform: scale(0.88) rotate(-2deg);
+  z-index: 5;
 }
 
 .card-slide.swiper-slide-active {
+  opacity: 1;
+  transform: scale(1.05) rotate(0deg);
   border-color: var(--color-accent);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.75);
+  z-index: 10;
+}
+
+.card-slide.swiper-slide-next {
+  opacity: 0.8;
+  transform: scale(0.88) rotate(2deg);
+  z-index: 5;
+}
+
+.card-slide.swiper-slide-next + .card-slide {
+  opacity: 0.45;
+  transform: scale(0.74) rotate(4.5deg);
+  z-index: 2;
 }
 
 .card-image {
@@ -134,7 +155,5 @@ const openRoleDetail = (roleId) => {
   height: 100%;
   object-fit: cover;
   display: block;
-  pointer-events: none; /* El clic pasa al contenedor */
-  user-select: none;
 }
 </style>
