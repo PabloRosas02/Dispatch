@@ -3,19 +3,19 @@
 import WelcomeCarousel from './Carrousel.vue'
 
 // Nota: Ajusta la ruta si tu carpeta de iconos está en otro nivel (ej. '../assets/icons/Logoletras.svg')
-import logoLetrasUrl from './icons/Logoletras.svg'
+import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 </script>
 
 <template>
   <header class="hero-container">
-    
+
     <div class="welcome-section">
       <div class="logo-wrapper">
-        
-        <img 
-          :src="logoLetrasUrl" 
-          alt="Kinsfolk Logo" 
-          class="main-logo" 
+
+        <img
+          :src="logoLetrasUrl"
+          alt="Kinsfolk Logo"
+          class="main-logo"
         />
 
       </div>
