@@ -16,7 +16,7 @@ export interface RPServer {
   title: string;
   subtitle: string;
   description: string;
-  image: string;
+  filename: string;
   discordLink: string;
   color: string;
   sections: RuleSection[];

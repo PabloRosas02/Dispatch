@@ -1,13 +1,6 @@
 import { ref } from 'vue';
 import type * as ServerType from '../types/serverTypes';
 
-import imgLEO from '@/assets/cards/K_LEO.png';
-import imgSAMS from '@/assets/cards/K_SAMS.png';
-import imgSAFD from '@/assets/cards/K_SAFD.png';
-import imgCiviles from '@/assets/cards/K_CIVILES.png';
-import imgIlegales from '@/assets/cards/K_ILEGALES.png';
-import imgCreator from '@/assets/cards/K_CREATOR.png';
-
 export const rpServers = <ServerType.RPServer[]>([
   {
     id: "leo",
@@ -17,7 +10,7 @@ export const rpServers = <ServerType.RPServer[]>([
     "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. \
     Diseñado con paneles tácticos intuitivos que garantizan una respuesta inmediata y optimización del flujo operativo de \
     Kinsfolk.",
-    image: imgLEO,
+    filename: "L.e.o.svg",
     discordLink: "https://discord.gg/",
     color: '#1b2d4a',
     sections: [
@@ -42,6 +35,56 @@ export const rpServers = <ServerType.RPServer[]>([
       },
     ],
   },
+  {
+    id: 'sams',
+    title: 'S.A.M.S ROL',
+    subtitle: 'MEDICAL ASSISTANCE & SERVICES',
+    description: 'Ecosistema robusto enfocado en servicios médicos y de asistencia rápida. Permite la clasificación inteligente de registros médicos, control de pacientes en tiempo real y una distribución visual ágil de recursos.',
+    filename: 'SAMS.svg',
+    color: '#591919',
+    discordLink: 'https://discord.gg/YpvBDNRn',
+    sections: []
+  },
+  {
+    id: 'safd',
+    title: 'S.A.F.D ROL',
+    subtitle: 'FIRE & RESCUE SOLUTIONS',
+    description: 'Solución táctica dedicada al cuerpo de bomberos y mitigación de riesgos. Proporciona interfaces adaptativas de mapeo interactivo y flujos de alertas críticas optimizados para situaciones de alta prioridad.',
+    filename: 'SAFD.svg',
+    color: '#824316',
+    discordLink: 'https://discord.gg/3KQ3JwSw',
+    sections: []
+  },
+  {
+    id: 'civiles',
+    title: 'CIVILES',
+    subtitle: 'CITIZEN ECOSYSTEM & JOBS',
+    description: 'El núcleo de la interacción social y económica. Un entorno dinámico donde los usuarios gestionan identidades, empleos civiles, licencias y propiedades bajo una interfaz estilizada y fluida.',
+    filename: 'Proyectos civiles.svg',
+    color: 'linear-gradient(135deg, #133a2d 0%, #060F16 100%)',
+    discordLink: 'https://discord.gg/KfN8vKhZ7',
+    sections: []
+  },
+  {
+    id: 'ilegales',
+    title: 'ILEGALES',
+    subtitle: 'CRIMINAL ENTERPRISE NETWORKS',
+    description: 'Sistemas diseñados con interfaces oscuras y minimalistas para la gestión de redes clandestinas, mercados negros y economías alternativas controladas desde las sombras de la ciudad.',
+    filename: 'Ilegales.svg',
+    bgColor: 'linear-gradient(135deg, #2c2d30 0%, #060F16 100%)',
+    discordLink: 'https://discord.gg/BECZxnSWS',
+    sections: []
+  },
+  {
+    id: 'creator',
+    title: 'CREADORES DE CONTENIDO',
+    subtitle: 'MEDIA & STREAMING TOOLS',
+    description: 'Espacio dedicado a creadores de contenido y distribución multimedia. Ofrece integración directa de transmisiones, galerías dinámicas y herramientas exclusivas para potenciar la marca Kinsfolk.',
+    filename: 'Content Creator.svg',
+    bgColor: 'linear-gradient(135deg, #571c75 0%, #060F16 100%)',
+    discordLink: 'https://discord.gg/e4GhgKx5s',
+    sections: []
+  }
 ]);
 
 export function useServerService() {
@@ -49,6 +92,10 @@ export function useServerService() {
   function updateServers(){
 
     return;
+  }
+
+  function getAllServers(): ref<ServerType.RPServer[]>{
+    return rpServers;
   }
 
   function getServerById(id: string): ServerType.RPServer | undefined{
@@ -75,6 +122,7 @@ export function useServerService() {
 
   return {
     updateServers,
+    getAllServers,
     getServerById,
     getServerColorById,
     getServerFromRouteParam,
