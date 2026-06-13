@@ -68,6 +68,7 @@ const openRoleDetail = (roleId: string | null ) => {
 <template>
   <div class="carousel-section">
     <swiper
+      v-if='baseCards.length > 0'
       :centeredSlides="true"
       :slidesPerView="5"
       :loop="true"
@@ -86,7 +87,7 @@ const openRoleDetail = (roleId: string | null ) => {
         class="card-slide"
       >
         <img
-          :src="getSvgUrl(card.filename)"
+          :src="getSvgUrl(card.id)"
           :alt="card.title"
           class="card-image"
         />
