@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, readonly } from 'vue';
 import type * as ServerType from '../types/serverTypes';
 
 export const rpServers = <ServerType.RPServer[]>([
@@ -95,7 +95,7 @@ export function useServerService() {
   }
 
   function getAllServers(){
-    return rpServers;
+    return readonly(rpServers);
   }
 
   function getServerById(id: string): ServerType.RPServer | undefined{
