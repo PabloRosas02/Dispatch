@@ -1,50 +1,43 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { useRouter } from 'vue-router'
+<script setup lang='ts'>
+import { ref, onMounted, computed } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { useRouter } from 'vue-router';
+import type { RPServer } from '../types/serverTypes.ts';
+import type { Swiper as SwiperClass } from 'swiper';
+import { useServerService } from '../services/serverService.ts';
 
 // Estilos base de Swiper
 import 'swiper/css'
 
 const router = useRouter()
-const swiperInstance = ref(null)
+const swiperInstance = ref<SwiperClass>()
+const { getAllServers, getSvgUrl } = useServerService();
 
-const baseCards = ref([
-  { id: 'leo', filename: 'L.e.o.svg', alt: 'L.E.O' },
-  { id: 'sams', filename: 'SAMS.svg', alt: 'SAMS' },
-  { id: 'safd', filename: 'SAFD.svg', alt: 'SAFD' },
-  { id: 'civiles', filename: 'Proyectos civiles.svg', alt: 'Proyectos Civiles' },
-  { id: 'ilegales', filename: 'Ilegales.svg', alt: 'Ilegales' },
-  { id: 'creator', filename: 'Content Creator.svg', alt: 'Content Creator' },
-])
+const baseCards = getAllServers();
 
-const duplicatedCards = computed(() => [...baseCards.value, ...baseCards.value])
+const duplicatedCards = computed(() => [...baseCards, ...baseCards])
 
-const getSvgUrl = (filename) => {
-  return new URL(`./icons/${filename}`, import.meta.url).href
+const onSwiper = (swiper: SwiperClass) => {
+  swiperInstance.value = swiper;
 }
 
-const onSwiper = (swiper) => {
-  swiperInstance.value = swiper
-}
-
-const onSlideChange = (swiper) => {
-  localStorage.setItem('kinsfolk_last_slide', swiper.activeIndex)
+const onSlideChange = (swiper: SwiperClass) => {
+  localStorage.setItem('kinsfolk_last_slide', `${swiper.activeIndex}`);
 }
 
 onMounted(() => {
-  const savedIndex = localStorage.getItem('kinsfolk_last_slide')
+  let savedIndex  = localStorage.getItem('kinsfolk_last_slide')
   if (savedIndex != null && swiperInstance.value) {
     swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
   }
 })
 
-const handleSwiperClick = (swiper) => {
-  const clickedSlide = swiper.clickedSlide
-  if (!clickedSlide) return // Si hacen clic en un espacio vacío, no hace nada
+const handleSwiperClick = (swiper: SwiperClass) => {
+  const clickedSlide = swiper.clickedSlide;
+  if (!clickedSlide) return; // Si hacen clic en un espacio vacío, no hace nada
 
   // Extraemos el ID del atributo "data-id" que pusimos en el HTML
-  const cardId = clickedSlide.getAttribute('data-id')
+  const cardId:string | null = clickedSlide.getAttribute('data-id');
 
   // Verificamos si la tarjeta clickeada ya se encuentra en la posición central
   const isCentered = clickedSlide.classList.contains('swiper-slide-active')
@@ -55,13 +48,16 @@ const handleSwiperClick = (swiper) => {
     setTimeout(() => {
       openRoleDetail(cardId)
     }, 350)
-  } else {
+  } else{
     //Ya está en el centro, abre la página de inmediato.
     openRoleDetail(cardId)
   }
 }
 
-const openRoleDetail = (roleId) => {
+const openRoleDetail = (roleId: string | null ) => {
+  if(roleId == null){
+    return;
+  }
   router.push({
     name: 'role-detail',
     params: { serverId: roleId }
@@ -91,7 +87,7 @@ const openRoleDetail = (roleId) => {
       >
         <img
           :src="getSvgUrl(card.filename)"
-          :alt="card.alt"
+          :alt="card.title"
           class="card-image"
         />
       </swiper-slide>
