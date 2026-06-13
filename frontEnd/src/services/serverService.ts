@@ -61,7 +61,7 @@ export const rpServers = <ServerType.RPServer[]>([
     subtitle: 'CITIZEN ECOSYSTEM & JOBS',
     description: 'El núcleo de la interacción social y económica. Un entorno dinámico donde los usuarios gestionan identidades, empleos civiles, licencias y propiedades bajo una interfaz estilizada y fluida.',
     filename: 'Proyectos civiles.svg',
-    color: 'linear-gradient(135deg, #133a2d 0%, #060F16 100%)',
+    color: '#133a2d',
     discordLink: 'https://discord.gg/KfN8vKhZ7',
     sections: []
   },
@@ -71,7 +71,7 @@ export const rpServers = <ServerType.RPServer[]>([
     subtitle: 'CRIMINAL ENTERPRISE NETWORKS',
     description: 'Sistemas diseñados con interfaces oscuras y minimalistas para la gestión de redes clandestinas, mercados negros y economías alternativas controladas desde las sombras de la ciudad.',
     filename: 'Ilegales.svg',
-    bgColor: 'linear-gradient(135deg, #2c2d30 0%, #060F16 100%)',
+    color: '#2c2d30',
     discordLink: 'https://discord.gg/BECZxnSWS',
     sections: []
   },
@@ -81,7 +81,7 @@ export const rpServers = <ServerType.RPServer[]>([
     subtitle: 'MEDIA & STREAMING TOOLS',
     description: 'Espacio dedicado a creadores de contenido y distribución multimedia. Ofrece integración directa de transmisiones, galerías dinámicas y herramientas exclusivas para potenciar la marca Kinsfolk.',
     filename: 'Content Creator.svg',
-    bgColor: 'linear-gradient(135deg, #571c75 0%, #060F16 100%)',
+    color: '#571c75',
     discordLink: 'https://discord.gg/e4GhgKx5s',
     sections: []
   }
@@ -94,7 +94,7 @@ export function useServerService() {
     return;
   }
 
-  function getAllServers(): ref<ServerType.RPServer[]>{
+  function getAllServers(){
     return rpServers;
   }
 
@@ -109,7 +109,16 @@ export function useServerService() {
       return server.color
     }
 
-    return 'linear-gradient(135deg, #1b2d4a 0%, #060F16 100%)';
+    return '#1b2d4a';
+  }
+
+  function getSvgUrl(id: string){
+    const server: ServerType.RPServer | undefined = getServerById(id);
+
+    if(server){
+      return new URL(`../components/icons/${server.filename}`, import.meta.url).href;
+    }
+    return undefined;
   }
 
   function getServerFromRouteParam(serverIdParam: string | string[]):
@@ -125,6 +134,7 @@ export function useServerService() {
     getAllServers,
     getServerById,
     getServerColorById,
+    getSvgUrl,
     getServerFromRouteParam,
   };
 }
