@@ -1,32 +1,34 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
+import type { CSSProperties } from 'vue'
 
 // Importación de tu mapa PNG o JPG
 import mapImageUrl from '../assets/images/mapa.png'
 
 // --- REFS PARA CONTROL DE DIMENSIONES ---
-const viewportRef = ref(null)
-const imgRatio = ref(1) // Relación aspecto real (alto / ancho) del mapa
+const viewportRef = ref<HTMLDivElement | null>(null)
+const imgRatio = ref<number>(1) // Relación aspecto real (alto / ancho) del mapa
 
 // --- ESTADOS DE TRANSFORMACIÓN (ZOOM Y PAN) ---
-const scale = ref(1)
-const panX = ref(0)
-const panY = ref(0)
-const isDragging = ref(false)
-const startX = ref(0)
-const startY = ref(0)
+const scale = ref<number>(1)
+const panX = ref<number>(0)
+const panY = ref<number>(0)
+const isDragging = ref<boolean>(false)
+const startX = ref<number>(0)
+const startY = ref<number>(0)
 
 // --- ESTADOS EXCLUSIVOS PARA MÓVILES (TOUCH GESTURES) ---
-const startTouchDist = ref(0)
-const startTouchScale = ref(1)
+const startTouchDist = ref<number>(0)
+const startTouchScale = ref<number>(1)
 
 // --- DETECTOR DE PROPORCIÓN DE LA IMAGEN ---
-const onImageLoad = (e) => {
-  imgRatio.value = e.target.naturalHeight / e.target.naturalWidth
+const onImageLoad = (e: Event): void => {
+  const target = e.target as HTMLImageElement
+  imgRatio.value = target.naturalHeight / target.naturalWidth
 }
 
 // --- DELIMITADOR MAGNÉTICO (CLAMPING) ---
-const clampOffsets = (x, y, currentScale) => {
+const clampOffsets = (x: number, y: number, currentScale: number): { x: number; y: number } => {
   if (!viewportRef.value) return { x, y }
 
   const vW = viewportRef.value.clientWidth
@@ -58,15 +60,43 @@ const clampOffsets = (x, y, currentScale) => {
   return { x: clampedX, y: clampedY }
 }
 
+// --- FUNCIÓN CENTRAL: ZOOM RELATIVO A UN PUNTO FOCAL ---
+const applyZoomRelative = (newScale: number, focalX: number, focalY: number): void => {
+  if (!viewportRef.value) return
+
+  const oldScale = scale.value
+  if (oldScale === newScale) return
+
+  const vW = viewportRef.value.clientWidth
+  // Origen de la transformación (centro de la capa del mapa sin escalar)
+  const Ox = vW / 2
+  const Oy = (vW * imgRatio.value) / 2
+
+  // Distancia desde el origen hasta el punto donde queremos hacer zoom
+  const Dx = focalX - Ox
+  const Dy = focalY - Oy
+
+  // Ajustar el desplazamiento (Pan) para mantener el punto focal fijo en pantalla
+  const targetPanX = Dx - (Dx - panX.value) * (newScale / oldScale)
+  const targetPanY = Dy - (Dy - panY.value) * (newScale / oldScale)
+
+  scale.value = newScale
+
+  // Aplicar límites magnéticos al nuevo desplazamiento calculado
+  const clamped = clampOffsets(targetPanX, targetPanY, newScale)
+  panX.value = clamped.x
+  panY.value = clamped.y
+}
+
 // --- INTERACCIÓN CON MOUSE (ESCRITORIO) ---
-const startPanMouse = (e) => {
+const startPanMouse = (e: MouseEvent): void => {
   e.preventDefault()
   isDragging.value = true
   startX.value = e.clientX - panX.value
   startY.value = e.clientY - panY.value
 }
 
-const onPanMouse = (e) => {
+const onPanMouse = (e: MouseEvent): void => {
   if (!isDragging.value) return
   const rawX = e.clientX - startX.value
   const rawY = e.clientY - startY.value
@@ -76,80 +106,116 @@ const onPanMouse = (e) => {
 }
 
 // --- INTERACCIÓN TÁCTIL (MÓVILES Y TABLETAS) ---
-const handleTouchStart = (e) => {
+const handleTouchStart = (e: TouchEvent): void => {
   if (e.touches.length === 1) {
-    // Un solo dedo: Iniciar arrastre (Pan)
+    const touch = e.touches[0]
+    if (!touch) return
+
     isDragging.value = true
-    startX.value = e.touches[0].clientX - panX.value
-    startY.value = e.touches[0].clientY - panY.value
+    startX.value = touch.clientX - panX.value
+    startY.value = touch.clientY - panY.value
   } else if (e.touches.length === 2) {
-    // Dos dedos: Iniciar Zoom de pellizco (Pinch)
-    isDragging.value = false // Desactivamos el arrastre para evitar saltos locos
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    if (!touch1 || !touch2) return
+
+    isDragging.value = false
     startTouchDist.value = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
+      touch1.clientX - touch2.clientX,
+      touch1.clientY - touch2.clientY
     )
     startTouchScale.value = scale.value
   }
 }
 
-const handleTouchMove = (e) => {
+const handleTouchMove = (e: TouchEvent): void => {
   if (e.touches.length === 1 && isDragging.value) {
-    // Procesar arrastre
-    const rawX = e.touches[0].clientX - startX.value
-    const rawY = e.touches[0].clientY - startY.value
+    const touch = e.touches[0]
+    if (!touch) return
+
+    const rawX = touch.clientX - startX.value
+    const rawY = touch.clientY - startY.value
     const clamped = clampOffsets(rawX, rawY, scale.value)
     panX.value = clamped.x
     panY.value = clamped.y
   } else if (e.touches.length === 2) {
+    const touch1 = e.touches[0]
+    const touch2 = e.touches[1]
+    if (!touch1 || !touch2 || !viewportRef.value) return
+
     // Procesar pellizco dinámico
     const currentDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
+      touch1.clientX - touch2.clientX,
+      touch1.clientY - touch2.clientY
     )
     const factor = currentDist / startTouchDist.value
     let newScale = startTouchScale.value * factor
-    
-    // Forzar límites de zoom entre 1x y 4x
     newScale = Math.max(1, Math.min(4, newScale))
-    applyZoom(newScale)
+
+    // MEJORA: Zoom móvil en el punto medio exacto de ambos dedos
+    const rect = viewportRef.value.getBoundingClientRect()
+    const midX = (touch1.clientX + touch2.clientX) / 2 - rect.left
+    const midY = (touch1.clientY + touch2.clientY) / 2 - rect.top
+
+    applyZoomRelative(newScale, midX, midY)
   }
 }
 
-const stopDragging = () => {
+const stopDragging = (): void => {
   isDragging.value = false
 }
 
-// --- CONTROLES GENERALES DE ZOOM ---
-const applyZoom = (newScale) => {
-  scale.value = newScale
-  const clamped = clampOffsets(panX.value, panY.value, newScale)
-  panX.value = clamped.x
-  panY.value = clamped.y
+// --- CONTROLES DE INTERFAZ (BOTONES + Y -) ---
+// Hacen zoom justo en el centro del Viewport actual ("Última Posición")
+const zoomIn = (): void => {
+  if (!viewportRef.value) return
+  const vW = viewportRef.value.clientWidth
+  const vH = viewportRef.value.clientHeight
+  if (scale.value < 4) {
+    applyZoomRelative(Math.min(scale.value + 0.4, 4), vW / 2, vH / 2)
+  }
 }
 
-const zoomIn = () => {
-  if (scale.value < 4) applyZoom(Math.min(scale.value + 0.3, 4))
+const zoomOut = (): void => {
+  if (!viewportRef.value) return
+  const vW = viewportRef.value.clientWidth
+  const vH = viewportRef.value.clientHeight
+  if (scale.value > 1) {
+    applyZoomRelative(Math.max(scale.value - 0.4, 1), vW / 2, vH / 2)
+  }
 }
 
-const zoomOut = () => {
-  if (scale.value > 1) applyZoom(Math.max(scale.value - 0.3, 1))
-}
-
-const resetMap = () => {
+const resetMap = (): void => {
   scale.value = 1
   const clamped = clampOffsets(0, 0, 1)
   panX.value = clamped.x
   panY.value = clamped.y
 }
 
-const handleWheel = (e) => {
+// --- CONTROLES DE MOUSE WHEEL (RUEDA DEL MOUSE) ---
+// Hace zoom exactamente en las coordenadas de tu cursor
+const handleWheel = (e: WheelEvent): void => {
   e.preventDefault()
-  if (e.deltaY < 0) zoomIn() 
-  else zoomOut()
+  if (!viewportRef.value) return
+
+  // Obtener posición del cursor relativa al contenedor del mapa
+  const rect = viewportRef.value.getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+
+  const zoomStep = 0.15
+  let newScale = scale.value
+
+  if (e.deltaY < 0) {
+    newScale = Math.min(scale.value + zoomStep, 4)
+  } else {
+    newScale = Math.max(scale.value - zoomStep, 1)
+  }
+
+  applyZoomRelative(newScale, mouseX, mouseY)
 }
 
-const mapTransformStyle = computed(() => {
+const mapTransformStyle = computed<CSSProperties>(() => {
   return {
     transform: `translate(${panX.value}px, ${panY.value}px) scale(${scale.value})`,
     transformOrigin: 'center center'
@@ -161,7 +227,7 @@ const mapTransformStyle = computed(() => {
   <div class="page-container">
     <div class="map-card">
       
-      <h2 class="map-title">MAPA INTERACTIVO</h2>
+      <h2 class="map-title">MAPA INTERACTIVO DE ZONAS</h2>
 
       <div 
         ref="viewportRef"
@@ -233,13 +299,12 @@ const mapTransformStyle = computed(() => {
 .map-viewport {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9; /* Formato panorámico para monitores */
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(99, 166, 218, 0.3);
   background-color: #060F16;
   cursor: grab;
-  /* CRÍTICO: Previene que el navegador arrastre la ventana completa al mover el mapa */
   touch-action: none; 
 }
 
@@ -292,12 +357,9 @@ const mapTransformStyle = computed(() => {
   box-shadow: 0 0 12px rgba(99, 166, 218, 0.4);
 }
 
-/* ==========================================================================
-   MEDIA QUERIES: OPTIMIZACIÓN PARA MÓVILES Y TABLETAS
-   ========================================================================== */
 @media (max-width: 768px) {
   .page-container {
-    padding: 12px; /* Menos espacio muerto en las orillas de la pantalla */
+    padding: 12px;
   }
 
   .map-card {
@@ -311,12 +373,9 @@ const mapTransformStyle = computed(() => {
   }
 
   .map-viewport {
-    /* Cambiamos a formato cuadrado (1/1) en móviles para dar más altura 
-       y que el mapa vertical de GTA no quede aplastado */
     aspect-ratio: 1 / 1; 
   }
 
-  /* Botones más grandes para que sean fáciles de presionar con los dedos */
   .map-controls {
     top: 12px;
     right: 12px;
@@ -327,8 +386,7 @@ const mapTransformStyle = computed(() => {
     width: 44px;
     height: 44px;
     font-size: 1.4rem;
-    background: rgba(6, 15, 22, 0.9); /* Ligeramente más opaco en móviles */
+    background: rgba(6, 15, 22, 0.9);
   }
 }
-
 </style>
