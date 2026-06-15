@@ -1,20 +1,3 @@
-<template>
-  <div class="view-viewport">
-    <div v-if="bLoading" class="loading-state">
-      <p>Decryption of Server Directives in progress...</p>
-      <div class="loading-spinner"></div>
-    </div>
-
-    <RulesPage
-      v-if="!bLoading && activeServerData"
-      :serverData="activeServerData"
-    />
-    <NotFound
-      v-else-if="!bLoading && !activeServerData"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -33,6 +16,23 @@ onMounted(() => {
   bLoading.value = false;
 });
 </script>
+
+<template>
+  <div class="view-viewport">
+    <div v-if="bLoading" class="loading-state">
+      <p>Decryption of Server Directives in progress...</p>
+      <div class="loading-spinner"></div>
+    </div>
+
+    <RulesPage
+      v-if="!bLoading && activeServerData"
+      :serverData="activeServerData"
+    />
+    <NotFound
+      v-else-if="!bLoading && !activeServerData"
+    />
+  </div>
+</template>
 
 <style scoped>
 .view-viewport {

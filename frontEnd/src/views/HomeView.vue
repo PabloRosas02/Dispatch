@@ -1,13 +1,13 @@
+<script setup>
+// Importamos el componente usando el alias @ que apunta directamente a src/
+import Welcome from '@/components/Welcome.vue'
+</script>
+
 <template>
   <main class="home-view">
     <Welcome />
   </main>
 </template>
-
-<script setup>
-// Importamos el componente usando el alias @ que apunta directamente a src/
-import Welcome from '@/components/Welcome.vue'
-</script>
 
 <style scoped>
 .home-view {

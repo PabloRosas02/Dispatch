@@ -1,3 +1,22 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { RuleItem } from '@/types/serverTypes.ts';
+
+defineProps<{
+  index: string;
+  title: RuleItem['title'];
+  description: RuleItem['description'];
+  example?: RuleItem['example'];
+  serverColor: string;
+}>();
+
+const isOpen = ref<boolean>(false);
+
+const toggleCard = () => {
+  isOpen.value = !isOpen.value;
+};
+</script>
+
 <!-- src/components/rules/RuleCard.vue -->
 <template>
   <div
@@ -26,25 +45,6 @@
     </transition>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import type { RuleItem } from '@/types/serverTypes.ts';
-
-defineProps<{
-  index: string;
-  title: RuleItem['title'];
-  description: RuleItem['description'];
-  example?: RuleItem['example'];
-  serverColor: string;
-}>();
-
-const isOpen = ref<boolean>(false);
-
-const toggleCard = () => {
-  isOpen.value = !isOpen.value;
-};
-</script>
 
 <style scoped>
 .rule-card {

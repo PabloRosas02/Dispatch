@@ -10,7 +10,7 @@ const { getServerFromRouteParam, getSvgUrl } = useServerService();
 
 const bLoading = ref<boolean>(true);
 
-/* 🌟 FUNCIÓN DINÁMICA DE VITE
+/*FUNCIÓN DINÁMICA DE VITE
    Asumiendo que este archivo de vista está en 'src/views/', usamos '../components/icons/'
    para llegar a tus SVGs. Si está en 'src/components/', cámbialo a './icons/' */
 

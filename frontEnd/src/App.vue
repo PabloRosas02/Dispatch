@@ -1,3 +1,10 @@
+<script setup>
+// Importamos el componente nativo de Vue Router
+import { RouterView } from 'vue-router'
+// Importamos tu pantalla de carga basada en el logo
+import LoadingScreen from './components/LoadingScreen.vue'
+</script>
+
 <template>
   <LoadingScreen />
   <RouterView v-slot="{ Component }">
@@ -6,13 +13,6 @@
     </KeepAlive>
   </RouterView>
 </template>
-
-<script setup>
-// Importamos el componente nativo de Vue Router
-import { RouterView } from 'vue-router'
-// Importamos tu pantalla de carga basada en el logo
-import LoadingScreen from './components/LoadingScreen.vue'
-</script>
 
 <style>
 html,
