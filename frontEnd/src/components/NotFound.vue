@@ -1,13 +1,3 @@
-<template>
-  <main class="not-found">
-    <h1>{{ title }}</h1>
-    <p>{{ description }}</p>
-    <RouterLink :to="linkUrl" class="error-link">
-      {{ linkText }}
-    </RouterLink>
-  </main>
-</template>
-
 <script setup lang="ts">
 // Explicit properties defining your fallback texts and customizable route paths
 withDefaults(
@@ -25,6 +15,16 @@ withDefaults(
   }
 );
 </script>
+
+<template>
+  <main class="not-found">
+    <h1>{{ title }}</h1>
+    <p>{{ description }}</p>
+    <RouterLink :to="linkUrl" class="error-link">
+      {{ linkText }}
+    </RouterLink>
+  </main>
+</template>
 
 <style scoped>
 .not-found {
