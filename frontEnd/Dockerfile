@@ -1,11 +1,13 @@
 
 ARG NODE_VERSION=20
 
-# BUILD
+# BASE
 FROM node:${NODE_VERSION}-alpine AS base
 WORKDIR /app
 COPY package*.json ./
 
+
+# DEVELOPMENT
 FROM base AS development
 
 ENV NODE_ENV=development
@@ -17,10 +19,9 @@ COPY . .
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
 
-FROM base AS build
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
 
+# BUILD
+FROM base AS build
 RUN npm install --package-lock-only && \
   npm ci
 
@@ -28,26 +29,22 @@ COPY . .
 
 RUN npm run build
 
-RUN chown -R nodejs:nodejs /app && \
-  chown -R 755 /app
 
-USER nodejs
+# PRODUCTION
+FROM nginx:alpine AS production
+WORKDIR /usr/share/nginx/html
 
-FROM node:${NODE_VERSION}-alpine AS production
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+COPY --from=build /app/dist .
 
-WORKDIR /app
-ENV NODE_ENV=production
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN npm install -g serve
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+  chmod -R 755 /usr/share/nginx/html && \
+  chown -R nginx:nginx /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
+  touch /var/run/nginx.pid && \
+  chown -R nginx:nginx /var/run/nginx.pid
 
-COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
+USER nginx
 
-RUN mkdir -p /app/dist && \
-  chown -R nodejs:nodejs /app
-
-USER nodejs
-
-EXPOSE 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
