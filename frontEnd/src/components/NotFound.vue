@@ -33,12 +33,12 @@ withDefaults(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #060F16;
+  /*background-color: #060F16;*/
   color: #f3e9dc;
   gap: 15px;
   text-align: center;
   padding: 1.5rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Exo 2", sans-serif;
 }
 
 h1 {
@@ -66,6 +66,5 @@ p {
 
 .error-link:hover {
   text-decoration: underline;
-  color: #f3e9dc;
 }
 </style>

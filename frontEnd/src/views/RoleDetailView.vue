@@ -69,7 +69,7 @@ onMounted(() => {
   </main>
 
   <main v-else class="not-found">
-    <h2>Role not found</h2>
+    <h1>ROLE NOT FOUND</h1>
     <p>El rol que buscas no se encuentra registrado en nuestro ecosistema.</p>
     <RouterLink to="/" class="error-link">Return to Home</RouterLink>
   </main>
@@ -315,11 +315,15 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #060F16;
+  /*background-color: #060F16;*/
   color: #f3e9dc;
   gap: 15px;
+  text-align: center;
+  padding: 1.5rem;
+  font-family: "Exo 2", sans-serif;
 }
 .error-link {
+  font-family: "Exo 2", sans-serif;
   color: #63a6da;
   text-decoration: none;
   font-weight: 700;

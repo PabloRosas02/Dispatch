@@ -1,0 +1,5 @@
+<template>
+  <div>
+    <h1>Noticias</h1>
+  </div>
+</template>

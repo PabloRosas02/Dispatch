@@ -5,6 +5,8 @@ import { RouterView } from 'vue-router'
 import LoadingScreen from './components/LoadingScreen.vue'
 // Importamos la barra de navegación
 import Navbar from './components/Navbar.vue'
+//Importar el footer
+import Footer from './components/Footer.vue'
 </script>
 
 <template>
@@ -15,6 +17,7 @@ import Navbar from './components/Navbar.vue'
       <component :is="Component" />
     </KeepAlive>
   </RouterView>
+  <Footer />
 </template>
 
 <style>
@@ -25,7 +28,6 @@ body,
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  background-color: #060f16;
   box-sizing: border-box;
 }
 
