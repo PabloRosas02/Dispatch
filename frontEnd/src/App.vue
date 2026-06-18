@@ -3,10 +3,13 @@
 import { RouterView } from 'vue-router'
 // Importamos tu pantalla de carga basada en el logo
 import LoadingScreen from './components/LoadingScreen.vue'
+// Importamos la barra de navegación
+import Navbar from './components/Navbar.vue'
 </script>
 
 <template>
   <LoadingScreen />
+  <Navbar />
   <RouterView v-slot="{ Component }">
     <KeepAlive include="HomeView">
       <component :is="Component" />
