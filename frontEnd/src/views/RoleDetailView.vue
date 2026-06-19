@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import NotFound from '@/components/NotFound.vue';
 import type * as ServerType from '../types/serverTypes.ts';
 import { useServerService } from '@/services/serverService.ts';
 
@@ -68,11 +69,11 @@ onMounted(() => {
     </div>
   </main>
 
-  <main v-else class="not-found">
-    <h2>Role not found</h2>
-    <p>El rol que buscas no se encuentra registrado en nuestro ecosistema.</p>
-    <RouterLink to="/" class="error-link">Return to Home</RouterLink>
-  </main>
+  <NotFound v-else
+    title="Role not found"
+    description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
+  >
+  </NotFound>
 </template>
 
 <style scoped>
@@ -97,8 +98,8 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background-color: #f3e9dc;
-  color: #060f16;
+  background-color: var(--color-light);
+  color: var(--color-primary);
   border: none;
   padding: 12px 24px;
   border-radius: 30px;
@@ -112,7 +113,7 @@ onMounted(() => {
 
 .back-button:hover {
   transform: translateX(-4px);
-  background-color: #efbc95;
+  background-color: var(--color-complementary);
 }
 
 /* Contenedor Principal Split */
@@ -156,7 +157,7 @@ onMounted(() => {
   object-fit: contain; /* 🌟 Cambiado a contain para que los SVGs vectoriales no se corten */
   display: block;
   border: 1px solid #ededed;
-  background-color: #060F16;
+  background-color: var(--color-primary);
 }
 
 .postal-footer {
@@ -183,7 +184,7 @@ onMounted(() => {
   font-weight: 900;
   margin: 0;
   line-height: 1;
-  color: #ecaf44;
+  color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: -1px;
 }
@@ -192,7 +193,7 @@ onMounted(() => {
   font-size: 1.4rem;
   font-weight: 700;
   margin: 12px 0 28px 0;
-  color: #63a6da;
+  color: var(--color-secondary);
   text-transform: uppercase;
   letter-spacing: 2px;
 }
@@ -200,7 +201,7 @@ onMounted(() => {
 .role-description {
   font-size: 1.1rem;
   line-height: 1.75;
-  color: #f3e9dc;
+  color: var(--color-light);
   margin-bottom: 35px;
   max-width: 540px;
 }
@@ -242,7 +243,7 @@ onMounted(() => {
 }
 
 .explore-button {
-  background-color: #ecaf44;
+  background-color: var(--color-accent);
   color: #060f16;
   border: none;
   box-shadow: 0 4px 15px rgba(236, 175, 68, 0.25);
@@ -309,22 +310,4 @@ onMounted(() => {
   }
 }
 
-.not-found {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #060F16;
-  color: #f3e9dc;
-  gap: 15px;
-}
-.error-link {
-  color: #63a6da;
-  text-decoration: none;
-  font-weight: 700;
-}
-.error-link:hover {
-  text-decoration: underline;
-}
 </style>
