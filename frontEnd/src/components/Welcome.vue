@@ -86,6 +86,9 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
   font-weight: 700;
   margin: 0 0 12px 0;
   letter-spacing: -0.5px;
+  text-shadow:
+  0 2px 8px rgba(0,0,0,.7),
+  0 4px 20px rgba(0,0,0,.5);
 }
 
 .highlight-text {
@@ -94,7 +97,8 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 
 .welcome-subtitle {
   color: var(--color-secondary);
-  font-size: 1.9rem;
+  font-family: "Exo 2", sans-serif;
+  font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.6;
   max-width: 600px;
@@ -111,6 +115,7 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 }
 
 .discord-button {
+  font-family: "Exo 2", sans-serif;
   display: inline-flex;
   align-items: center;
   justify-content: center;
