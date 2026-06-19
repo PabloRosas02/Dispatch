@@ -33,16 +33,16 @@ withDefaults(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #060F16;
-  color: #f3e9dc;
+  /*background-color: #060F16;*/
+  color: var(--color-light);
   gap: 15px;
   text-align: center;
   padding: 1.5rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Exo 2", sans-serif;
 }
 
 h1 {
-  color: #ecaf44;
+  color: var(--color-accent);
   margin: 0;
   font-size: 2rem;
   text-transform: uppercase;
@@ -50,7 +50,7 @@ h1 {
 }
 
 p {
-  color: #f3e9dc;
+  color: var(--color-light);
   margin: 0;
   opacity: 0.85;
   max-width: 500px;
@@ -58,7 +58,7 @@ p {
 }
 
 .error-link {
-  color: #63a6da;
+  color: var(--color-secondary);
   text-decoration: none;
   font-weight: 700;
   transition: color 0.2s ease;
@@ -66,6 +66,5 @@ p {
 
 .error-link:hover {
   text-decoration: underline;
-  color: #f3e9dc;
 }
 </style>

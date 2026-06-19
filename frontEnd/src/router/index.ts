@@ -1,32 +1,68 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouterView } from 'vue-router'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+
   routes: [
     {
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
     },
+
     {
-      path: '/roles/:serverId',
-      name: 'role-detail',
-      component: () => import('../views/RoleDetailView.vue'),
+      path: '/roles',
+      name: 'role-root',
+      component: RouterView,
+      children: [
+        {
+          path: ':serverId',
+          name: 'role-detail',
+          component: ()=> import('../views/RoleDetailView.vue'),
+        }
+      ]
     },
+
     {
-      path: '/reglas/:serverId',
-      name: 'rules-detail',
-      component: ()=> import ('../views/RulesPageView.vue'),
+      path: '/reglas',
+      name: 'rules-root',
+      component: RouterView,
+      children:[
+        {
+          path: ':serverId',
+          name: 'rules-detail',
+          component: ()=> import ('../views/RulesPageView.vue'),
+        },
+      ]
     },
+
     {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: ()=> import ('../components/NotFound.vue'),
-    // Optional: Pass specific error details directly via props
-    props: {
-      title: 'Page Not Found',
-      description: 'La direccion URL no existe.',
-    }
-  }
+      path: '/housing',
+      name: 'housing',
+      component: () => import('../views/HousingView.vue'),
+    },
+
+    {
+      path: '/controles',
+      name: 'controls',
+      component: () => import('../views/ControlesView.vue'),
+    },
+
+    {
+      path: '/noticias',
+      name: 'news',
+      component: () => import('../views/NewsView.vue'),
+    },
+
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../components/NotFound.vue'),
+      props: {
+        title: 'Page Not Found',
+        description: 'La direccion URL no existe.',
+      },
+    },
   ],
 })
 

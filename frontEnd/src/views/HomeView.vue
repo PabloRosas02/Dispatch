@@ -13,6 +13,6 @@ import Welcome from '@/components/Welcome.vue'
 .home-view {
   width: 100%;
   min-height: 100vh;
-  background-color: #060f16; /* Mantiene la consistencia del color de fondo */
+ /* background-color: #060f16; /* Mantiene la consistencia del color de fondo */
 }
 </style>
