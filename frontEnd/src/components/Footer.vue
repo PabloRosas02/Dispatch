@@ -41,7 +41,6 @@
 
 <style scoped>
 .footer {
-  margin-top: 100px;
 
   font-family: "Exo 2", sans-serif;
   background: rgba(6, 15, 22, 0.75);

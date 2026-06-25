@@ -12,11 +12,13 @@ import Footer from './components/Footer.vue'
 <template>
   <LoadingScreen />
   <Navbar />
-  <RouterView v-slot="{ Component }">
-    <KeepAlive include="HomeView">
-      <component :is="Component" />
-    </KeepAlive>
-  </RouterView>
+  <main class="page-content">
+    <RouterView v-slot="{ Component }">
+      <KeepAlive include="HomeView">
+        <component :is="Component" />
+      </KeepAlive>
+    </RouterView>
+  </main>
   <Footer />
 </template>
 
@@ -29,6 +31,15 @@ body,
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
 }
 
 /* Aplicamos box-sizing de forma heredada a todos los elementos del sitio */

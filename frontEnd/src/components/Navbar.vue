@@ -88,6 +88,7 @@
   border-bottom: 1px solid rgba(99, 166, 218, 0.15);
 
   padding: 10px 20px;
+  z-index: 9999;
 }
 
 .logo img {
@@ -152,7 +153,7 @@
   .nav-links {
     position: absolute;
     top: calc(100% + 8px);
-    right: 0;
+    right: 12px;
 
     width: 220px;
 
@@ -164,7 +165,8 @@
     margin: 0;
     padding: 0;
 
-    background: #1b1b1b;
+    background: rgba(27, 27, 27, 0.98);
+    backdrop-filter: blur(12px);
 
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,.4);
@@ -172,11 +174,13 @@
     max-height: 0;
     overflow: hidden;
 
-    transition: max-height .25s ease;
+    z-index: 1000;
+
+    transition: max-height .3s ease;
   }
 
   .nav-links.open {
-    max-height: 170px;
+    max-height: 400px;
   }
 
   .nav-links li {
