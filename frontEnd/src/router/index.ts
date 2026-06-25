@@ -8,6 +8,9 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
+      meta: {
+        title: 'Kinsfolk'
+      }
     },
 
     {
@@ -20,7 +23,10 @@ const router = createRouter({
           name: 'role-detail',
           component: ()=> import('../views/RoleDetailView.vue'),
         }
-      ]
+      ],
+      meta: {
+        title: 'Roles'
+      }
     },
 
     {
@@ -33,37 +39,71 @@ const router = createRouter({
           name: 'rules-detail',
           component: ()=> import ('../views/RulesPageView.vue'),
         },
-      ]
+      ],
+      meta: {
+        title: 'Reglas'
+      }
     },
 
     {
       path: '/housing',
       name: 'housing',
       component: () => import('../views/HousingView.vue'),
+      meta: {
+        title: 'Housing'
+      }
     },
 
     {
       path: '/controles',
       name: 'controls',
       component: () => import('../views/ControlesView.vue'),
+      meta: {
+        title: 'Controles'
+      }
     },
 
     {
       path: '/noticias',
       name: 'news',
       component: () => import('../views/NewsView.vue'),
+      meta: {
+        title: 'Noticias'
+      }
     },
 
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../components/NotFound.vue'),
+      meta: {
+        title: 'Page Not Found'
+      },
       props: {
         title: 'Page Not Found',
         description: 'La direccion URL no existe.',
       },
     },
   ],
+})
+
+router.beforeEach((to) => {
+  const baseTitle = to.meta.title as string || 'Kinsfolk';
+
+
+  switch(to.name)
+  {
+    case 'role-detail':
+    case 'rules-detail':
+      const serverId = to.params.serverId as string;
+      document.title = serverId ? `${baseTitle} - Servidor ${serverId}` : baseTitle
+      break;
+    default:
+      document.title = baseTitle;
+      break;
+  }
+
+  return true
 })
 
 export default router

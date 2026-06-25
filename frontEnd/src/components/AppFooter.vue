@@ -3,7 +3,7 @@
     <div class="footer-container">
         <div class="footer-brand">
             <img
-            src="@/assets/icons/Logo.svg"
+            src="/icons/Logo.svg"
             alt="Kinsfolk"
             class="footer-logo"
             />

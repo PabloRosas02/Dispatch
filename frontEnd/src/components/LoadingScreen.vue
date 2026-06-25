@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
 // Nota: Si este archivo LoadingScreen está dentro de 'src/components/', la ruta './icons/logo.svg' es la correcta.
-import logoUrl from '@/assets/icons/Logo.svg';
+import logoUrl from '/icons/Logo.svg';
 
 const isVisible = ref(true);
 
