@@ -67,7 +67,7 @@
   
   <script lang="ts" setup>
   import { ref } from "vue";
-  import Logo from "@/assets/icons/Logo.svg";
+  import Logo from "/icons/Logo.svg";
   
   const isOpen = ref(false);
   const toggleMenu = () => {

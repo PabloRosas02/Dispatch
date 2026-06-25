@@ -3,7 +3,7 @@
 import WelcomeCarousel from './ServerCarrousel.vue'
 
 // Nota: Ajusta la ruta si tu carpeta de iconos está en otro nivel (ej. '../assets/icons/Logoletras.svg')
-import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
+import logoLetrasUrl from '/icons/Logoletras.svg'
 </script>
 
 <template>

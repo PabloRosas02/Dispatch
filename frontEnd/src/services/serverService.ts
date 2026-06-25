@@ -216,7 +216,7 @@ export function useServerService() {
     const server: ServerType.RPServer | undefined = getServerById(id);
 
     if(server){
-      return new URL(`/src/assets/icons/${server.filename}`, import.meta.url).href;
+      return `/icons/${server.filename}`;
     }
     return undefined;
   }
