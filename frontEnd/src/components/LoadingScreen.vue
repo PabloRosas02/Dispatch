@@ -2,13 +2,13 @@
 import { ref, onMounted } from 'vue';
 
 // Nota: Si este archivo LoadingScreen está dentro de 'src/components/', la ruta './icons/logo.svg' es la correcta.
-import logoUrl from './icons/logo.svg';
+import logoUrl from '@/assets/icons/Logo.svg';
 
 const isVisible = ref(true);
 
 onMounted(() => {
   document.body.style.overflow = 'hidden';
-  
+
   setTimeout(() => {
     isVisible.value = false;
   }, 1800);
@@ -23,10 +23,10 @@ const onAfterLeave = () => {
   <Transition name="fade" @after-leave="onAfterLeave">
     <div v-if="isVisible" class="loader-overlay">
       <div class="loader-content">
-        
+
         <div class="loader-logo-container animate-pulse-slow">
-          <img 
-            :src="logoUrl" 
+          <img
+            :src="logoUrl"
             alt="Logo"
             class="loader-logo"
             style="filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1));"
@@ -99,17 +99,17 @@ const onAfterLeave = () => {
 
 /* Estilos de escalado adaptativo para el nuevo logo */
 .loader-logo {
-  width: 65%; 
-  height: auto; 
-  max-width: 450px; 
+  width: 65%;
+  height: auto;
+  max-width: 450px;
   transition: max-width 0.3s ease;
   display: block;
 }
 
 @media (max-width: 480px) {
   .loader-logo {
-    width: 80%;       
-    max-width: 260px; 
+    width: 80%;
+    max-width: 260px;
   }
 }
 

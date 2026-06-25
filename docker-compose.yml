@@ -1,4 +1,4 @@
-name: family-page
+name: kinsfolk
 
 x-frontend-base-build: &frontend-base-build
   context: ./frontEnd
@@ -11,13 +11,36 @@ x-frontend-base: &frontend-base
     - ./.env
   restart: unless-stopped
 
+x-main-proxy-base: &main-proxy-base
+    image: nginx:alpine
+    container_name: main-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_cache:/tmp/nginx_cache
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
 services:
+
+  main-proxy:
+    profiles: ["prod"]
+    depends_on:
+      - frontend
+    <<: *main-proxy-base
+  main-proxy-dev:
+    profiles: ["dev"]
+    <<: *main-proxy-base
 
   frontend-dev:
     profiles: ["dev"]
     build:
       <<: *frontend-base-build
       target: development
+    container_name: page-dev
     ports:
         - "5173:5173"
     volumes:
@@ -25,12 +48,16 @@ services:
       - /app/node_modules
     <<: *frontend-base
 
-  frontend-prod:
+  frontend:
     profiles: ["prod"]
     build:
       <<: *frontend-base-build
       target: production
-    ports:
-        - "${EXTERNAL_PORT_FD}:3000"
+    container_name: page-prod
+    security_opt:
+      - no-new-privileges:true
     <<: *frontend-base
 
+volumes:
+  nginx_cache:
+    driver: local

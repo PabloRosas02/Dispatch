@@ -3,19 +3,19 @@
 import WelcomeCarousel from './Carrousel.vue'
 
 // Nota: Ajusta la ruta si tu carpeta de iconos está en otro nivel (ej. '../assets/icons/Logoletras.svg')
-import logoLetrasUrl from './icons/Logoletras.svg'
+import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 </script>
 
 <template>
   <header class="hero-container">
-    
+
     <div class="welcome-section">
       <div class="logo-wrapper">
-        
-        <img 
-          :src="logoLetrasUrl" 
-          alt="Kinsfolk Logo" 
-          class="main-logo" 
+
+        <img
+          :src="logoLetrasUrl"
+          alt="Kinsfolk Logo"
+          class="main-logo"
         />
 
       </div>
@@ -58,7 +58,6 @@ import logoLetrasUrl from './icons/Logoletras.svg'
   justify-content: flex-start;
   padding: 40px 20px;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Estilos de la Bienvenida */
@@ -71,6 +70,7 @@ import logoLetrasUrl from './icons/Logoletras.svg'
 .logo-wrapper {
   width: 100%;
   max-width: 450px; /* Mantiene el tamaño horizontal ideal en desktop */
+  aspect-ratio: 3 / 1;
   margin: 0 auto 24px auto;
 }
 
@@ -78,6 +78,7 @@ import logoLetrasUrl from './icons/Logoletras.svg'
 .main-logo {
   width: 100%;
   height: auto;
+  aspect-ratio: 3 / 1;
   display: block; /* Elimina espaciados fantasmas inferiores de las imágenes */
 }
 
@@ -87,6 +88,9 @@ import logoLetrasUrl from './icons/Logoletras.svg'
   font-weight: 700;
   margin: 0 0 12px 0;
   letter-spacing: -0.5px;
+  text-shadow:
+  0 2px 8px rgba(0,0,0,.7),
+  0 4px 20px rgba(0,0,0,.5);
 }
 
 .highlight-text {
@@ -95,23 +99,33 @@ import logoLetrasUrl from './icons/Logoletras.svg'
 
 .welcome-subtitle {
   color: var(--color-secondary);
-  font-size: 1.9rem;
-  font-weight: 500;
+
+  font-family: "Exo 2", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+
   line-height: 1.6;
+
   max-width: 600px;
   margin: 16px auto 0 auto;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(99, 166, 218, 0.25),
+    0 0 16px rgba(99, 166, 218, 0.15);
+
 }
+
 
 /* Estilos de la sección Discord */
 .discord-section {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
 .discord-button {
+  font-family: "Exo 2", sans-serif;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -145,4 +159,6 @@ import logoLetrasUrl from './icons/Logoletras.svg'
   height: auto;
   display: block;
 }
+
+
 </style>

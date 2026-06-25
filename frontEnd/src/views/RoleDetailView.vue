@@ -1,80 +1,30 @@
-<script setup>
-import { computed } from 'vue';
+<script setup lang='ts'>
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import NotFound from '@/components/NotFound.vue';
+import type * as ServerType from '../types/serverTypes.ts';
+import { useServerService } from '@/services/serverService.ts';
 
 const route = useRoute();
-// Captura el :id de la URL de forma reactiva (ejemplo: 'leo', 'sams', etc.)
-const id = computed(() => route.params.id);
+const role = ref<ServerType.RPServer | undefined>(undefined);
+const { getServerFromRouteParam, getSvgUrl } = useServerService();
 
-/* 🌟 FUNCIÓN DINÁMICA DE VITE
-   Asumiendo que este archivo de vista está en 'src/views/', usamos '../components/icons/' 
+const bLoading = ref<boolean>(true);
+
+/*FUNCIÓN DINÁMICA DE VITE
+   Asumiendo que este archivo de vista está en 'src/views/', usamos '../components/icons/'
    para llegar a tus SVGs. Si está en 'src/components/', cámbialo a './icons/' */
-const getSvgUrl = (filename) => {
-  return new URL(`../components/icons/${filename}`, import.meta.url).href;
-};
-
-// Base de datos local indexada por el ID del rol (Ahora usa los nombres de archivos SVG)
-const rolesData = {
-  leo: {
-    titulo: 'L.E.O ROL',
-    subtitulo: 'LAW ENFORCEMENT & ORDER',
-    descripcion: 'Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. Diseñado con paneles tácticos intuitivos que garantizan una respuesta inmediata y optimización del flujo operativo de Kinsfolk.',
-    filename: 'L.e.o.svg',
-    bgColor: 'linear-gradient(135deg, #1b2d4a 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/YpvBDNRn'
-  },
-  sams: {
-    titulo: 'S.A.M.S ROL',
-    subtitulo: 'MEDICAL ASSISTANCE & SERVICES',
-    descripcion: 'Ecosistema robusto enfocado en servicios médicos y de asistencia rápida. Permite la clasificación inteligente de registros médicos, control de pacientes en tiempo real y una distribución visual ágil de recursos.',
-    filename: 'SAMS.svg',
-    bgColor: 'linear-gradient(135deg, #591919 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/YpvBDNRn'
-  },
-  safd: {
-    titulo: 'S.A.F.D ROL',
-    subtitulo: 'FIRE & RESCUE SOLUTIONS',
-    descripcion: 'Solución táctica dedicada al cuerpo de bomberos y mitigación de riesgos. Proporciona interfaces adaptativas de mapeo interactivo y flujos de alertas críticas optimizados para situaciones de alta prioridad.',
-    filename: 'SAFD.svg',
-    bgColor: 'linear-gradient(135deg, #824316 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/3KQ3JwSw'
-  },
-  civiles: {
-    titulo: 'CIVILES',
-    subtitulo: 'CITIZEN ECOSYSTEM & JOBS',
-    descripcion: 'El núcleo de la interacción social y económica. Un entorno dinámico donde los usuarios gestionan identidades, empleos civiles, licencias y propiedades bajo una interfaz estilizada y fluida.',
-    filename: 'Proyectos civiles.svg',
-    bgColor: 'linear-gradient(135deg, #133a2d 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/KfN8vKhZ7'
-  },
-  ilegales: {
-    titulo: 'ILEGALES',
-    subtitulo: 'CRIMINAL ENTERPRISE NETWORKS',
-    descripcion: 'Sistemas diseñados con interfaces oscuras y minimalistas para la gestión de redes clandestinas, mercados negros y economías alternativas controladas desde las sombras de la ciudad.',
-    filename: 'Ilegales.svg',
-    bgColor: 'linear-gradient(135deg, #2c2d30 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/BECZxnSWS'
-  },
-  creator: {
-    titulo: 'CREADORES DE CONTENIDO',
-    subtitulo: 'MEDIA & STREAMING TOOLS',
-    descripcion: 'Espacio dedicado a creadores de contenido y distribución multimedia. Ofrece integración directa de transmisiones, galerías dinámicas y herramientas exclusivas para potenciar la marca Kinsfolk.',
-    filename: 'Content Creator.svg',
-    bgColor: 'linear-gradient(135deg, #571c75 0%, #060F16 100%)',
-    discordUrl: 'https://discord.gg/e4GhgKx5s'
-  }
-};
 
 // Propiedad computada que extrae el rol correspondiente o devuelve null si no existe
-const role = computed(() => {
-  if (!id.value) return null;
-  return rolesData[id.value.toLowerCase()] || null;
+onMounted(() => {
+  role.value = getServerFromRouteParam(route.params.serverId as string);
+  bLoading.value =false;
 });
 </script>
 
 <template>
-  <main v-if="role" class="detail-page" :style="{ '--bg-gradient': role.bgColor }">
-    
+  <main v-if="role" class="detail-page" :style="{ '--bg-gradient': role.color }">
+
     <RouterLink to="/" class="back-button">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
@@ -85,7 +35,7 @@ const role = computed(() => {
     <div class="content-container">
       <div class="postal-wrapper">
         <div class="postal-card">
-          <img :src="getSvgUrl(role.filename)" :alt="role.titulo" class="postal-image" />
+          <img :src="getSvgUrl(role.id)" :alt="role.title" class="postal-image" />
           <div class="postal-footer">
             <span class="postal-brand">VISIT KINSFOLK</span>
           </div>
@@ -93,20 +43,20 @@ const role = computed(() => {
       </div>
 
       <div class="info-wrapper">
-        <h1 class="role-title">{{ role.titulo }}</h1>
-        <h2 class="role-subtitle">{{ role.subtitulo }}</h2>
-        <p class="role-description">{{ role.descripcion }}</p>
-        
+        <h1 class="role-title">{{ role.title }}</h1>
+        <h2 class="role-subtitle">{{ role.subtitle }}</h2>
+        <p class="role-description">{{ role.description }}</p>
+
         <div class="action-buttons-group">
           <button class="explore-button">
-            Explora {{ role.titulo }}
+            Explora {{ role.title }}
           </button>
 
-          <a 
-            v-if="role.discordUrl" 
-            :href="role.discordUrl" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            v-if="role.discordLink"
+            :href="role.discordLink"
+            target="_blank"
+            rel="noopener noreferrer"
             class="discord-button"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
@@ -118,19 +68,19 @@ const role = computed(() => {
       </div>
     </div>
   </main>
-  
-  <main v-else class="not-found">
-    <h2>Role not found</h2>
-    <p>El rol que buscas no se encuentra registrado en nuestro ecosistema.</p>
-    <RouterLink to="/" class="error-link">Return to Home</RouterLink>
-  </main>
+
+  <NotFound v-else
+    title="Role not found"
+    description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
+  >
+  </NotFound>
 </template>
 
 <style scoped>
 .detail-page {
   width: 100%;
   min-height: 100vh;
-  background: var(--bg-gradient, #060F16);
+  background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-background) 100%), var(--color-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,8 +98,8 @@ const role = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background-color: #f3e9dc;
-  color: #060f16;
+  background-color: var(--color-light);
+  color: var(--color-primary);
   border: none;
   padding: 12px 24px;
   border-radius: 30px;
@@ -163,7 +113,7 @@ const role = computed(() => {
 
 .back-button:hover {
   transform: translateX(-4px);
-  background-color: #efbc95;
+  background-color: var(--color-complementary);
 }
 
 /* Contenedor Principal Split */
@@ -207,7 +157,7 @@ const role = computed(() => {
   object-fit: contain; /* 🌟 Cambiado a contain para que los SVGs vectoriales no se corten */
   display: block;
   border: 1px solid #ededed;
-  background-color: #060F16;
+  background-color: var(--color-primary);
 }
 
 .postal-footer {
@@ -234,7 +184,7 @@ const role = computed(() => {
   font-weight: 900;
   margin: 0;
   line-height: 1;
-  color: #ecaf44;
+  color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: -1px;
 }
@@ -243,7 +193,7 @@ const role = computed(() => {
   font-size: 1.4rem;
   font-weight: 700;
   margin: 12px 0 28px 0;
-  color: #63a6da;
+  color: var(--color-secondary);
   text-transform: uppercase;
   letter-spacing: 2px;
 }
@@ -251,7 +201,7 @@ const role = computed(() => {
 .role-description {
   font-size: 1.1rem;
   line-height: 1.75;
-  color: #f3e9dc;
+  color: var(--color-light);
   margin-bottom: 35px;
   max-width: 540px;
 }
@@ -293,7 +243,7 @@ const role = computed(() => {
 }
 
 .explore-button {
-  background-color: #ecaf44;
+  background-color: var(--color-accent);
   color: #060f16;
   border: none;
   box-shadow: 0 4px 15px rgba(236, 175, 68, 0.25);
@@ -347,7 +297,7 @@ const role = computed(() => {
   .role-title {
     font-size: 3rem;
   }
-  
+
   .action-buttons-group {
     flex-direction: column;
     width: 100%;
@@ -360,22 +310,4 @@ const role = computed(() => {
   }
 }
 
-.not-found {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #060F16;
-  color: #f3e9dc;
-  gap: 15px;
-}
-.error-link {
-  color: #63a6da;
-  text-decoration: none;
-  font-weight: 700;
-}
-.error-link:hover {
-  text-decoration: underline;
-}
 </style>
