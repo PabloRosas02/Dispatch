@@ -36,7 +36,7 @@ const onSlideChange = (swiper: SwiperClass) => {
 }
 
 onMounted(() => {
-  let savedIndex  = localStorage.getItem('kinsfolk_last_slide')
+  const savedIndex  = localStorage.getItem('kinsfolk_last_slide')
   if (savedIndex != null && swiperInstance.value) {
     swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
   }

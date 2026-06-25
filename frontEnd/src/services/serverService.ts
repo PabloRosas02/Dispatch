@@ -1,7 +1,7 @@
 import { ref, readonly } from 'vue';
 import type * as ServerType from '../types/serverTypes';
 
-export const rpServers = <ServerType.RPServer[]>([
+export const rpServers = ref<ServerType.RPServer[]>([
   {
     id: "leo",
     title: "L.E.O ROL",
@@ -195,15 +195,15 @@ export function useServerService() {
   }
 
   function getAllServers(){
-    return readonly(rpServers);
+    return readonly(rpServers.value);
   }
 
   function getServerById(id: string): ServerType.RPServer | undefined{
-    return rpServers.find(server => server.id === id);
+    return rpServers.value.find(server => server.id === id);
   }
 
   function getServerColorById(id: string): string {
-    const server:ServerType.RPServer | undefined = rpServers.find(server => server.id === id);
+    const server:ServerType.RPServer | undefined = rpServers.value.find(server => server.id === id);
 
     if(server){
       return server.color
