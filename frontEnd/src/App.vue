@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 // Importamos el componente nativo de Vue Router
 import { RouterView } from 'vue-router'
 // Importamos tu pantalla de carga basada en el logo
 import LoadingScreen from './components/LoadingScreen.vue'
 // Importamos la barra de navegación
-import Navbar from './components/Navbar.vue'
+import Navbar from './components/AppNavbar.vue'
 //Importar el footer
-import Footer from './components/Footer.vue'
+import Footer from './components/AppFooter.vue'
 </script>
 
 <template>

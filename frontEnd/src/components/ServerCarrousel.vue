@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay } from 'swiper/modules'
 import { useRouter } from 'vue-router';
-import type { RPServer } from '../types/serverTypes.ts';
 import type { Swiper as SwiperClass } from 'swiper';
 import { useServerService } from '../services/serverService.ts';
 import { onActivated, onDeactivated } from 'vue'

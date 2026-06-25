@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 // Importamos el nuevo componente modular del carrusel
-import WelcomeCarousel from './Carrousel.vue'
+import WelcomeCarousel from './ServerCarrousel.vue'
 
 // Nota: Ajusta la ruta si tu carpeta de iconos está en otro nivel (ej. '../assets/icons/Logoletras.svg')
 import logoLetrasUrl from '@/assets/icons/Logoletras.svg'

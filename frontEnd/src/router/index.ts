@@ -8,7 +8,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue'),
-      meta: { 
+      meta: {
         title: 'Kinsfolk'
       }
     },
@@ -24,7 +24,7 @@ const router = createRouter({
           component: ()=> import('../views/RoleDetailView.vue'),
         }
       ],
-      meta: { 
+      meta: {
         title: 'Roles'
       }
     },
@@ -40,7 +40,7 @@ const router = createRouter({
           component: ()=> import ('../views/RulesPageView.vue'),
         },
       ],
-      meta: { 
+      meta: {
         title: 'Reglas'
       }
     },
@@ -49,7 +49,7 @@ const router = createRouter({
       path: '/housing',
       name: 'housing',
       component: () => import('../views/HousingView.vue'),
-      meta: { 
+      meta: {
         title: 'Housing'
       }
     },
@@ -58,7 +58,7 @@ const router = createRouter({
       path: '/controles',
       name: 'controls',
       component: () => import('../views/ControlesView.vue'),
-      meta: { 
+      meta: {
         title: 'Controles'
       }
     },
@@ -67,7 +67,7 @@ const router = createRouter({
       path: '/noticias',
       name: 'news',
       component: () => import('../views/NewsView.vue'),
-      meta: { 
+      meta: {
         title: 'Noticias'
       }
     },
@@ -76,7 +76,7 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('../components/NotFound.vue'),
-      meta: { 
+      meta: {
         title: 'Page Not Found'
       },
       props: {
@@ -87,10 +87,10 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const baseTitle = to.meta.title as string || 'Kinsfolk';
 
-  
+
   switch(to.name)
   {
     case 'role-detail':
@@ -103,7 +103,7 @@ router.beforeEach((to, from, next) => {
       break;
   }
 
-  next()
+  return true
 })
 
 export default router
