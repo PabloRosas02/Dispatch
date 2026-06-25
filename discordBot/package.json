@@ -1,0 +1,40 @@
+{
+  "name": "discord-bot-admin",
+  "version": "2.0.0",
+  "description": "Bot de Discord para administradores con TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "security-check": "npm audit --production"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "typescript",
+    "admin"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.6.0",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "undici": "^6.19.7"
+  },
+  "resolutions": {
+    "undici": "^6.19.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
