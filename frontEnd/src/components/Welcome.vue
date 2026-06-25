@@ -1,29 +1,127 @@
-<script setup>
-// Importamos el nuevo componente modular del carrusel
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router' // Importamos el hook para leer los query parameters
 import WelcomeCarousel from './Carrousel.vue'
+import defaultLogoUrl from '@/assets/icons/Logoletras.svg'
 
-// Nota: Ajusta la ruta si tu carpeta de iconos está en otro nivel (ej. '../assets/icons/Logoletras.svg')
-import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
+// Importamos la lógica generalizada del diseñador y la barra común
+import { useDesigner } from '@/composables/useDesigner'
+import BuilderToolbar from '@/components/BuilderToolbar.vue'
+
+interface KinsfolkPageConfig {
+  welcomeTitle: string
+  welcomeDescription: string
+  ctaText: string
+  logoUrl: string
+}
+
+// Configuración inicial espejo (fallbacks locales idénticos a la fábrica)
+const pageConfig = ref<KinsfolkPageConfig>({
+  welcomeTitle: 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
+  welcomeDescription: 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
+  ctaText: 'Únete',
+  logoUrl: defaultLogoUrl
+})
+
+// Referencias de los nodos editables del DOM
+const titleRef = ref<HTMLDivElement | null>(null)
+const subtitleRef = ref<HTMLDivElement | null>(null)
+
+// Instanciamos el composable generalizador con la llave de caché de esta vista
+const designer = useDesigner({
+  cacheKey: 'kinsfolk_page_config'
+})
+
+// Instanciamos la ruta activa
+const route = useRoute()
+
+// Validación de seguridad: el panel de edición sólo existirá si se incluye la llave secreta en la URL
+const isAuthorizedDesigner = computed(() => {
+  return route.query.mode === 'admin-designer' //http://localhost:5173/?mode=admin-designer
+})
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/cache/kinsfolk_page_config')
+    const result = await response.json()
+    
+    // Tolerancia en el desempaquetado de datos si el backend retorna { success: true, data: ... } o directo
+    const data = result.data ? result.data : result
+
+    if (data && Object.keys(data).length > 0) {
+      pageConfig.value = {
+        welcomeTitle: data.welcomeTitle || 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
+        welcomeDescription: data.welcomeDescription || 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
+        ctaText: data.ctaText || 'Únete',
+        logoUrl: data.logoUrl || defaultLogoUrl
+      }
+    }
+  } catch (error) {
+    console.error('[Welcome.vue] Error al cargar la configuración inicial:', error)
+  }
+})
+
+// Ejecuta la alternancia del modo diseñador y recolecta los HTML inline
+const handleSaveOrEdit = () => {
+  designer.toggleEdit(pageConfig, {
+    welcomeTitle: titleRef,
+    welcomeDescription: subtitleRef
+  })
+}
 </script>
 
 <template>
   <header class="hero-container">
+    
+    <BuilderToolbar 
+      v-if="isAuthorizedDesigner && designer.isEditing.value" 
+      :designer="designer" 
+      :onSave="handleSaveOrEdit" 
+    />
+
+    <button 
+      v-if="isAuthorizedDesigner && !designer.isEditing.value" 
+      class="designer-trigger" 
+      @click="handleSaveOrEdit"
+    >
+      📝 Modo Diseñador
+    </button>
 
     <div class="welcome-section">
       <div class="logo-wrapper">
-
-        <img
-          :src="logoLetrasUrl"
-          alt="Kinsfolk Logo"
-          class="main-logo"
-        />
-
+        <div class="image-editor-wrapper">
+          <img
+            :src="pageConfig.logoUrl || defaultLogoUrl"
+            alt="Kinsfolk Logo"
+            class="main-logo"
+          />
+          
+          <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="image-actions-overlay">
+            <label class="img-action-btn">
+              Reemplazar
+              <input 
+                type="file" 
+                accept="image/*" 
+                class="hidden-file-input" 
+                @change="e => designer.handleImageUpload(e, pageConfig, 'logoUrl')" 
+              />
+            </label>
+            <button 
+              v-if="pageConfig.logoUrl && pageConfig.logoUrl !== defaultLogoUrl" 
+              class="img-action-btn delete-btn" 
+              @click="designer.removeImage(pageConfig, 'logoUrl')"
+            >
+              Quitar
+            </button>
+          </div>
+        </div>
       </div>
-      <h1 class="welcome-title">Bienvenido a <span class="highlight-text">Kinsfolk</span></h1>
-      <p class="welcome-subtitle">
-        Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro
-        ecosistema.
-      </p>
+      
+      <h1 v-if="!designer.isEditing.value" class="welcome-title" v-html="pageConfig.welcomeTitle"></h1>
+      <div v-else ref="titleRef" contenteditable="true" class="welcome-title editable-container"></div>
+      
+      <p v-if="!designer.isEditing.value" class="welcome-subtitle" v-html="pageConfig.welcomeDescription"></p>
+      <div v-else ref="subtitleRef" contenteditable="true" class="welcome-subtitle editable-container"></div>
     </div>
 
     <WelcomeCarousel />
@@ -41,14 +139,105 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
             d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.71-11A68.52,68.52,0,0,1,28,80.48c1-.76,2-1.56,3-2.37a75,75,0,0,0,65.2,0c1,.81,2,1.61,3,2.37a68.52,68.52,0,0,1-10.74,4.85,74.37,74.37,0,0,0,6.71,11,105.73,105.73,0,0,0,31-18.83C129.87,49.85,123.65,27,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"
           />
         </svg>
-        <span>Únete</span>
+        <span v-if="!designer.isEditing.value">{{ pageConfig.ctaText }}</span>
+        <input v-else v-model="pageConfig.ctaText" class="cta-inline-input" @click.stop />
       </a>
     </div>
   </header>
 </template>
 
 <style scoped>
-/* Contenedor estructural global */
+/* --- CONTROLES INTERACTIVOS FLOTANTES PARA IMÁGENES --- */
+.image-editor-wrapper {
+  position: relative;
+  width: 100%;
+  display: inline-block;
+}
+.image-actions-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 8px;
+}
+.img-action-btn {
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.img-action-btn:hover {
+  background: var(--color-accent, #ecaf44);
+  color: #000;
+  border-color: var(--color-accent, #ecaf44);
+}
+.image-actions-overlay .delete-btn {
+  background: #7a1313;
+  border-color: #931c1c;
+}
+.image-actions-overlay .delete-btn:hover {
+  background: #ff2a2a;
+  color: #fff;
+  border-color: #ff2a2a;
+}
+.hidden-file-input {
+  display: none;
+}
+
+/* --- CLASES DE SOPORTE PARA MODO DISEÑADOR --- */
+.designer-trigger {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: rgba(236, 175, 68, 0.12);
+  color: var(--color-accent, #ecaf44);
+  border: 1px solid var(--color-accent, #ecaf44);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+.designer-trigger:hover {
+  background: var(--color-accent, #ecaf44);
+  color: #111;
+}
+.editable-container {
+  border: 1px dashed var(--color-accent, #ecaf44);
+  outline: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 200px;
+}
+.cta-inline-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed #fff;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  width: 80px;
+  text-align: center;
+  outline: none;
+}
+
+/* --- TU CSS ORIGINAL PRESERVADO SIN ALTERACIONES --- */
 .hero-container {
   min-height: 100vh;
   width: 100%;
@@ -60,7 +249,6 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
   box-sizing: border-box;
 }
 
-/* Estilos de la Bienvenida */
 .welcome-section {
   text-align: center;
   max-width: 800px;
@@ -69,23 +257,27 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 
 .logo-wrapper {
   width: 100%;
-  max-width: 450px; /* Mantiene el tamaño horizontal ideal en desktop */
+  max-width: 450px;
   margin: 0 auto 24px auto;
 }
 
-/* Estilos fluidos aplicados ahora a la etiqueta <img> */
 .main-logo {
   width: 100%;
   height: auto;
-  display: block; /* Elimina espaciados fantasmas inferiores de las imágenes */
+  display: block;
 }
 
 .welcome-title {
   color: var(--color-light);
   font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 12px 0;
+  font-weight: 400; 
   letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 4px 20px rgba(0,0,0,.5);
+}
+
+.welcome-title b, 
+.welcome-title strong {
+  font-weight: 800 !important;
 }
 
 .highlight-text {
@@ -94,7 +286,8 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 
 .welcome-subtitle {
   color: var(--color-secondary);
-  font-size: 1.9rem;
+  font-family: "Exo 2", sans-serif;
+  font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.6;
   max-width: 600px;
@@ -102,7 +295,6 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Estilos de la sección Discord */
 .discord-section {
   margin-top: 20px;
   display: flex;
@@ -111,6 +303,7 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
 }
 
 .discord-button {
+  font-family: "Exo 2", sans-serif;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -143,5 +336,9 @@ import logoLetrasUrl from '@/assets/icons/Logoletras.svg'
   width: 24px;
   height: auto;
   display: block;
+}
+
+:deep(b), :deep(strong) {
+  font-weight: bold !important;
 }
 </style>

@@ -17,13 +17,11 @@ export class CacheController extends BaseController {
     try {
       const { key } = req.params;
       
-      if (!cacheService.has(key)) {
-        this.sendError(res, `La llave '${key}' no existe en la caché`, 404);
-        return;
-      }
-
+      // Intentamos recuperar el elemento directamente. 
+      // Si no existe, nuestro CacheService se encargará de gestionar el fallback o retornar null.
       const data = cacheService.get(key);
-      this.sendSuccess(res, data, `Elemento '${key}' recuperado.`);
+      
+      this.sendSuccess(res, data, `Elemento '${key}' procesado correctamente.`);
     } catch (error: any) {
       this.sendError(res, 'Error al recuperar el elemento', 500, error.message);
     }
@@ -49,6 +47,7 @@ export class CacheController extends BaseController {
     try {
       const { key } = req.params;
 
+      // El DELETE sí se puede mantener con verificación o simplemente intentar borrar directamente
       if (!cacheService.has(key)) {
         this.sendError(res, `La llave '${key}' no existe`, 404);
         return;
