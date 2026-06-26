@@ -1,14 +1,23 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay } from 'swiper/modules'
 import { useRouter } from 'vue-router';
-import type { RPServer } from '../types/serverTypes.ts';
 import type { Swiper as SwiperClass } from 'swiper';
 import { useServerService } from '../services/serverService.ts';
-
+import { onActivated, onDeactivated } from 'vue'
 // Estilos base de Swiper
 import 'swiper/css'
 
+onActivated(() => {
+  console.log('ACTIVATED')
+
+  swiperInstance.value?.autoplay?.start()
+})
+
+onDeactivated(() => {
+  console.log('DEACTIVATED')
+})
 const router = useRouter()
 const swiperInstance = ref<SwiperClass>()
 const { getAllServers, getSvgUrl } = useServerService();
@@ -26,7 +35,7 @@ const onSlideChange = (swiper: SwiperClass) => {
 }
 
 onMounted(() => {
-  let savedIndex  = localStorage.getItem('kinsfolk_last_slide')
+  const savedIndex  = localStorage.getItem('kinsfolk_last_slide')
   if (savedIndex != null && swiperInstance.value) {
     swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
   }
@@ -69,6 +78,13 @@ const openRoleDetail = (roleId: string | null ) => {
   <div class="carousel-section">
     <swiper
       v-if='baseCards.length > 0'
+      :modules="[Autoplay]"
+      :autoplay="{
+          delay: 4500,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        }"
+      :speed="1200"
       :centeredSlides="true"
       :slidesPerView="5"
       :loop="true"
@@ -100,14 +116,14 @@ const openRoleDetail = (roleId: string | null ) => {
 .carousel-section {
   width: 100%;
   max-width: 1100px;
-  margin: 20px auto 0 auto;
+  min-height: 200px;
   overflow: hidden; /* Muestra estrictamente 5 imágenes a la vez */
 }
 
 .cards-swiper {
   width: 100%;
+  min-height: 350px;
   padding-top: 40px;
-  padding-bottom: 60px;
 }
 
 .card-slide {
@@ -132,10 +148,17 @@ const openRoleDetail = (roleId: string | null ) => {
 
 .card-slide.swiper-slide-active {
   opacity: 1;
-  transform: scale(1.05) rotate(0deg);
+
+  transform: scale(1) rotate(0deg);
+
   border-color: var(--color-accent);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.75);
+
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.75);
+
   z-index: 10;
+
+  animation: kinsfolkBreath 3s ease-in-out infinite;
 }
 
 .card-slide.swiper-slide-next {
@@ -155,5 +178,42 @@ const openRoleDetail = (roleId: string | null ) => {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+@keyframes kinsfolkBreath {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 rgba(236, 175, 68, 0.15),
+      0 25px 50px rgba(0, 0, 0, 0.75);
+  }
+
+  50% {
+    transform: scale(1.02);
+    box-shadow:
+      0 0 20px rgba(236, 175, 68, 0.45),
+      0 25px 50px rgba(0, 0, 0, 0.75);
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-swiper {
+    min-height: 200px;
+    padding-top: 20px;
+  }
+
+  .card-slide {
+    transform: scale(0.6) rotate(-4.5deg);
+  }
+
+  .card-slide.swiper-slide-prev,
+  .card-slide.swiper-slide-next {
+    transform: scale(0.75) rotate(0deg);
+  }
+
+  .card-slide.swiper-slide-active {
+    transform: scale(0.9) rotate(0deg);
+  }
 }
 </style>

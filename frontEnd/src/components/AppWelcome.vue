@@ -288,17 +288,19 @@ const handleSaveOrEdit = () => {
   color: var(--color-secondary);
   font-family: "Exo 2", sans-serif;
   font-size: 1.25rem;
+
   font-family: "Exo 2", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 500;
+  font-size: 1.3rem;
+  font-weight: 600;
+
   line-height: 1.6;
+
   max-width: 600px;
   margin: 16px auto 0 auto;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .discord-section {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
   width: 100%;
