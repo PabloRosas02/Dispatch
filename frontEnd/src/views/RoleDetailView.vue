@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import NotFound from '@/components/NotFound.vue';
 import type * as ServerType from '../types/serverTypes.ts';
 import { useServerService } from '@/services/serverService.ts';
 
@@ -237,11 +238,11 @@ const handleSaveOrEdit = () => {
     </div>
   </main>
 
-  <main v-else-if="!bLoading" class="not-found">
-    <h2>Role not found</h2>
-    <p>El rol que buscas no se encuentra registrado en nuestro ecosistema.</p>
-    <RouterLink to="/" class="error-link">Return to Home</RouterLink>
-  </main>
+  <NotFound v-else
+    title="Role not found"
+    description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
+  >
+  </NotFound>
 </template>
 
 <style scoped>
@@ -372,6 +373,8 @@ const handleSaveOrEdit = () => {
   height: 100%;
   object-fit: contain; 
   display: block;
+  border: 1px solid #ededed;
+  background-color: var(--color-primary);
 }
 .postal-footer {
   margin-top: 20px;
@@ -457,7 +460,7 @@ const handleSaveOrEdit = () => {
   font-weight: 900;
   margin: 0;
   line-height: 1;
-  color: #ecaf44;
+  color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: -1px;
 }
@@ -465,14 +468,14 @@ const handleSaveOrEdit = () => {
   font-size: 1.4rem;
   font-weight: 700;
   margin: 12px 0 28px 0;
-  color: #63a6da;
+  color: var(--color-secondary);
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 .role-description {
   font-size: 1.1rem;
   line-height: 1.75;
-  color: #f3e9dc;
+  color: var(--color-light);
   margin-bottom: 35px;
   max-width: 540px;
 }
@@ -502,7 +505,7 @@ const handleSaveOrEdit = () => {
   box-sizing: border-box;
 }
 .explore-button {
-  background-color: #ecaf44;
+  background-color: var(--color-accent);
   color: #060f16;
   border: none;
 }
@@ -579,14 +582,4 @@ const handleSaveOrEdit = () => {
   .explore-button, .discord-button { width: 100%; }
 }
 
-.not-found {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #060F16;
-  color: #f3e9dc;
-}
-.error-link { color: #63a6da; text-decoration: none; font-weight: 700; }
 </style>

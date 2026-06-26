@@ -288,6 +288,8 @@ const handleSaveOrEdit = () => {
   color: var(--color-secondary);
   font-family: "Exo 2", sans-serif;
   font-size: 1.25rem;
+  font-family: "Exo 2", sans-serif;
+  font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.6;
   max-width: 600px;
@@ -303,6 +305,7 @@ const handleSaveOrEdit = () => {
 }
 
 .discord-button {
+  font-family: "Exo 2", sans-serif;
   font-family: "Exo 2", sans-serif;
   display: inline-flex;
   align-items: center;

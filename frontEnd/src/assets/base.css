@@ -24,17 +24,46 @@
   font-weight: normal;
 }
 
+html,
+body,
+#app {
+  min-height: 100vh;
+}
+
 body {
-  background-color: var(--color-primary);
-  color: var(--color-text);
-  box-sizing: border-box;
-  font-family:'Poppins', sans-serif;
-  font-style: normal;
-  font-size: 15px;
-  line-height: 1.6;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+   background-image:
+    linear-gradient(
+      to bottom,
+      rgba(6,15,22,.75) 0%,
+      rgba(6,15,22,.35) 40%,
+      rgba(6,15,22,.60) 100%
+    ),
+    url('/vinewood-desktop.webp');
+
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-image:
+      linear-gradient(
+        rgba(6, 15, 22, 0.55),
+        rgba(6, 15, 22, 0.70)
+      ),
+      url('/vinewood-mobile.webp');
+
+    background-attachment: scroll;
+  }
+}
+
+h1, h2, h3, h4, h5, h6, .title .subtitle{
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-heading);
 }
 
 h1, h2, h3, h4, h5, h6, .title .subtitle{

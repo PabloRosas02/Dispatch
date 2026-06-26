@@ -3,15 +3,21 @@
 import { RouterView } from 'vue-router'
 // Importamos tu pantalla de carga basada en el logo
 import LoadingScreen from './components/LoadingScreen.vue'
+// Importamos la barra de navegación
+import Navbar from './components/Navbar.vue'
+//Importar el footer
+import Footer from './components/Footer.vue'
 </script>
 
 <template>
   <LoadingScreen />
+  <Navbar />
   <RouterView v-slot="{ Component }">
     <KeepAlive include="HomeView">
       <component :is="Component" />
     </KeepAlive>
   </RouterView>
+  <Footer />
 </template>
 
 <style>
@@ -22,7 +28,6 @@ body,
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  background-color: #060f16;
   box-sizing: border-box;
 }
 
@@ -38,13 +43,13 @@ body,
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #060f16;
+  background: var(--color-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #63a6da;
+  background: var(--color-secondary);
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ecaf44;
+  background: var(--color-complementary);
 }
 </style>
