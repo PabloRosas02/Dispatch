@@ -10,6 +10,8 @@ x-frontend-base: &frontend-base
   env_file:
     - ./.env
   restart: unless-stopped
+  networks:
+    - internal-nw
 
 x-main-proxy-base: &main-proxy-base
     image: nginx:alpine
@@ -23,6 +25,9 @@ x-main-proxy-base: &main-proxy-base
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    networks:
+    - extenal-nw
+    - internal-nw
 
 services:
 
@@ -58,6 +63,28 @@ services:
       - no-new-privileges:true
     <<: *frontend-base
 
+  ngrok-tunnel:
+    profiles: ["prod"]
+    image: ngrok/ngrok:alpine
+    container_name: tunnel
+    restart: unless-stopped
+    command:
+      - "http"
+      - "main-proxy:80"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_TOKEN}
+    depends_on:
+      - main-proxy
+    networks:
+      - extenal-nw
+
 volumes:
   nginx_cache:
     driver: local
+
+networks:
+  extenal-nw:
+    driver: bridge
+  internal-nw:
+    driver: bridge
+    internal: true
