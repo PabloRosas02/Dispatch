@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router' // Importamos el hook para leer los query parameters
-import WelcomeCarousel from './Carrousel.vue'
-import defaultLogoUrl from '@/assets/icons/Logoletras.svg'
+import WelcomeCarousel from './ServerCarrousel.vue'
+import defaultLogoUrl from '/icons/Logoletras.svg'
 
 // Importamos la lógica generalizada del diseñador y la barra común
 import { useDesigner } from '@/composables/useDesigner'
