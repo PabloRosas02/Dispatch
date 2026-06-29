@@ -25,6 +25,7 @@ const router = createRouter({
         }
       ],
       meta: {
+        hideLayout: true,
         title: 'Roles'
       }
     },

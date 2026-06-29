@@ -1,17 +1,24 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 // Importamos el componente nativo de Vue Router
 import { RouterView } from 'vue-router'
 // Importamos tu pantalla de carga basada en el logo
 import LoadingScreen from './components/LoadingScreen.vue'
 // Importamos la barra de navegación
 import Navbar from './components/AppNavbar.vue'
-//Importar el footer
+// Importar el footer
 import Footer from './components/AppFooter.vue'
+
+// Inicializamos la ruta activa para verificar sus meta-datos
+const route = useRoute()
 </script>
 
 <template>
   <LoadingScreen />
-  <Navbar />
+  
+  <!-- Oculta el Navbar si la ruta activa tiene meta.hideLayout -->
+  <Navbar v-if="!route.meta.hideLayout" />
+  
   <main class="page-content">
     <RouterView v-slot="{ Component }">
       <KeepAlive include="HomeView">
@@ -19,7 +26,9 @@ import Footer from './components/AppFooter.vue'
       </KeepAlive>
     </RouterView>
   </main>
-  <Footer />
+  
+  <!-- Oculta el Footer si la ruta activa tiene meta.hideLayout -->
+  <Footer v-if="!route.meta.hideLayout" />
 </template>
 
 <style>

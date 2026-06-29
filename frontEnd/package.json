@@ -16,6 +16,8 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@tiptap/starter-kit": "^3.27.1",
+    "@tiptap/vue-3": "^3.27.1",
     "pinia": "^3.0.4",
     "swiper": "^12.2.0",
     "vue": "^3.5.32",

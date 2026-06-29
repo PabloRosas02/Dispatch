@@ -1,171 +1,539 @@
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import NotFound from '@/components/NotFound.vue';
 import type * as ServerType from '../types/serverTypes.ts';
 import { useServerService } from '@/services/serverService.ts';
 
+import NotFound from '@/components/NotFound.vue'; 
+
+// Reutilizamos el motor del diseñador y la barra común
+import { useDesigner } from '@/composables/useDesigner';
+import BuilderToolbar from '@/components/BuilderToolbar.vue';
+
+// Extendemos la interfaz localmente para soportar el array de imágenes adicionales
+interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
+  filename?: string;
+  images?: string[]; 
+}
+
 const route = useRoute();
-const role = ref<ServerType.RPServer | undefined>(undefined);
 const { getServerFromRouteParam, getSvgUrl } = useServerService();
 
+const role = ref<ExtendedRPServer | undefined>(undefined);
 const bLoading = ref<boolean>(true);
 
-/*FUNCIÓN DINÁMICA DE VITE
-   Asumiendo que este archivo de vista está en 'src/views/', usamos '../components/icons/'
-   para llegar a tus SVGs. Si está en 'src/components/', cámbialo a './icons/' */
+// REFERENCIA: Para el contenedor panorámico principal
+const containerRef = ref<HTMLElement | null>(null);
 
-// Propiedad computada que extrae el rol correspondiente o devuelve null si no existe
-onMounted(() => {
-  role.value = getServerFromRouteParam(route.params.serverId as string);
-  bLoading.value =false;
+// ESTADO: Controla qué imagen se está viendo en pantalla completa
+const activeLightboxImage = ref<string | null>(null);
+
+// Referencias del DOM para los contenedores editables inline (Textos)
+const titleRef = ref<HTMLDivElement | null>(null);
+const subtitleRef = ref<HTMLDivElement | null>(null);
+const descriptionRef = ref<HTMLDivElement | null>(null);
+
+const routeServerId = Array.isArray(route.params.serverId) 
+  ? route.params.serverId[0] 
+  : route.params.serverId;
+const currentServerId = routeServerId || 'leo';
+
+// Inicializamos el Designer pasándole la cacheKey correcta desde el inicio
+const designer = useDesigner({
+  cacheKey: `server_page_config_${currentServerId}`
 });
+
+const isAuthorizedDesigner = computed(() => {
+  return route.query.mode === 'admin-designer';
+});
+
+// PROPIEDAD COMPUTADA: Detecta si debe centrarse (solo 1 imagen y no está editando)
+const isCenteredLayout = computed(() => {
+  if (!role.value || !role.value.images) return true;
+  if (designer.isEditing.value) return false;
+  return role.value.images.length <= 1;
+});
+
+onMounted(async () => {
+  const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
+  
+  if (defaultRole) {
+    const targetCacheKey = `server_page_config_${defaultRole.id}`;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/cache/${targetCacheKey}`);
+      const result = await response.json();
+      const data = result.data ? result.data : result;
+
+      if (data && Object.keys(data).length > 0) {
+        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.id)]);
+
+        role.value = {
+          ...defaultRole,
+          title: data.title || defaultRole.title,
+          subtitle: data.subtitle || defaultRole.subtitle,
+          description: data.description || defaultRole.description,
+          images: savedImages
+        };
+      } else {
+        role.value = { 
+          ...defaultRole, 
+          images: [getSvgUrl(defaultRole.id) || '']
+        };
+      }
+    } catch (error) {
+      console.error('[RoleDetailView.vue] Error cargando configuración guardada:', error);
+      role.value = { 
+        ...defaultRole, 
+        images: [getSvgUrl(defaultRole.id) || ''] 
+      };
+    }
+  }
+  bLoading.value = false;
+});
+
+/**
+ * Manejador para la tecla ESC
+ */
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeLightbox();
+  }
+};
+
+/**
+ * Escucha reactivamente los cambios en el estado del lightbox
+ */
+watch(activeLightboxImage, (newValue) => {
+  if (newValue) {
+    window.addEventListener('keydown', handleKeyDown);
+  } else {
+    window.removeEventListener('keydown', handleKeyDown);
+  }
+});
+
+/**
+ * Limpieza al destruir el componente
+ */
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
+
+/**
+ * Convierte la rueda vertical en desplazamiento horizontal dinámico
+ */
+const handleWheelScroll = (event: WheelEvent) => {
+  if (!containerRef.value) return;
+
+  if (event.deltaY !== 0) {
+    event.preventDefault(); 
+    
+    containerRef.value.scrollBy({
+      left: event.deltaY * 2.8, 
+      behavior: 'auto' 
+    });
+  }
+};
+
+/**
+ * CORRECCIÓN: Tipado estricto y validación asíncrona para blindar TypeScript
+ */
+const handleAddImage = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  if (!input || !input.files || input.files.length === 0 || !role.value) return;
+
+  const file: File | undefined = input.files[0];
+  if (!file) return; 
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64Result = e.target?.result as string;
+    if (base64Result && role.value) {
+      if (!role.value.images) {
+        role.value.images = [];
+      }
+      role.value.images.push(base64Result);
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+/**
+ * Remueve una tarjeta del flujo horizontal mediante su índice
+ */
+const removeImageAtIndex = (index: number) => {
+  if (!role.value || !role.value.images) return;
+  role.value.images.splice(index, 1);
+  
+  if (role.value.images.length === 0) {
+    role.value.images.push(getSvgUrl(role.value.id) || '');
+  }
+};
+
+const handleSaveOrEdit = () => {
+  if (!role.value) return;
+  designer.toggleEdit(role, {
+    title: titleRef,
+    subtitle: subtitleRef,
+    description: descriptionRef
+  });
+};
+
+/**
+ * Abre el Lightbox para ver la imagen completa (solo si no se está editando)
+ */
+const openImageLightbox = (imgSrc: string) => {
+  if (designer.isEditing.value) return; 
+  activeLightboxImage.value = imgSrc;
+};
+
+/**
+ * Cierra el Lightbox
+ */
+const closeLightbox = () => {
+  activeLightboxImage.value = null;
+};
 </script>
 
 <template>
-  <main v-if="role" class="detail-page" :style="{ '--bg-gradient': role.color }">
+  <BuilderToolbar 
+    v-if="isAuthorizedDesigner && designer.isEditing.value" 
+    :designer="designer" 
+    :onSave="handleSaveOrEdit" 
+  />
 
-    <RouterLink to="/" class="back-button">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-      </svg>
-      <span>Back</span>
-    </RouterLink>
+  <button 
+    v-if="isAuthorizedDesigner && role && !designer.isEditing.value" 
+    class="designer-trigger" 
+    @click="handleSaveOrEdit"
+  >
+    📝 Modo Diseñador ({{ role.id.toUpperCase() }})
+  </button>
 
-    <div class="content-container">
-      <div class="postal-wrapper">
-        <div class="postal-card">
-          <img :src="getSvgUrl(role.id)" :alt="role.title" class="postal-image" />
-          <div class="postal-footer">
-            <span class="postal-brand">VISIT KINSFOLK</span>
+  <div v-if="role">
+    <main 
+      ref="containerRef"
+      class="detail-page-panoramic" 
+      :class="{ 'is-centered': isCenteredLayout }"
+      :style="{ '--bg-gradient': role.color }"
+      @wheel="handleWheelScroll"
+    >
+
+      <RouterLink to="/" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        <span>Back</span>
+      </RouterLink>
+
+      <div class="panoramic-track">
+        
+        <div class="content-container-original">
+          <div class="postal-wrapper">
+            <div class="postal-card main-polaroid">
+              <div class="image-viewport">
+                <img :src="role.images && role.images[0]" :alt="role.title" class="postal-image" />
+                
+                <div v-if="designer.isEditing.value && role.images && role.images.length > 1" class="image-actions-overlay">
+                  <button class="img-action-btn delete-btn" @click.stop="removeImageAtIndex(0)">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+              
+              <div class="postal-footer">
+                <span class="postal-brand">VISIT KINSFOLK</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-wrapper">
+            <h1 v-if="!designer.isEditing.value" class="role-title" v-html="role.title"></h1>
+            <div v-else ref="titleRef" contenteditable="true" class="role-title editable-container" v-html="role.title"></div>
+
+            <h2 v-if="!designer.isEditing.value" class="role-subtitle" v-html="role.subtitle"></h2>
+            <div v-else ref="subtitleRef" contenteditable="true" class="role-subtitle editable-container" v-html="role.subtitle"></div>
+
+            <p v-if="!designer.isEditing.value" class="role-description" v-html="role.description"></p>
+            <div v-else ref="descriptionRef" contenteditable="true" class="role-description editable-container" v-html="role.description"></div>
+
+            <div class="action-buttons-group">
+              <button class="explore-button">
+                Explora {{ role.title.replace(/<[^>]*>/g, '') }}
+              </button>
+
+              <a v-if="role.discordLink" :href="role.discordLink" target="_blank" rel="noopener noreferrer" class="discord-button">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 127.14 96.36"
+                  style="width: 18px !important; height: 18px !important; min-width: 18px !important; min-height: 18px !important; flex-shrink: 0 !important; display: inline-block; vertical-align: middle; overflow: visible !important;"
+                  fill="currentColor"
+                >
+                  <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.47,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-10.93,68.6,68.6,0,0,1-10.64-5.12c.91-.67,1.81-1.37,2.65-2.1a75.22,75.22,0,0,0,72.94,0c.84.73,1.74,1.43,2.65,2.1a68.6,68.6,0,0,1-10.64,5.12,74.37,74.37,0,0,0,6.72,10.93,105.73,105.73,0,0,0,31.05-18.83C129.24,50.7,123.4,27.87,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.87,46,53.87,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.11,46,96.11,53,91,65.69,84.69,65.69Z"/>
+                </svg>
+                <span>Unete al Discord</span>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="info-wrapper">
-        <h1 class="role-title">{{ role.title }}</h1>
-        <h2 class="role-subtitle">{{ role.subtitle }}</h2>
-        <p class="role-description">{{ role.description }}</p>
+        <div v-if="(role.images && role.images.length > 1) || designer.isEditing.value" class="extended-gallery-flow">
+          <template v-for="(imgSrc, idx) in role.images" :key="idx">
+            <div v-if="idx > 0" class="postal-wrapper">
+              <div 
+                class="gallery-clean-image" 
+                :style="`transform: rotate(${idx % 2 === 0 ? -1.5 : 2}deg);`"
+                @click="openImageLightbox(imgSrc)"
+                :class="{ 'clickable-view': !designer.isEditing.value }"
+              >
+                <div class="image-viewport">
+                  <img :src="imgSrc" :alt="role.title" class="postal-image" />
+                  
+                  <div v-if="designer.isEditing.value" class="image-actions-overlay">
+                    <button class="img-action-btn delete-btn" @click.stop="removeImageAtIndex(idx)">
+                      Eliminar Imagen
+                    </button>
+                  </div>
 
-        <div class="action-buttons-group">
-          <button class="explore-button">
-            Explora {{ role.title }}
-          </button>
+                  <div v-if="!designer.isEditing.value" class="expand-indicator-overlay">
+                    <button class="expand-trigger-btn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1H1.707l4.12-4.12a.5.5 0 0 0 0-.708zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0v-4a.5.5 0 0 0-.5-.5h4a.5.5 0 1 0 0 1h2.793l-4.12 4.12a.5.5 0 0 0 0-.708z"/>
+                      </svg>
+                      Expandir Imagen
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
 
-          <a
-            v-if="role.discordLink"
-            :href="role.discordLink"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="discord-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.214 12.214 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.12.194-2.194.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.005-.083 6.07 6.07 0 0 0 .248-.195.051.051 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.09.066.174.132.248.195a.051.051 0 0 1-.004.083 9.11 9.11 0 0 1-1.248.595.052.052 0 0 0-.018.011.05.05 0 0 0-.01.059c.237.466.51.908.819 1.329a.05.05 0 0 0 .056.019 13.23 13.23 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-7.726 7.394c-.797 0-1.453-.732-1.453-1.636s.642-1.636 1.453-1.636c.804 0 1.46.738 1.453 1.636 0 .904-.649 1.636-1.453 1.636Zm4.373 0c-.797 0-1.453-.732-1.453-1.636s.642-1.636 1.453-1.636c.804 0 1.46.738 1.453 1.636 0 .904-.649 1.636-1.453 1.636Z"/>
-            </svg>
-            <span>Unete al Discord</span>
-          </a>
+          <div v-if="designer.isEditing.value" class="add-postal-placeholder">
+            <label class="add-image-btn-zone">
+              <div class="plus-icon">➕</div>
+              <span>Añadir foto a la derecha</span>
+              <input type="file" accept="image/*" class="hidden-file-input" @change="handleAddImage" />
+            </label>
+          </div>
         </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div v-else>
+    <NotFound 
+      title="Role not found"
+      description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
+    />
+  </div>
+
+  <Transition name="fade">
+    <div v-if="activeLightboxImage" class="image-lightbox-modal" @click="closeLightbox">
+      <button class="lightbox-close-btn" @click="closeLightbox">✕</button>
+      <div class="lightbox-content" @click.stop>
+        <img :src="activeLightboxImage" class="lightbox-full-image" alt="Visualización completa" />
       </div>
     </div>
-  </main>
-
-  <NotFound v-else
-    title="Role not found"
-    description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
-  >
-  </NotFound>
+  </Transition>
 </template>
 
 <style scoped>
-.detail-page {
-  width: 100%;
-  min-height: 100vh;
+/* --- CONFIGURACIONES DEL MODO DISEÑADOR --- */
+.designer-trigger {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: rgba(236, 175, 68, 0.12);
+  color: var(--color-accent, #ecaf44);
+  border: 1px solid var(--color-accent, #ecaf44);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+.designer-trigger:hover {
+  background: var(--color-accent, #ecaf44);
+  color: #111;
+}
+.editable-container {
+  border: 1px dashed var(--color-accent, #ecaf44);
+  outline: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+}
+
+/* --- MAQUETACIÓN HORIZONTAL GENERAL (PANORÁMICA) --- */
+.detail-page-panoramic {
+  width: 100vw;
+  height: 100vh;
   background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-background) 100%), var(--color-background);
+  overflow-y: hidden;
+  overflow-x: auto; 
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
   box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
 }
 
-/* Estilo del Botón "Back" */
-.back-button {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background-color: var(--color-light);
-  color: var(--color-primary);
-  border: none;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.25s ease;
-  z-index: 10;
+.detail-page-panoramic::-webkit-scrollbar {
+  height: 8px;
+}
+.detail-page-panoramic::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+.detail-page-panoramic::-webkit-scrollbar-thumb {
+  background: var(--color-accent, #ecaf44);
+  border-radius: 4px;
 }
 
-.back-button:hover {
-  transform: translateX(-4px);
-  background-color: var(--color-complementary);
-}
-
-/* Contenedor Principal Split */
-.content-container {
+.panoramic-track {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
   width: 100%;
-  max-width: 1200px;
+  padding-right: 80px; 
+}
+
+.content-container-original {
+  display: flex;
+  flex-direction: row;
+  width: 1200px;
   align-items: center;
   justify-content: space-between;
   gap: 80px;
-  z-index: 2;
+  flex-shrink: 0; 
+  margin-left: calc(50vw - 600px); 
 }
 
-/* --- ESTILOS DE LA POSTAL (IZQUIERDA) --- */
+.detail-page-panoramic.is-centered .content-container-original {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.extended-gallery-flow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 60px;
+  flex-shrink: 0;
+  padding-left: 60px; 
+}
+
+/* --- TARJETA POLAROID --- */
 .postal-wrapper {
-  flex: 1;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
 .postal-card {
   background-color: #ffffff;
   padding: 16px 16px 45px 16px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
   border-radius: 4px;
-  transform: rotate(-3.5deg);
+  width: 450px;
+  box-sizing: border-box;
   transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  max-width: 480px;
-  width: 100%;
 }
-
+.main-polaroid {
+  transform: rotate(-3.5deg);
+}
 .postal-card:hover {
-  transform: rotate(-1deg) scale(1.03);
+  transform: rotate(-0.5deg) scale(1.03) !important;
+  z-index: 5;
 }
 
+.gallery-clean-image {
+  position: relative;
+  width: 450px;
+  box-sizing: border-box;
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+}
+.gallery-clean-image:hover {
+  transform: rotate(-0.5deg) scale(1.03) !important;
+  z-index: 5;
+}
+.gallery-clean-image .image-viewport {
+  border-radius: 4px;
+}
+
+.clickable-view {
+  cursor: pointer;
+}
+
+.expand-indicator-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(6, 15, 22, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+  opacity: 0;
+}
+.gallery-clean-image .image-viewport:hover .expand-indicator-overlay {
+  background: rgba(6, 15, 22, 0.35);
+  opacity: 1;
+}
+
+.expand-trigger-btn {
+  background: rgba(255, 255, 255, 0.92);
+  color: #060f16;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.gallery-clean-image .image-viewport:hover .expand-trigger-btn {
+  transform: translateY(0);
+}
+.expand-trigger-btn:hover {
+  background: #ffffff;
+  color: var(--color-accent, #ecaf44);
+  transform: scale(1.05);
+}
+
+.image-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #060F16;
+  overflow: hidden;
+}
 .postal-image {
   width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: contain; /* 🌟 Cambiado a contain para que los SVGs vectoriales no se corten */
+  height: 100%;
+  object-fit: contain; 
   display: block;
   border: 1px solid #ededed;
   background-color: var(--color-primary);
 }
-
 .postal-footer {
   margin-top: 20px;
   display: flex;
   align-items: center;
+  justify-content: center; 
 }
-
 .postal-brand {
   font-family: 'Impact', 'Arial Black', sans-serif;
   font-size: 1.3rem;
@@ -173,12 +541,119 @@ onMounted(() => {
   letter-spacing: 1.5px;
 }
 
-/* --- ESTILOS DEL TEXTO (DERECHA) --- */
-.info-wrapper {
-  flex: 1;
-  color: #ffffff;
+/* --- PLACEHOLDER IMÁGENES --- */
+.add-postal-placeholder {
+  width: 450px;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 25px; 
+  flex-shrink: 0;
+}
+.add-image-btn-zone {
+  width: 100%;
+  height: 100%;
+  border: 2px dashed var(--color-accent, #ecaf44);
+  background: rgba(236, 175, 68, 0.02);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-accent, #ecaf44);
+  cursor: pointer;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+.add-image-btn-zone:hover {
+  background: rgba(236, 175, 68, 0.08);
+}
+.plus-icon { font-size: 2rem; }
+.hidden-file-input { display: none; }
+
+.image-actions-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.img-action-btn.delete-btn {
+  background: #7a1313;
+  border: 1px solid #931c1c;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.img-action-btn.delete-btn:hover {
+  background: #ff2a2a;
 }
 
+/* --- MODAL PANTALLA COMPLETA --- */
+.image-lightbox-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 10, 15, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-content {
+  max-width: 90%;
+  max-height: 85%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-full-image {
+  max-width: 100%;
+  max-height: 100vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+}
+.lightbox-close-btn {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.lightbox-close-btn:hover {
+  color: var(--color-accent, #ecaf44);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* --- TEXTOS E INFO --- */
+.info-wrapper {
+  flex-shrink: 0;
+  width: 540px;
+  color: #ffffff;
+}
 .role-title {
   font-size: 4.2rem;
   font-weight: 900;
@@ -188,7 +663,6 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: -1px;
 }
-
 .role-subtitle {
   font-size: 1.4rem;
   font-weight: 700;
@@ -197,7 +671,6 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-
 .role-description {
   font-size: 1.1rem;
   line-height: 1.75;
@@ -206,108 +679,127 @@ onMounted(() => {
   max-width: 540px;
 }
 
-/* --- CONTENEDOR DE BOTONES --- */
 .action-buttons-group {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
 }
-
-.explore-button,
-.discord-button {
+.explore-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  vertical-align: middle;
   gap: 10px;
   height: 50px;
   padding: 0 32px;
   font-size: 0.95rem;
   font-weight: 800;
-  font-family: inherit;
-  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
   border-radius: 4px;
   text-decoration: none;
-  box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.explore-button svg,
-.discord-button svg {
-  display: block;
-  flex-shrink: 0;
-}
-
-.explore-button {
+  box-sizing: border-box;
   background-color: var(--color-accent);
   color: #060f16;
   border: none;
-  box-shadow: 0 4px 15px rgba(236, 175, 68, 0.25);
 }
-
 .explore-button:hover {
   background-color: #f3e9dc;
-  color: #060f16;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(243, 233, 220, 0.35);
 }
 
+/* --- BOTÓN DE DISCORD BLINDADO --- */
 .discord-button {
-  background-color: #5865F2;
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.25);
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  height: 50px !important;
+  padding: 0 32px !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  border-radius: 4px !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+  background-color: #5865F2 !important;
+  color: #ffffff !important;
+  border: none !important;
 }
-
 .discord-button:hover {
-  background-color: #4752C4;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(88, 101, 242, 0.45);
+  background-color: #4752C4 !important;
+  transform: translateY(-2px) !important;
 }
 
-/* Responsivo para Tablets y Teléfonos */
-@media (max-width: 968px) {
-  .content-container {
+.discord-button svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important; 
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+.back-button {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f3e9dc;
+  color: #060f16;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  text-decoration: none;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+:deep(b), :deep(strong) { font-weight: bold !important; }
+:deep(i), :deep(em) { font-style: italic !important; }
+:deep(u) { text-decoration: underline !important; }
+
+@media (max-width: 1024px) {
+  .detail-page-panoramic, .detail-page-panoramic.is-centered {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100vh;
+  }
+  .panoramic-track {
     flex-direction: column;
-    text-align: center;
+    padding: 120px 20px 40px 20px !important;
     gap: 40px;
   }
-  .role-description {
-    margin: 0 auto 30px auto;
-  }
-  .postal-card {
-    transform: rotate(0deg);
-    max-width: 380px;
-  }
-  .back-button {
-    position: relative;
-    top: 0;
-    left: 0;
-    margin-bottom: 30px;
-  }
-  .detail-page {
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 40px 20px;
-  }
-  .role-title {
-    font-size: 3rem;
-  }
-
-  .action-buttons-group {
+  .content-container-original {
     flex-direction: column;
     width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+    text-align: center;
+    gap: 40px;
+    margin-left: 0 !important;
   }
-  .explore-button,
-  .discord-button {
+  .info-wrapper { width: 100%; }
+  .role-description { margin: 0 auto 30px auto; }
+  .extended-gallery-flow {
+    flex-direction: column;
     width: 100%;
+    gap: 40px;
+    padding-left: 0;
   }
+  .postal-card, .gallery-clean-image, .add-postal-placeholder {
+    width: 100%;
+    max-width: 420px;
+  }
+  .action-buttons-group { flex-direction: column; }
+  .explore-button, .discord-button { width: 100%; }
 }
-
 </style>
