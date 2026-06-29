@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import RulesPage from '../components/rules/RulesPage.vue';
-import NotFound from '../components/NotFound.vue';
+import NotFound from '../components/miscellaneous/NotFound.vue';
 import type * as ServerTypes from '../types/serverTypes.ts';
 import { useServerService } from '../services/serverService';
 

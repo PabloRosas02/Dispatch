@@ -57,12 +57,15 @@ export function useDesigner(options: DesignerOptions) {
       showColorDropdown.value = false
       showAdvancedModal.value = false
 
-      // Guardar en la API
+      // Guardar en la API utilizando el mapa dinámico de rutas del backend /:key
       try {
-        await fetch(apiEndpoint, {
+        await fetch(`${apiEndpoint}/${cacheKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: cacheKey, value: pageConfigRef.value })
+          body: JSON.stringify({ 
+            key: cacheKey, 
+            value: pageConfigRef.value 
+          })
         })
         if (options.onSaveSuccess) options.onSaveSuccess()
       } catch (error) {

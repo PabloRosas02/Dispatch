@@ -3,11 +3,11 @@ import { useRoute } from 'vue-router'
 // Importamos el componente nativo de Vue Router
 import { RouterView } from 'vue-router'
 // Importamos tu pantalla de carga basada en el logo
-import LoadingScreen from './components/LoadingScreen.vue'
+import LoadingScreen from './components/miscellaneous/LoadingScreen.vue'
 // Importamos la barra de navegación
-import Navbar from './components/AppNavbar.vue'
+import Navbar from './components/navegation/AppNavbar.vue'
 // Importar el footer
-import Footer from './components/AppFooter.vue'
+import Footer from './components/navegation/AppFooter.vue'
 
 // Inicializamos la ruta activa para verificar sus meta-datos
 const route = useRoute()

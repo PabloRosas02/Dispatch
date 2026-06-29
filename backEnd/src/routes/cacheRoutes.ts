@@ -6,7 +6,7 @@ const cacheController = new CacheController();
 
 router.get('/', cacheController.getAllCache);
 router.get('/:key', cacheController.getByKey);
-router.post('/', cacheController.setCache);
+router.post('/:key', cacheController.setCache);
 router.delete('/:key', cacheController.deleteByKey);
 
 export default router;

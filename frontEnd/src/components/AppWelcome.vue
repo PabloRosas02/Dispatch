@@ -6,7 +6,7 @@ import defaultLogoUrl from '/icons/Logoletras.svg'
 
 // Importamos la lógica generalizada del diseñador y la barra común
 import { useDesigner } from '@/composables/useDesigner'
-import BuilderToolbar from '@/components/BuilderToolbar.vue'
+import BuilderToolbar from '@/components/editor/BuilderToolbar.vue'
 
 interface KinsfolkPageConfig {
   welcomeTitle: string
