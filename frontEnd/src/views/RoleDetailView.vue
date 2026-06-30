@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import type * as ServerType from '../types/serverTypes.ts';
 import { useServerService } from '@/services/serverService.ts';
 
-import NotFound from '@/components/NotFound.vue'; 
+import NotFound from '@/components/NotFound.vue';
 
 // Reutilizamos el motor del diseñador y la barra común
 import { useDesigner } from '@/composables/useDesigner';
@@ -13,7 +13,7 @@ import BuilderToolbar from '@/components/BuilderToolbar.vue';
 // Extendemos la interfaz localmente para soportar el array de imágenes adicionales
 interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
   filename?: string;
-  images?: string[]; 
+  images?: string[];
 }
 
 const route = useRoute();
@@ -33,8 +33,8 @@ const titleRef = ref<HTMLDivElement | null>(null);
 const subtitleRef = ref<HTMLDivElement | null>(null);
 const descriptionRef = ref<HTMLDivElement | null>(null);
 
-const routeServerId = Array.isArray(route.params.serverId) 
-  ? route.params.serverId[0] 
+const routeServerId = Array.isArray(route.params.serverId)
+  ? route.params.serverId[0]
   : route.params.serverId;
 const currentServerId = routeServerId || 'leo';
 
@@ -56,12 +56,12 @@ const isCenteredLayout = computed(() => {
 
 onMounted(async () => {
   const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
-  
+
   if (defaultRole) {
     const targetCacheKey = `server_page_config_${defaultRole.id}`;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/cache/${targetCacheKey}`);
+      const response = await fetch(`/api/cache/${targetCacheKey}`);
       const result = await response.json();
       const data = result.data ? result.data : result;
 
@@ -76,16 +76,16 @@ onMounted(async () => {
           images: savedImages
         };
       } else {
-        role.value = { 
-          ...defaultRole, 
+        role.value = {
+          ...defaultRole,
           images: [getSvgUrl(defaultRole.id) || '']
         };
       }
     } catch (error) {
       console.error('[RoleDetailView.vue] Error cargando configuración guardada:', error);
-      role.value = { 
-        ...defaultRole, 
-        images: [getSvgUrl(defaultRole.id) || ''] 
+      role.value = {
+        ...defaultRole,
+        images: [getSvgUrl(defaultRole.id) || '']
       };
     }
   }
@@ -126,11 +126,11 @@ const handleWheelScroll = (event: WheelEvent) => {
   if (!containerRef.value) return;
 
   if (event.deltaY !== 0) {
-    event.preventDefault(); 
-    
+    event.preventDefault();
+
     containerRef.value.scrollBy({
-      left: event.deltaY * 2.8, 
-      behavior: 'auto' 
+      left: event.deltaY * 2.8,
+      behavior: 'auto'
     });
   }
 };
@@ -143,7 +143,7 @@ const handleAddImage = (event: Event) => {
   if (!input || !input.files || input.files.length === 0 || !role.value) return;
 
   const file: File | undefined = input.files[0];
-  if (!file) return; 
+  if (!file) return;
 
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -164,7 +164,7 @@ const handleAddImage = (event: Event) => {
 const removeImageAtIndex = (index: number) => {
   if (!role.value || !role.value.images) return;
   role.value.images.splice(index, 1);
-  
+
   if (role.value.images.length === 0) {
     role.value.images.push(getSvgUrl(role.value.id) || '');
   }
@@ -183,7 +183,7 @@ const handleSaveOrEdit = () => {
  * Abre el Lightbox para ver la imagen completa (solo si no se está editando)
  */
 const openImageLightbox = (imgSrc: string) => {
-  if (designer.isEditing.value) return; 
+  if (designer.isEditing.value) return;
   activeLightboxImage.value = imgSrc;
 };
 
@@ -196,24 +196,24 @@ const closeLightbox = () => {
 </script>
 
 <template>
-  <BuilderToolbar 
-    v-if="isAuthorizedDesigner && designer.isEditing.value" 
-    :designer="designer" 
-    :onSave="handleSaveOrEdit" 
+  <BuilderToolbar
+    v-if="isAuthorizedDesigner && designer.isEditing.value"
+    :designer="designer"
+    :onSave="handleSaveOrEdit"
   />
 
-  <button 
-    v-if="isAuthorizedDesigner && role && !designer.isEditing.value" 
-    class="designer-trigger" 
+  <button
+    v-if="isAuthorizedDesigner && role && !designer.isEditing.value"
+    class="designer-trigger"
     @click="handleSaveOrEdit"
   >
     📝 Modo Diseñador ({{ role.id.toUpperCase() }})
   </button>
 
   <div v-if="role">
-    <main 
+    <main
       ref="containerRef"
-      class="detail-page-panoramic" 
+      class="detail-page-panoramic"
       :class="{ 'is-centered': isCenteredLayout }"
       :style="{ '--bg-gradient': role.color }"
       @wheel="handleWheelScroll"
@@ -227,20 +227,20 @@ const closeLightbox = () => {
       </RouterLink>
 
       <div class="panoramic-track">
-        
+
         <div class="content-container-original">
           <div class="postal-wrapper">
             <div class="postal-card main-polaroid">
               <div class="image-viewport">
                 <img :src="role.images && role.images[0]" :alt="role.title" class="postal-image" />
-                
+
                 <div v-if="designer.isEditing.value && role.images && role.images.length > 1" class="image-actions-overlay">
                   <button class="img-action-btn delete-btn" @click.stop="removeImageAtIndex(0)">
                     Eliminar
                   </button>
                 </div>
               </div>
-              
+
               <div class="postal-footer">
                 <span class="postal-brand">VISIT KINSFOLK</span>
               </div>
@@ -263,8 +263,8 @@ const closeLightbox = () => {
               </button>
 
               <a v-if="role.discordLink" :href="role.discordLink" target="_blank" rel="noopener noreferrer" class="discord-button">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 127.14 96.36"
                   style="width: 18px !important; height: 18px !important; min-width: 18px !important; min-height: 18px !important; flex-shrink: 0 !important; display: inline-block; vertical-align: middle; overflow: visible !important;"
                   fill="currentColor"
@@ -280,15 +280,15 @@ const closeLightbox = () => {
         <div v-if="(role.images && role.images.length > 1) || designer.isEditing.value" class="extended-gallery-flow">
           <template v-for="(imgSrc, idx) in role.images" :key="idx">
             <div v-if="idx > 0" class="postal-wrapper">
-              <div 
-                class="gallery-clean-image" 
+              <div
+                class="gallery-clean-image"
                 :style="`transform: rotate(${idx % 2 === 0 ? -1.5 : 2}deg);`"
                 @click="openImageLightbox(imgSrc)"
                 :class="{ 'clickable-view': !designer.isEditing.value }"
               >
                 <div class="image-viewport">
                   <img :src="imgSrc" :alt="role.title" class="postal-image" />
-                  
+
                   <div v-if="designer.isEditing.value" class="image-actions-overlay">
                     <button class="img-action-btn delete-btn" @click.stop="removeImageAtIndex(idx)">
                       Eliminar Imagen
@@ -322,7 +322,7 @@ const closeLightbox = () => {
   </div>
 
   <div v-else>
-    <NotFound 
+    <NotFound
       title="Role not found"
       description="El rol que buscas no se encuentra registrado en nuestro ecosistema."
     />
@@ -374,7 +374,7 @@ const closeLightbox = () => {
   height: 100vh;
   background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-background) 100%), var(--color-background);
   overflow-y: hidden;
-  overflow-x: auto; 
+  overflow-x: auto;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -399,7 +399,7 @@ const closeLightbox = () => {
   align-items: center;
   height: 100%;
   width: 100%;
-  padding-right: 80px; 
+  padding-right: 80px;
 }
 
 .content-container-original {
@@ -409,8 +409,8 @@ const closeLightbox = () => {
   align-items: center;
   justify-content: space-between;
   gap: 80px;
-  flex-shrink: 0; 
-  margin-left: calc(50vw - 600px); 
+  flex-shrink: 0;
+  margin-left: calc(50vw - 600px);
 }
 
 .detail-page-panoramic.is-centered .content-container-original {
@@ -424,7 +424,7 @@ const closeLightbox = () => {
   align-items: center;
   gap: 60px;
   flex-shrink: 0;
-  padding-left: 60px; 
+  padding-left: 60px;
 }
 
 /* --- TARJETA POLAROID --- */
@@ -523,7 +523,7 @@ const closeLightbox = () => {
 .postal-image {
   width: 100%;
   height: 100%;
-  object-fit: contain; 
+  object-fit: contain;
   display: block;
   border: 1px solid #ededed;
   background-color: var(--color-primary);
@@ -532,7 +532,7 @@ const closeLightbox = () => {
   margin-top: 20px;
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
 }
 .postal-brand {
   font-family: 'Impact', 'Arial Black', sans-serif;
@@ -545,7 +545,7 @@ const closeLightbox = () => {
 .add-postal-placeholder {
   width: 450px;
   aspect-ratio: 1 / 1;
-  margin-bottom: 25px; 
+  margin-bottom: 25px;
   flex-shrink: 0;
 }
 .add-image-btn-zone {
@@ -742,7 +742,7 @@ const closeLightbox = () => {
   max-width: 18px !important;
   max-height: 18px !important;
   flex-shrink: 0 !important;
-  overflow: visible !important; 
+  overflow: visible !important;
   display: inline-block !important;
   vertical-align: middle !important;
 }
