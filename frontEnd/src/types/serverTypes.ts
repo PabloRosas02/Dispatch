@@ -21,3 +21,15 @@ export interface RPServer {
   color: string;
   sections: RuleSection[];
 }
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  subtitle: string;
+  content: string;
+  date: string;
+  author: string;
+  category: string;
+  images: string[];
+  videoUrl?: string;
+}

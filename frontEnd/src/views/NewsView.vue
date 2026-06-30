@@ -2,107 +2,83 @@
 import { ref, onMounted, computed, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-// REUTILIZACIÓN: Componentes y lógicas de tu ecosistema /editor
+// Componentes y lógica de edición
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
 import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
 import { useDesigner } from '@/composables/useDesigner';
 
-interface NewsArticle {
-  id: string;
-  title: string;
-  subtitle: string;
-  content: string;
-  date: string;
-  author: string;
-  category: string;
-  images: string[];
-  videoUrl?: string;
-}
+// IMPORTACIÓN OFICIAL DESDE TU ARCHIVO DE TIPOS CENTRALIZADO
+import type { NewsArticle } from '@/types/serverTypes';
 
 const route = useRoute();
 const newsList = ref<NewsArticle[]>([]);
 const activeIndex = ref<number>(0);
 const bLoading = ref<boolean>(true);
 
-// Estado para controlar la visibilidad del historial (Sidebar)
+// Controles de UI y Filtros
 const isSidebarOpen = ref<boolean>(true);
-
-// ESTADO PARA EL BUSCADOR
 const searchQuery = ref<string>('');
 
-// ESTADOS PARA PAGINACIÓN (10 en 10)
+// Paginación (10 en 10)
 const currentPage = ref<number>(1);
 const ITEMS_PER_PAGE = 10;
 
-// CacheKey limpia y exacta para identificar el microbloque en tu database.json
 const CACHE_KEY = 'news_page_general_config';
+const designer = useDesigner({ cacheKey: CACHE_KEY });
 
-const designer = useDesigner({
-  cacheKey: CACHE_KEY
-});
-
-// VALIDACIÓN REUTILIZADA: Valida si la URL contiene ?mode=admin-designer
+// Computados de Validación y Selección
 const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
-
 const currentArticle = computed(() => newsList.value[activeIndex.value] || null);
 
-// LÓGICA DE FILTRADO (Buscador por Nombre, Fecha o Autor)
+// Filtrado de Boletines (Optimizado para evitar búsquedas repetitivas vacías)
 const filteredNewsList = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return newsList.value;
-  }
-  const query = searchQuery.value.toLowerCase().trim();
-  return newsList.value.filter(item => {
-    return (
-      item.title.toLowerCase().includes(query) ||
-      item.date.toLowerCase().includes(query) ||
-      item.author.toLowerCase().includes(query)
-    );
-  });
+  const query = searchQuery.value.trim().toLowerCase();
+  if (!query) return newsList.value;
+  
+  return newsList.value.filter(item => 
+    item.title.toLowerCase().includes(query) ||
+    item.date.toLowerCase().includes(query) ||
+    item.author.toLowerCase().includes(query)
+  );
 });
 
-// LÓGICA DE PAGINACIÓN COMPUTADA (Basada en la lista ya filtrada)
+// Paginación Computada
 const totalPages = computed(() => Math.ceil(filteredNewsList.value.length / ITEMS_PER_PAGE) || 1);
 
 const paginatedNewsList = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE;
-  return filteredNewsList.value.slice(start, end);
+  return filteredNewsList.value.slice(start, start + ITEMS_PER_PAGE);
 });
 
-// RESETEAR PAGINACIÓN SI SE ESCRIBE EN EL BUSCADOR
+// Resetear paginación al buscar
 watch(searchQuery, () => {
   currentPage.value = 1;
 });
 
-// Formateador de URLs de YouTube para el iframe
+// Formateador robusto de URLs de YouTube mediante Expresión Regular
 const embedVideoUrl = computed(() => {
   if (!currentArticle.value?.videoUrl) return '';
   const url = currentArticle.value.videoUrl;
-  let videoId = '';
-  
-  if (url.includes('v=')) {
-    videoId = url.split('v=')[1]?.split('&')[0] || '';
-  } else if (url.includes('youtu.be/')) {
-    videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
-  } else if (url.includes('embed/')) {
-    return url;
-  }
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+
+  return (match && match[2]?.length === 11)
+    ? `https://www.youtube.com/embed/${match[2]}`
+    : url;
 });
 
-// PERSISTENCIA: Carga inicial desde database.json a través de la API de caché
+// Persistencia: Carga inicial desde la API de caché
 onMounted(async () => {
   try {
     const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`);
-    
     if (response.status === 404) {
       newsList.value = [];
       return;
     }
 
     const result = await response.json();
-    const rawData = result.data ? result.data : (result.value ? result.value : result);
+    const rawData = result.data ?? result.value ?? result;
 
     if (rawData && Array.isArray(rawData.news)) {
       newsList.value = rawData.news;
@@ -119,10 +95,11 @@ onMounted(async () => {
   }
 });
 
-// PERSISTENCIA: Integración limpia con useDesigner y encapsulación estricta de Payload
+// Persistencia: Guardar o Editar (Sincronización Limpia)
 const handleSaveOrEdit = async () => {
   if (!currentArticle.value) return;
   
+  // Pasamos referencias limpias de los elementos al compositor
   designer.toggleEdit(currentArticle, {
     title: ref(document.querySelector('.news-title')),
     subtitle: ref(document.querySelector('.news-subtitle')),
@@ -134,20 +111,15 @@ const handleSaveOrEdit = async () => {
       await nextTick();
       bLoading.value = true;
       
-      // 1. Priorizamos métodos internos del composable si existen
-      if (typeof (designer as any).saveCache === 'function') {
-        await (designer as any).saveCache();
-      } else if (typeof (designer as any).updateCache === 'function') {
-        await (designer as any).updateCache({ news: newsList.value });
+      const designerRef = designer as any;
+      if (typeof designerRef.saveCache === 'function') {
+        await designerRef.saveCache();
+      } else if (typeof designerRef.updateCache === 'function') {
+        await designerRef.updateCache({ news: newsList.value });
       } else {
-        
-        // 2. SOLUCIÓN AL 400 (POST): Estructura estándar que empareja con la lectura del onMounted
-        // Envolvemos el estado en 'value' tal como se recupera en la carga inicial
         const payload = {
           key: CACHE_KEY,
-          value: {
-            news: newsList.value
-          }
+          value: { news: newsList.value }
         };
 
         const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
@@ -159,15 +131,11 @@ const handleSaveOrEdit = async () => {
           body: JSON.stringify(payload)
         });
 
-        // 3. Segundo intento de contingencia con una raíz plana si el validador del backend es diferente
         if (!response.ok) {
-          console.warn('[NewsView.vue] Estructura con "value" rechazada. Intentando variante "data" plana...');
-          
+          console.warn('[NewsView.vue] Estructura "value" rechazada. Intentando alternativa...');
           const alternativePayload = {
             id: CACHE_KEY,
-            data: {
-              news: newsList.value
-            }
+            data: { news: newsList.value }
           };
 
           await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
@@ -177,10 +145,9 @@ const handleSaveOrEdit = async () => {
           });
         }
       }
-      
-      console.log('[NewsView.vue] Historial de noticias sincronizado con éxito.');
+      console.log('[NewsView.vue] Historial sincronizado correctamente.');
     } catch (error) {
-      console.error('[NewsView.vue] Error crítico al guardar cambios en database.json:', error);
+      console.error('[NewsView.vue] Error crítico al guardar en database.json:', error);
     } finally {
       bLoading.value = false;
     }
@@ -223,9 +190,9 @@ const deleteCurrentArticle = () => {
 
 const handleAddImage = (event: Event) => {
   const input = event.target as HTMLInputElement;
-  if (!input.files || input.files.length === 0 || !currentArticle.value) return;
+  if (!input.files?.length || !currentArticle.value) return;
   
-  const file: File | undefined = input.files[0];
+  const file = input.files[0];
   if (!file) return;
 
   const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -248,7 +215,7 @@ const handleAddImage = (event: Event) => {
 };
 
 const removeImageAtIndex = (index: number) => {
-  if (!currentArticle.value || !currentArticle.value.images) return;
+  if (!currentArticle.value?.images) return;
   currentArticle.value.images.splice(index, 1);
 };
 
@@ -261,7 +228,6 @@ const selectArticleFromPage = (item: NewsArticle) => {
   if (globalIdx !== -1) {
     activeIndex.value = globalIdx;
   }
-  
   if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
     isSidebarOpen.value = false;
   }
@@ -271,14 +237,6 @@ const changePage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
   }
-};
-
-const prevPage = () => {
-  if (currentPage.value > 1) changePage(currentPage.value - 1);
-};
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) changePage(currentPage.value + 1);
 };
 </script>
 
@@ -386,11 +344,9 @@ const nextPage = () => {
           <button 
             class="pag-btn" 
             :disabled="currentPage === 1" 
-            @click="prevPage"
+            @click="changePage(currentPage - 1)"
             title="Anterior"
-          >
-            ◀
-          </button>
+          >◀</button>
           
           <div class="pag-numeric-indicator">
             <span class="current-indicator">{{ currentPage }}</span> 
@@ -401,11 +357,9 @@ const nextPage = () => {
           <button 
             class="pag-btn" 
             :disabled="currentPage === totalPages" 
-            @click="nextPage"
+            @click="changePage(currentPage + 1)"
             title="Siguiente"
-          >
-            ▶
-          </button>
+          >▶</button>
         </div>
       </aside>
 
@@ -442,8 +396,10 @@ const nextPage = () => {
             v-else 
             contenteditable="true" 
             class="news-title editable-container" 
-            v-html="currentArticle.title"
-          ></div>
+            @input="currentArticle.title = ($event.target as HTMLElement).innerText"
+          >
+            {{ currentArticle.title }}
+          </div>
 
           <h2 
             v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
@@ -454,8 +410,10 @@ const nextPage = () => {
             v-else 
             contenteditable="true" 
             class="news-subtitle editable-container" 
-            v-html="currentArticle.subtitle"
-          ></div>
+            @input="currentArticle.subtitle = ($event.target as HTMLElement).innerText"
+          >
+            {{ currentArticle.subtitle }}
+          </div>
 
           <hr class="newsletter-separator" />
 
@@ -500,8 +458,10 @@ const nextPage = () => {
             v-else 
             contenteditable="true" 
             class="news-content-body editable-container" 
-            v-html="currentArticle.content"
-          ></div>
+            @input="currentArticle.content = ($event.target as HTMLElement).innerHTML"
+          >
+            {{ currentArticle.content }}
+          </div>
 
         </article>
       </main>
@@ -509,7 +469,7 @@ const nextPage = () => {
     </div>
   </div>
   
-  <div v-else class="loader-placeholder">
+  <div class="loader-placeholder" v-else>
     <span>Sincronizando Boletines...</span>
   </div>
 </template>
@@ -948,7 +908,7 @@ const nextPage = () => {
   margin-bottom: 30px;
 }
 
-/* DISPOSITIVOS MÓVILES Y TABLETAS */
+/* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
   .news-panoramic-layout {
     padding: 20px 15px;

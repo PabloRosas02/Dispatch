@@ -65,10 +65,21 @@
     "news_page_general_config": {
       "news": [
         {
-          "id": "news_1782711761209",
+          "id": "news_1782782683675",
           "title": "NUEVA NOTICIA DISPONIBLE",
           "subtitle": "SUMARIO O SUBTÍTULO DEL BOLETÍN",
           "content": "Comienza a escribir aquí el cuerpo principal de tu newsletter...",
+          "date": "29 de junio de 2026",
+          "author": "Diseñador",
+          "category": "Novedades",
+          "images": [],
+          "videoUrl": ""
+        },
+        {
+          "id": "news_1782711761209",
+          "title": "hfhfgh",
+          "subtitle": "",
+          "content": "",
           "date": "28 de junio de 2026",
           "author": "Diseñador",
           "category": "Novedades",
