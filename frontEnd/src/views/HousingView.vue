@@ -298,7 +298,7 @@ const mapTransformStyle = computed<CSSProperties>(() => {
 
 .map-title {
   text-align: center;
-  color: var(--color-accent);
+  color: var(--color-secondary);
   font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: 2px;
