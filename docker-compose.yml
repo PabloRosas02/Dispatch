@@ -10,6 +10,8 @@ x-frontend-base: &frontend-base
   env_file:
     - ./.env
   restart: unless-stopped
+  depends_on:
+    - backend
   networks:
     - internal-nw
 
@@ -33,9 +35,9 @@ services:
 
   main-proxy:
     profiles: ["prod"]
+    <<: *main-proxy-base
     depends_on:
       - frontend
-    <<: *main-proxy-base
   main-proxy-dev:
     profiles: ["dev"]
     <<: *main-proxy-base
@@ -62,6 +64,20 @@ services:
     security_opt:
       - no-new-privileges:true
     <<: *frontend-base
+
+  backend:
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile
+      target: backend-production
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+    container_name: backend
+    restart: unless-stopped
+    volumes:
+      - ./database.json:/app/database.json:rw
+    networks:
+      - internal-nw
 
   ngrok-tunnel:
     profiles: ["prod"]
