@@ -29,6 +29,9 @@ const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer
 // Lógica UI específica de la vista
 const isSidebarOpen = ref<boolean>(true);
 
+// Variable para el Lightbox (Expandir Imagen)
+const activeLightboxImage = ref<string | null>(null);
+
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
@@ -266,6 +269,18 @@ const handleInitializeFirstArticle = async () => {
 
           <hr class="newsletter-separator" />
 
+          <div class="newsletter-gallery-section">
+            <ImageGalleryManager 
+              v-if="currentArticle.images" 
+              v-model:images="currentArticle.images" 
+              :isEditing="isAuthorizedDesigner && designer.isEditing.value" 
+              variant="normal"
+              @add-image="handleAddImage"
+              @remove-image="removeImageAtIndex"
+              @open-lightbox="activeLightboxImage = $event"
+            />
+          </div>
+
           <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="newsletter-editor-extensions">
             <div class="extension-input-group">
               <label>Enlace o ID de Video (YouTube):</label>
@@ -276,16 +291,6 @@ const handleInitializeFirstArticle = async () => {
                 class="extension-field"
               />
             </div>
-          </div>
-
-          <div class="newsletter-gallery-section">
-            <ImageGalleryManager 
-              v-if="currentArticle.images" 
-              v-model:images="currentArticle.images" 
-              :isEditing="isAuthorizedDesigner && designer.isEditing.value" 
-              @add-image="handleAddImage"
-              @remove-image="removeImageAtIndex"
-            />
           </div>
 
           <div v-if="embedVideoUrl" class="newsletter-video-wrapper">
@@ -321,9 +326,35 @@ const handleInitializeFirstArticle = async () => {
   <div class="loader-placeholder" v-else>
     <span>Sincronizando Boletines...</span>
   </div>
+
+  <Transition name="fade">
+    <div v-if="activeLightboxImage" class="image-lightbox-modal" @click="activeLightboxImage = null">
+      <button class="lightbox-close-btn" @click="activeLightboxImage = null">✕</button>
+      <div class="lightbox-content" @click.stop>
+        <img :src="activeLightboxImage" class="lightbox-full-image" alt="Visualización ampliada" />
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>
+/* LIGHTBOX Y GENERAL */
+.image-lightbox-modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(4, 10, 15, 0.96); backdrop-filter: blur(10px);
+  z-index: 99999; display: flex; align-items: center; justify-content: center;
+}
+.lightbox-content { max-width: 90%; max-height: 85%; display: flex; align-items: center; justify-content: center; }
+.lightbox-full-image { max-width: 100%; max-height: 100vh; object-fit: contain; border-radius: 4px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); }
+.lightbox-close-btn {
+  position: absolute; top: 30px; right: 40px; background: none; border: none;
+  color: #fff; font-size: 2.5rem; cursor: pointer; transition: color 0.2s;
+}
+.lightbox-close-btn:hover { color: var(--color-accent, #ecaf44); }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* DISEÑO NEWS */
 .news-panoramic-layout {
   min-height: 100vh;
   background-color: #060f16;
@@ -753,11 +784,85 @@ const handleInitializeFirstArticle = async () => {
   width: 100%;
   height: 100%;
 }
+
+
+/* ==========================================================================
+   GALERÍA: IMAGEN TIPO BANNER CENTRADA Y REDUCIDA (SIN POLAROID)
+   ========================================================================== */
 .newsletter-gallery-section {
-  margin-bottom: 30px;
+  width: 100%;
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
 }
 
-/* RESPONSIVE DESIGN 
+/* Apagamos SOLO la rotación forzada del componente, mantenemos la interactividad */
+.newsletter-gallery-section :deep(.gallery-clean-image) {
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Convertimos el flujo en una simple columna vertical centrada */
+.newsletter-gallery-section :deep(.extended-gallery-flow) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 25px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Destruimos el "cartón" de la Polaroid.
+   TAMAÑO REDUCIDO: max-width 85% */
+.newsletter-gallery-section :deep(.postal-wrapper),
+.newsletter-gallery-section :deep(.gallery-clean-image),
+.newsletter-gallery-section :deep(.add-postal-placeholder) {
+  width: 100% !important;
+  max-width: 85% !important;
+  display: block !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Respetamos el contenedor interactivo pero le quitamos el forzado cuadrado */
+.newsletter-gallery-section :deep(.image-viewport) {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: auto !important; 
+  background: transparent !important;
+  border-radius: 6px !important; /* Bordes redondeados del banner */
+  overflow: hidden !important;
+  position: relative !important; /* Mantiene viva la capa de "Expandir" y "Eliminar" */
+}
+
+/* La imagen abarca el contenedor reducido */
+.newsletter-gallery-section :deep(.postal-image) {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 500px !important; /* Opcional: evita que fotos verticales se hagan enormes */
+  object-fit: cover !important;
+  display: block !important;
+  border: none !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Estilo para el botón de "Añadir foto" para que coincida con el nuevo diseño */
+.newsletter-gallery-section :deep(.add-image-btn-zone) {
+  border: 1px dashed rgba(102, 192, 244, 0.5) !important;
+  background: rgba(102, 192, 244, 0.05) !important;
+  color: #66c0f4 !important;
+  min-height: 120px !important;
+  border-radius: 6px !important;
+}
+
+
+/* RESPONSIVE DESIGN (MÓVIL) 
 ========================================================= */
 @media (max-width: 1024px) {
   .news-panoramic-layout {
@@ -776,8 +881,8 @@ const handleInitializeFirstArticle = async () => {
   .news-sidebar {
     position: fixed;
     top: 72px; 
-    left: 0; /*Restauramos el ancho a 320px (como en desktop) para que no se corte */
-    width: 320px; /*max-width garantiza que en celulares muy estrechos no se salga de la pantalla */
+    left: 0; 
+    width: 320px; 
     max-width: 85vw;
     height: calc(100vh - 72px); 
     z-index: 99;
@@ -788,8 +893,8 @@ const handleInitializeFirstArticle = async () => {
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     transform: translateX(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto; /*Ajustamos el padding para darle espacio lateral al scrollbar */
-    padding: 20px 15px 90px 15px; /*Fundamental para que el padding no ensanche el menú accidentalmente */
+    overflow-y: auto; 
+    padding: 20px 15px 90px 15px; 
     box-sizing: border-box;
   }
 
@@ -822,7 +927,7 @@ const handleInitializeFirstArticle = async () => {
 
   .sidebar-toggle-arrow {
     position: fixed;
-    top: 95px; /*Movemos la flecha un poco más a la derecha para que coincida con los 320px */
+    top: 95px; 
     left: 310px;
   }
   
@@ -837,12 +942,18 @@ const handleInitializeFirstArticle = async () => {
   .news-title {
     font-size: 2.2rem;
   }
+
+  /* En móvil, dejamos que la imagen tome casi todo el ancho disponible */
+  .newsletter-gallery-section :deep(.postal-wrapper),
+  .newsletter-gallery-section :deep(.gallery-clean-image),
+  .newsletter-gallery-section :deep(.add-postal-placeholder) {
+    max-width: 100% !important; 
+  }
 }
 
-/* Regla de seguridad extra para celulares muy angostos (ej. iPhone SE) */
 @media (max-width: 400px) {
   .sidebar-toggle-arrow {
-    left: 80vw; /* La flecha se adapta al max-width de 85vw del sidebar */
+    left: 80vw;
   }
 }
 </style>

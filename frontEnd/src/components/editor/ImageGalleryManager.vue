@@ -95,7 +95,7 @@ const removeImageAtIndex = (index: number) => {
     <div v-if="isEditing" class="add-postal-placeholder">
       <label class="add-image-btn-zone">
         <div class="plus-icon">➕</div>
-        <span>Añadir foto a la derecha</span>
+        <span>Añadir imagen</span>
         <input type="file" accept="image/*" class="hidden-file-input" @change="handleAddImage" />
       </label>
     </div>
