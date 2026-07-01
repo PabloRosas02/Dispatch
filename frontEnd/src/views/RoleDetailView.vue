@@ -1,40 +1,35 @@
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import type * as ServerType from '../types/serverTypes.ts';
-import { useServerService } from '@/services/serverService.ts';
-
 import NotFound from '@/components/miscellaneous/NotFound.vue'; 
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
-// IMPORTACIÓN: Traemos el nuevo gestor de imágenes dinámicas
 import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
 
+// Composables
 import { useDesigner } from '@/composables/useDesigner';
-
-interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
-  filename?: string;
-  images?: string[]; 
-}
+import { useRoleDetail } from '@/composables/useRoleDetail';
 
 const route = useRoute();
-const { getServerFromRouteParam, getSvgUrl } = useServerService();
-
-const role = ref<ExtendedRPServer | undefined>(undefined);
-const bLoading = ref<boolean>(true);
 const containerRef = ref<HTMLElement | null>(null);
-
-// Control de imagen activa para el Lightbox modal de pantalla completa
-const activeLightboxImage = ref<string | null>(null);
 
 const routeServerId = Array.isArray(route.params.serverId) 
   ? route.params.serverId[0] 
   : route.params.serverId;
 const currentServerId = routeServerId || 'leo';
 
-const designer = useDesigner({
-  cacheKey: `server_page_config_${currentServerId}`
-});
+// Extraemos la lógica del composable
+const {
+  role,
+  bLoading,
+  activeLightboxImage,
+  fetchRoleData,
+  handleAddImage,
+  removeImageAtIndex
+} = useRoleDetail(currentServerId);
 
+// Lógica del Diseñador
+const cacheKeyStr = `server_page_config_${currentServerId}`;
+const designer = useDesigner({ cacheKey: cacheKeyStr });
 const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
 
 const isCenteredLayout = computed(() => {
@@ -43,48 +38,9 @@ const isCenteredLayout = computed(() => {
   return role.value.images.length <= 1;
 });
 
-onMounted(async () => {
-  const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
-  
-  if (defaultRole) {
-    const targetCacheKey = `server_page_config_${defaultRole.id}`;
-    try {
-      const response = await fetch(`http://localhost:3000/api/cache/${targetCacheKey}`);
-      const result = await response.json();
-      const data = result.data ? result.data : result;
-
-      if (data && Object.keys(data).length > 0) {
-        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.id)]);
-        role.value = {
-          ...defaultRole,
-          title: data.title || defaultRole.title,
-          subtitle: data.subtitle || defaultRole.subtitle,
-          description: data.description || defaultRole.description,
-          images: savedImages
-        };
-      } else {
-        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.id) || ''] };
-      }
-    } catch (error) {
-      console.error('[RoleDetailView.vue] Error:', error);
-      role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.id) || ''] };
-    }
-  }
-  bLoading.value = false;
-});
-
-// Manejadores globales para cerrar el Lightbox presionando la tecla Escape (ESC)
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') activeLightboxImage.value = null;
-};
-
-watch(activeLightboxImage, (newValue) => {
-  if (newValue) window.addEventListener('keydown', handleKeyDown);
-  else window.removeEventListener('keydown', handleKeyDown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
+// Carga Inicial Controlada
+onMounted(() => {
+  fetchRoleData();
 });
 
 const handleWheelScroll = (event: WheelEvent) => {
@@ -95,47 +51,40 @@ const handleWheelScroll = (event: WheelEvent) => {
   }
 };
 
-const handleSaveOrEdit = () => {
+const handleSaveOrEdit = async () => {
   if (!role.value) return;
+  
   designer.toggleEdit(role, {
     title: ref(document.querySelector('.role-title')),
     subtitle: ref(document.querySelector('.role-subtitle')),
     description: ref(document.querySelector('.role-description'))
   });
-};
 
-// CORRECCIÓN TYPESCRIPT: Control e inserción segura de imágenes secundarias
-const handleAddImage = (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  if (!input.files || input.files.length === 0 || !role.value) return;
-  
-  const file = input.files[0];
-  
-  if (!file) return;
-  
-  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // Límite de 10 MB
-  
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    alert(`El archivo excede el límite máximo permitido de 10 MB.`);
-    return;
-  }
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64Result = e.target?.result as string;
-    if (base64Result && role.value) {
-      if (!role.value.images) {
-        role.value.images = [];
+  if (!designer.isEditing.value) {
+    try {
+      await nextTick();
+      bLoading.value = true;
+      
+      const payload = { key: cacheKeyStr, value: role.value };
+      const response = await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: cacheKeyStr, data: role.value })
+        });
       }
-      role.value.images.push(base64Result);
+    } catch (error) {
+      console.error('[RoleDetailView] Error al guardar:', error);
+    } finally {
+      bLoading.value = false;
     }
-  };
-  reader.readAsDataURL(file);
-};
-
-const removeImageAtIndex = (index: number) => {
-  if (!role.value || !role.value.images) return;
-  role.value.images.splice(index, 1);
+  }
 };
 </script>
 
@@ -207,22 +156,28 @@ const removeImageAtIndex = (index: number) => {
           </div>
         </div>
 
-        <ImageGalleryManager 
-          v-if="role.images" 
-          v-model:images="role.images" 
-          :isEditing="designer.isEditing.value" 
-          variant="collage"
-          @open-lightbox="activeLightboxImage = $event"
-          @add-image="handleAddImage"
-          @remove-image="removeImageAtIndex"
-        />
+        <div class="gallery-safe-zone">
+          <ImageGalleryManager 
+            v-if="role.images" 
+            v-model:images="role.images" 
+            :isEditing="designer.isEditing.value" 
+            variant="collage"
+            @open-lightbox="activeLightboxImage = $event"
+            @add-image="handleAddImage"
+            @remove-image="removeImageAtIndex"
+          />
+        </div>
 
       </div>
     </main>
   </div>
 
-  <div v-else>
+  <div v-else-if="!bLoading">
     <NotFound />
+  </div>
+  
+  <div v-else class="loader-placeholder-fullscreen">
+    Cargando Datos de Servidor...
   </div>
 
   <Transition name="fade">
@@ -237,246 +192,425 @@ const removeImageAtIndex = (index: number) => {
 
 <style scoped>
 /* ==========================================================================
-   ESTILOS BASE E INTERFAZ PANORÁMICA
+   INTERFAZ LIGHTBOX Y GENERALES
    ========================================================================== */
 .image-lightbox-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
   height: 100vh;
-  background: rgba(4, 10, 15, 0.96);
+  background: rgba(4, 10, 15, 0.96); 
   backdrop-filter: blur(10px);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
+  z-index: 99999; 
+  display: flex; 
+  align-items: center; 
   justify-content: center;
 }
-.lightbox-content {
-  max-width: 90%;
-  max-height: 85%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.lightbox-full-image {
-  max-width: 100%;
-  max-height: 100vh;
-  object-fit: contain;
-  border-radius: 4px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+.lightbox-content { max-width: 90%; max-height: 85%; display: flex; align-items: center; justify-content: center; }
+.lightbox-full-image { 
+  max-width: 100%; 
+  max-height: 100vh; 
+  object-fit: contain; 
+  border-radius: 4px; 
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); 
 }
 .lightbox-close-btn {
-  position: absolute;
-  top: 30px;
-  right: 40px;
-  background: none;
+  position: absolute; 
+  top: 30px; 
+  right: 40px; 
+  background: none; 
   border: none;
-  color: #ffffff;
-  font-size: 2.5rem;
-  cursor: pointer;
+  color: #fff; 
+  font-size: 2.5rem; 
+  cursor: pointer; 
   transition: color 0.2s;
 }
-.lightbox-close-btn:hover {
-  color: var(--color-accent, #ecaf44);
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.lightbox-close-btn:hover { color: var(--color-accent); }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 .designer-trigger {
-  position: fixed;
-  top: 24px;
-  right: 24px;
+  position: fixed; 
+  top: 24px; 
+  right: 24px; 
   z-index: 10000;
-  background: rgba(236, 175, 68, 0.12);
-  color: var(--color-accent, #ecaf44);
-  border: 1px solid var(--color-accent, #ecaf44);
+  background: rgba(236, 175, 68, 0.12); 
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent); 
   padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 8px; 
+  cursor: pointer; 
   font-weight: 600;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px); 
   transition: all 0.2s;
 }
-.designer-trigger:hover {
-  background: var(--color-accent, #ecaf44);
-  color: #111;
-}
+.designer-trigger:hover { background: var(--color-accent); color: #111; }
+
 .editable-container {
-  border: 1px dashed var(--color-accent, #ecaf44);
-  outline: none;
+  border: 1px dashed var(--color-accent); 
+  outline: none; 
   padding: 6px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px; 
+  background: rgba(255, 255, 255, 0.02); 
   text-align: left;
 }
+
 .detail-page-panoramic {
-  width: 100vw;
+  width: 100vw; 
   height: 100vh;
-  background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-background) 100%), var(--color-background);
-  overflow-y: hidden;
+  background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-primary) 100%), var(--color-primary);
+  overflow-y: hidden; 
   overflow-x: auto; 
-  display: flex;
-  align-items: center;
+  display: flex; 
+  align-items: center; 
   box-sizing: border-box;
 }
-.panoramic-track {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
+.panoramic-track { 
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
+  height: 100%; 
   width: 100%;
-  padding-right: 80px; 
-}
+  padding-right: 80px; }
 .content-container-original {
-  display: flex;
-  flex-direction: row;
-  width: 1200px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 80px;
+  display: flex; 
+  flex-direction: row; 
+  width: 1200px; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 80px; 
   flex-shrink: 0; 
-  margin-left: calc(50vw - 600px); 
+  margin-left: calc(50vw - 600px);
 }
-.detail-page-panoramic.is-centered .content-container-original {
-  margin-left: auto;
-  margin-right: auto;
-}
-.postal-wrapper {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.detail-page-panoramic.is-centered .content-container-original { margin-left: auto; margin-right: auto; }
+
+/* POLAROID CARD */
+.postal-wrapper { 
+  flex-shrink: 0; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 }
 .postal-card {
-  background-color: #ffffff;
-  padding: 16px 16px 45px 16px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
-  width: 450px;
-  box-sizing: border-box;
+  background-color: #fff; 
+  padding: 16px 16px 45px 16px; 
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  border-radius: 4px; 
+  width: 450px; 
+  box-sizing: border-box; 
   transform: rotate(-3.5deg);
 }
-.image-viewport {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background-color: #060F16;
-  overflow: hidden;
-}
-.postal-image {
-  width: 100%;
-  height: 100%;
+.image-viewport { 
+  position: relative; 
+  width: 100%; 
+  aspect-ratio: 1/1; 
+  background-color: var(--color-primary); 
+  overflow: hidden; }
+.postal-image { 
+  width: 100%; 
+  height: 100%; 
   object-fit: contain; 
-  display: block;
-  border: 1px solid #ededed;
+  display: block; 
+  border: 1px solid #ededed; 
 }
-.postal-footer {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
+.postal-footer { 
+  margin-top: 20px; 
+  display: flex; 
   justify-content: center; 
+  align-items: center; 
 }
-.postal-brand {
-  font-family: 'Impact', 'Arial Black', sans-serif;
-  font-size: 1.3rem;
-  color: #c4c4c4;
-  letter-spacing: 1.5px;
+.postal-brand { 
+  font-family: 'Impact', 'Arial Black', 
+  sans-serif; font-size: 1.3rem; 
+  color: #c4c4c4; 
+  letter-spacing: 1.5px; 
 }
-.info-wrapper {
-  flex-shrink: 0;
-  width: 540px;
-  color: #ffffff;
+
+/* INFO WRAPPER */
+.info-wrapper { 
+  flex-shrink: 0; 
+  width: 540px; 
+  color: var(--color-light); 
 }
-.role-title {
-  font-size: 4.2rem;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--color-accent);
-  text-transform: uppercase;
+.role-title { 
+  font-size: 4.2rem; 
+  font-weight: 900; 
+  line-height: 1; 
+  color: var(--color-accent); 
+  text-transform: uppercase; 
+  margin-bottom: 0;
 }
-.role-subtitle {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin: 12px 0 28px 0;
-  color: var(--color-secondary);
-  text-transform: uppercase;
+.role-subtitle { 
+  font-size: 1.4rem; 
+  font-weight: 700; 
+  margin: 12px 0 28px 0; 
+  color: var(--color-secondary); 
+  text-transform: uppercase; 
 }
-.role-description {
-  font-size: 1.1rem;
-  line-height: 1.75;
-  color: var(--color-light);
-  margin-bottom: 35px;
+.role-description { 
+  font-size: 1.1rem; 
+  line-height: 1.75; 
+  color: var(--color-light); 
+  margin-bottom: 35px; 
 }
-.action-buttons-group {
-  display: flex;
-  gap: 16px;
+
+/* BOTONES */
+.action-buttons-group { 
+  display: flex; 
+  gap: 16px; 
 }
 .explore-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  height: 50px; 
   padding: 0 32px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  border-radius: 4px;
-  background-color: var(--color-accent);
-  color: #060f16;
-  border: none;
+  font-size: 0.95rem; 
+  font-weight: 800; 
+  text-transform: uppercase; 
+  border-radius: 4px; 
+  background-color: var(--color-accent); 
+  color: var(--color-primary); 
+  border: none; 
   cursor: pointer;
 }
 .discord-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  height: 50px;
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 10px; 
+  height: 50px; 
   padding: 0 32px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  border-radius: 4px;
-  text-decoration: none;
-  background-color: #5865F2;
-  color: #ffffff;
+  font-size: 0.95rem; 
+  font-weight: 800; 
+  text-transform: uppercase; 
+  border-radius: 4px; 
+  text-decoration: none; 
+  background-color: #5865F2; 
+  color: #fff; 
   border: none;
 }
 .back-button {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  display: inline-flex;
-  align-items: center;
+  position: absolute; 
+  top: 40px; 
+  left: 40px; 
+  display: inline-flex; 
+  align-items: center; 
   gap: 10px;
-  background-color: #f3e9dc;
-  color: #060f16;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-weight: 700;
-  text-decoration: none;
+  background-color: var(--color-light); 
+  color: var(--color-primary); 
+  padding: 12px 24px; 
+  border-radius: 30px; 
+  font-weight: 700; 
+  text-decoration: none; 
   z-index: 100;
 }
 
+.loader-placeholder-fullscreen {
+  height: 100vh; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: var(--color-accent); 
+  font-weight: bold; 
+  background-color: var(--color-primary);
+}
+
+
+/* ==========================================================================
+   DISEÑO "BENTO BOX" (ESCRITORIO)
+   ========================================================================== */
+.gallery-safe-zone {
+  width: 100%;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+
+.gallery-safe-zone :deep(ul) {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  grid-auto-rows: 240px !important; 
+  grid-auto-flow: dense !important; 
+  gap: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-width: 600px; 
+}
+
+/* Limpieza para evitar traslapes en grid */
+.gallery-safe-zone :deep(li),
+.gallery-safe-zone :deep(.gallery-item) {
+  position: relative !important;
+  top: auto !important; left: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  background: transparent !important;
+  border: none !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+  border-radius: 12px !important;
+}
+
+.gallery-safe-zone :deep(li *),
+.gallery-safe-zone :deep(.gallery-item *) {
+  overflow: visible !important;
+}
+
+/* TAMAÑOS DINÁMICOS */
+.gallery-safe-zone :deep(li:nth-child(3n+1)),
+.gallery-safe-zone :deep(.gallery-item:nth-child(3n+1)) { grid-row: span 2 !important; }
+.gallery-safe-zone :deep(li:nth-child(5n)),
+.gallery-safe-zone :deep(.gallery-item:nth-child(5n)) { grid-column: span 2 !important; }
+
+/* IMAGEN PREVIEW */
+.gallery-safe-zone :deep(img) {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; 
+  object-position: center !important;
+  transform: none !important;
+  transition: transform 0.3s ease, filter 0.3s ease !important;
+  cursor: pointer;
+}
+
+.gallery-safe-zone :deep(img:hover) {
+  transform: scale(1.05) !important;
+  filter: brightness(1.1) !important;
+}
+
+
 @media (max-width: 1024px) {
   .detail-page-panoramic {
-    overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh;
+    overflow-y: auto; 
+    overflow-x: hidden; 
+    height: auto; 
+    min-height: 100vh;
+    display: block; 
+    padding-bottom: 60px;
   }
   .panoramic-track {
-    flex-direction: column; padding: 120px 20px 40px 20px !important; gap: 40px;
+    flex-direction: column; 
+    height: auto; 
+    padding: 100px 20px 40px 20px !important; 
+    gap: 40px; 
   }
   .content-container-original {
-    flex-direction: column; width: 100%; text-align: center; margin-left: 0 !important;
+    flex-direction: column; 
+    width: 100%; 
+    text-align: center; 
+    margin-left: 0 !important; 
+    gap: 30px;
   }
-  .info-wrapper { width: 100%; }
-  .action-buttons-group { flex-direction: column; }
-  .explore-button, .discord-button { width: 100%; }
+  .postal-card { 
+    width: 100%; 
+    max-width: 300px; 
+    padding: 12px 12px 30px 12px; 
+    margin: 0 auto; 
+  }
+  .info-wrapper { 
+    width: 100%; 
+    margin-bottom: 20px; 
+  }
+  
+  .role-title { 
+    font-size: 2.8rem; 
+  }
+  .role-subtitle { 
+    font-size: 1.15rem; 
+    margin-bottom: 20px; 
+  }
+  .role-description { 
+    font-size: 1rem; 
+    margin-bottom: 25px; 
+  }
+  
+  .action-buttons-group { 
+    flex-direction: column; 
+    gap: 12px; 
+  }
+  .explore-button, .discord-button { 
+    width: 100%; 
+    height: 55px; 
+  }
+  .back-button { 
+    position: absolute; 
+    top: 20px; 
+    left: 20px; 
+  }
+
+  .gallery-safe-zone {
+    margin-top: 40px;
+    padding-bottom: 60px;
+    width: 100%;
+    display: block;
+  }
+
+  .gallery-safe-zone :deep(*) {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .gallery-safe-zone :deep(ul) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-auto-rows: auto !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: unset !important;
+  }
+
+  .gallery-safe-zone :deep(li),
+  .gallery-safe-zone :deep(.gallery-item) {
+    display: block !important;
+    grid-row: span 1 !important; /* Anula el span vertical de escritorio */
+    grid-column: span 1 !important; /* Anula el span horizontal de escritorio */
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important; /* Cajas siempre cuadradas matemáticamente */
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important; /* LA CLAVE: Corta lo que sobre físicamente */
+    border-radius: 12px !important;
+  }
+
+  .gallery-safe-zone :deep(li:nth-child(3n)),
+  .gallery-safe-zone :deep(.gallery-item:nth-child(3n)) {
+    grid-column: span 2 !important;
+    aspect-ratio: 2 / 1 !important; /* Rectángulo horizontal (mitad de alto que ancho) */
+  }
+  .gallery-safe-zone :deep(li div),
+  .gallery-safe-zone :deep(.gallery-item div),
+  .gallery-safe-zone :deep(li a) {
+    display: contents !important;
+  }
+
+  /* wLa imagen cubre su celda sin deformarse */
+  .gallery-safe-zone :deep(img) {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    object-fit: cover !important; /* Recorta la imagen desde el centro */
+    border-radius: 0 !important; /* El radio ya lo tiene el padre */
+  }
 }
 </style>
