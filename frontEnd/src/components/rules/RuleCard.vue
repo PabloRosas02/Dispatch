@@ -30,7 +30,21 @@ const toggleCard = () => {
         <span class="rule-tag">{{ index }}</span>
       </div>
       <h4 class="rule-title">{{ title }}</h4>
-      <span class="rule-icon">{{ isOpen ? '−' : '+' }}</span>
+      <div class="rule-icon">
+        <svg
+          class="chevron"
+          :class="{ open: isOpen }"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
     </div>
 
     <transition name="slide">
@@ -48,160 +62,296 @@ const toggleCard = () => {
 
 <style scoped>
 .rule-card {
-  background: linear-gradient(135deg, rgba(99, 166, 218, 0.08), rgba(239, 188, 149, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(99, 166, 218, 0.08),
+    rgba(239, 188, 149, 0.05)
+  );
+
   backdrop-filter: blur(12px);
+
   border: 1px solid var(--color-light);
+
   border-radius: 16px;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+
   overflow: hidden;
+
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+  transition:
+    border-color .22s ease,
+    background .22s ease,
+    box-shadow .22s ease;
 }
 
-/* Hover sin movimiento, solo cambios visuales sutiles */
+/* Hover */
+
 .rule-card:hover {
   border-color: var(--card-color);
-  background: linear-gradient(135deg, rgba(99, 166, 218, 0.12), rgba(239, 188, 149, 0.08));
+
+  background: linear-gradient(
+    135deg,
+    rgba(99, 166, 218, 0.12),
+    rgba(239, 188, 149, 0.08)
+  );
+
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
 }
 
 .rule-card.is-open {
   border-color: var(--card-color);
-  background: linear-gradient(135deg, rgba(99, 166, 218, 0.12), rgba(239, 188, 149, 0.08));
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+
+  background: linear-gradient(
+    135deg,
+    rgba(99, 166, 218, 0.12),
+    rgba(239, 188, 149, 0.08)
+  );
+
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
 }
+
+/* ===================================================== */
 
 .rule-header {
   display: flex;
   align-items: center;
   gap: 1.2rem;
+
   padding: 1.2rem 1.5rem;
 }
 
 .rule-number-wrapper {
-  position: relative;
   min-width: 50px;
 }
 
 .rule-tag {
-  font-size: 0.85rem;
+  font-size: .85rem;
   font-weight: 800;
-  font-family: 'Exo 2', monospace;
+  font-family: "Exo 2", monospace;
+
   color: var(--color-secondary);
-  background: rgba(99, 166, 218, 0.15);
+
+  background: rgba(99,166,218,.15);
+
+  border: 1px solid rgba(99,166,218,.3);
+
+  border-radius: 999px;
+
   padding: 4px 10px;
-  border-radius: 20px;
-  display: inline-block;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(99, 166, 218, 0.3);
+
+  letter-spacing: .5px;
 }
 
 .rule-title {
-  color: var(--color-light);
-  margin: 0;
-  flex-grow: 1;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  flex:1;
+
+  margin:0;
+
+  color:var(--color-light);
+
+  font-size:1rem;
+
+  font-weight:600;
+
+  letter-spacing:.5px;
+
+  text-shadow:0 1px 2px rgba(0,0,0,.2);
 }
 
-.rule-icon {
-  color: var(--color-complementary);
-  font-size: 1.3rem;
-  font-weight: 300;
-  transition: all 0.2s ease;
-  width: 24px;
-  text-align: center;
+/* ===================================================== */
+/* CHEVRON */
+/* ===================================================== */
+
+.rule-icon{
+
+  width:38px;
+  height:38px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  flex-shrink:0;
+
+  border-radius:50%;
+
+  background:rgba(255,255,255,.05);
+
+  color:var(--color-accent);
+
+  transition:
+      background .25s ease,
+      color .25s ease;
 }
 
-.rule-card.is-open .rule-icon {
-  color: var(--card-color);
-  transform: rotate(180deg);
+.rule-card:hover .rule-icon{
+
+  background:rgba(236,175,68,.12);
+
 }
+
+.rule-card.is-open .rule-icon{
+
+  background:rgba(236,175,68,.18);
+
+  color:var(--card-color);
+
+}
+
+/* SOLO EL SVG GIRA */
+
+.chevron{
+
+  width:18px;
+  height:18px;
+
+  display:block;
+
+  transform:rotate(0deg);
+
+  transform-origin:center;
+
+  transition:transform .28s cubic-bezier(.22,1,.36,1);
+
+  will-change:transform;
+}
+
+.chevron.open{
+
+  transform:rotate(180deg);
+
+}
+
+/* ===================================================== */
 
 .rule-content {
-  padding: 0 1.5rem 1.2rem 1.5rem;
-  border-top: 1px solid rgba(243, 233, 220, 0.1);
+
+  padding:0 1.5rem 1.2rem;
+
+  border-top:1px solid rgba(243,233,220,.1);
 }
 
 .rule-description {
-  color: rgba(243, 233, 220, 0.85);
-  line-height: 1.7;
-  margin: 0 0 1rem 0;
-  font-size: 0.9rem;
+
+  color:rgba(243,233,220,.85);
+  font-family:"Exo 2", monospace;
+  line-height:1.7;
+
+  margin:0 0 1rem;
+
+  font-size:.9rem;
 }
 
-/* Example con fondo primary (sólido) */
 .rule-example {
-  background: var(--color-primary);
-  border-left: 3px solid var(--color-complementary);
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
+
+  display:flex;
+
+  flex-wrap:wrap;
+
+  gap:.8rem;
+
+  background:var(--color-primary);
+
+  border-left:3px solid var(--color-complementary);
+
+  border-radius:8px;
+
+  padding:.85rem 1rem;
 }
 
 .example-label {
-  color: var(--color-secondary);
-  font-weight: 800;
-  font-size: 0.7rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  opacity: 0.9;
+
+  color:var(--color-secondary);
+
+  font-size:.7rem;
+  font-family:"Exo 2", monospace;
+  font-weight:800;
+
+  letter-spacing:1.5px;
+
+  text-transform:uppercase;
 }
 
 .example-text {
-  color: var(--color-light);
-  font-style: italic;
-  font-size: 0.85rem;
-  flex: 1;
-  opacity: 0.9;
+
+  flex:1;
+
+  color:var(--color-light);
+
+  font-size:.85rem;
+  font-family:"Exo 2", monospace;
+  font-style:italic;
+
+  opacity:.9;
 }
 
-/* Transiciones más rápidas */
+/* ===================================================== */
+/* TRANSITION */
+/* ===================================================== */
+
 .slide-enter-active,
-.slide-leave-active {
-  transition: all 0.2s ease;
+.slide-leave-active{
+
+  transition:
+      opacity .22s ease,
+      transform .22s ease;
 }
 
 .slide-enter-from,
-.slide-leave-to {
-  transform: translateY(-8px);
-  opacity: 0;
+.slide-leave-to{
+
+  opacity:0;
+
+  transform:translateY(-8px);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .rule-header {
-    padding: 1rem;
+/* ===================================================== */
+/* MOBILE */
+/* ===================================================== */
+
+@media (max-width:768px){
+
+  .rule-header{
+
+      padding:1rem;
   }
 
-  .rule-tag {
-    font-size: 0.7rem;
-    padding: 3px 8px;
+  .rule-tag{
+
+      font-size:.7rem;
+
+      padding:3px 8px;
   }
 
-  .rule-title {
-    font-size: 0.85rem;
+  .rule-title{
+
+      font-size:.9rem;
   }
 
-  .rule-content {
-    padding: 0 1rem 1rem 1rem;
+  .rule-content{
+
+      padding:0 1rem 1rem;
   }
 
-  .rule-example {
-    flex-direction: column;
-    gap: 0.3rem;
+  .rule-example{
+
+      flex-direction:column;
+
+      gap:.35rem;
   }
 
-  .example-label {
-    font-size: 0.65rem;
+  .example-label{
+
+      font-size:.65rem;
   }
 
-  .example-text {
-    font-size: 0.8rem;
+  .example-text{
+
+      font-size:.8rem;
   }
+
 }
 </style>

@@ -672,6 +672,7 @@ const closeLightbox = () => {
   letter-spacing: 2px;
 }
 .role-description {
+  font-family: "Exo 2", monospace;
   font-size: 1.1rem;
   line-height: 1.75;
   color: var(--color-light);
@@ -680,6 +681,7 @@ const closeLightbox = () => {
 }
 
 .action-buttons-group {
+  font-family: "Exo 2", monospace;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -688,6 +690,7 @@ const closeLightbox = () => {
 .explore-button {
   display: inline-flex;
   align-items: center;
+  font-family: "Exo 2", monospace;
   justify-content: center;
   gap: 10px;
   height: 50px;
