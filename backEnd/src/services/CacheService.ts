@@ -5,9 +5,9 @@ import { RPServer } from '../interfaces/ServerInterfaces';
 export class CacheService {
   private cache: Map<string, any>;
   private servers: Map<string, RPServer>;
-  
+
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbPath = path.join(__dirname, '../../database.json');
+  private dbPath = '/app/database.json';
 
   // --- VALORES DE FÁBRICA / ORIGINALES (DISEÑO Y TEXTOS SINCRO-DEFAULT) ---
   private readonly factoryCacheDefaults: Record<string, any> = {
@@ -52,7 +52,7 @@ export class CacheService {
   constructor() {
     this.cache = new Map<string, any>();
     this.servers = new Map<string, RPServer>();
-    
+
     // Al arrancar, intenta cargar los datos previos del disco o inicializa con los de fábrica
     this.loadFromDisk();
   }
@@ -80,7 +80,7 @@ export class CacheService {
 
         // Rehidratar mapa de caché genérica
         this.cache = new Map(Object.entries(parsedData.cache || {}));
-        
+
         // Rehidratar mapa de servidores
         this.servers.clear();
         if (Array.isArray(parsedData.servers)) {

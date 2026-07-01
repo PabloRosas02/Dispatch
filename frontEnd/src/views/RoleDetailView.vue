@@ -89,24 +89,24 @@ const handleSaveOrEdit = async () => {
 </script>
 
 <template>
-  <BuilderToolbar 
-    v-if="isAuthorizedDesigner && designer.isEditing.value" 
-    :designer="designer" 
-    :onSave="handleSaveOrEdit" 
+  <BuilderToolbar
+    v-if="isAuthorizedDesigner && designer.isEditing.value"
+    :designer="designer"
+    :onSave="handleSaveOrEdit"
   />
 
-  <button 
-    v-if="isAuthorizedDesigner && role && !designer.isEditing.value" 
-    class="designer-trigger" 
+  <button
+    v-if="isAuthorizedDesigner && role && !designer.isEditing.value"
+    class="designer-trigger"
     @click="handleSaveOrEdit"
   >
     📝 Modo Diseñador ({{ role.id.toUpperCase() }})
   </button>
 
   <div v-if="role">
-    <main 
+    <main
       ref="containerRef"
-      class="detail-page-panoramic" 
+      class="detail-page-panoramic"
       :class="{ 'is-centered': isCenteredLayout }"
       :style="{ '--bg-gradient': role.color }"
       @wheel="handleWheelScroll"

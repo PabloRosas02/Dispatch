@@ -42,9 +42,9 @@ const isAuthorizedDesigner = computed(() => {
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/cache/kinsfolk_page_config')
+    const response = await fetch('/api/cache/kinsfolk_page_config')
     const result = await response.json()
-    
+
     // Tolerancia en el desempaquetado de datos si el backend retorna { success: true, data: ... } o directo
     const data = result.data ? result.data : result
 
@@ -72,16 +72,16 @@ const handleSaveOrEdit = () => {
 
 <template>
   <header class="hero-container">
-    
-    <BuilderToolbar 
-      v-if="isAuthorizedDesigner && designer.isEditing.value" 
-      :designer="designer" 
-      :onSave="handleSaveOrEdit" 
+
+    <BuilderToolbar
+      v-if="isAuthorizedDesigner && designer.isEditing.value"
+      :designer="designer"
+      :onSave="handleSaveOrEdit"
     />
 
-    <button 
-      v-if="isAuthorizedDesigner && !designer.isEditing.value" 
-      class="designer-trigger" 
+    <button
+      v-if="isAuthorizedDesigner && !designer.isEditing.value"
+      class="designer-trigger"
       @click="handleSaveOrEdit"
     >
       📝 Modo Diseñador
@@ -95,20 +95,20 @@ const handleSaveOrEdit = () => {
             alt="Kinsfolk Logo"
             class="main-logo"
           />
-          
+
           <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="image-actions-overlay">
             <label class="img-action-btn">
               Reemplazar
-              <input 
-                type="file" 
-                accept="image/*" 
-                class="hidden-file-input" 
-                @change="e => designer.handleImageUpload(e, pageConfig, 'logoUrl')" 
+              <input
+                type="file"
+                accept="image/*"
+                class="hidden-file-input"
+                @change="e => designer.handleImageUpload(e, pageConfig, 'logoUrl')"
               />
             </label>
-            <button 
-              v-if="pageConfig.logoUrl && pageConfig.logoUrl !== defaultLogoUrl" 
-              class="img-action-btn delete-btn" 
+            <button
+              v-if="pageConfig.logoUrl && pageConfig.logoUrl !== defaultLogoUrl"
+              class="img-action-btn delete-btn"
               @click="designer.removeImage(pageConfig, 'logoUrl')"
             >
               Quitar
@@ -116,10 +116,10 @@ const handleSaveOrEdit = () => {
           </div>
         </div>
       </div>
-      
+
       <h1 v-if="!designer.isEditing.value" class="welcome-title" v-html="pageConfig.welcomeTitle"></h1>
       <div v-else ref="titleRef" contenteditable="true" class="welcome-title editable-container"></div>
-      
+
       <p v-if="!designer.isEditing.value" class="welcome-subtitle" v-html="pageConfig.welcomeDescription"></p>
       <div v-else ref="subtitleRef" contenteditable="true" class="welcome-subtitle editable-container"></div>
     </div>
@@ -270,12 +270,12 @@ const handleSaveOrEdit = () => {
 .welcome-title {
   color: var(--color-light);
   font-size: 2.5rem;
-  font-weight: 400; 
+  font-weight: 400;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 4px 20px rgba(0,0,0,.5);
 }
 
-.welcome-title b, 
+.welcome-title b,
 .welcome-title strong {
   font-weight: 800 !important;
 }
