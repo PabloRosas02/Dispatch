@@ -62,7 +62,7 @@ onMounted(() => {
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
               <path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.214 12.214 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.12.194-2.194.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.005-.083 6.07 6.07 0 0 0 .248-.195.051.051 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.09.066.174.132.248.195a.051.051 0 0 1-.004.083 9.11 9.11 0 0 1-1.248.595.052.052 0 0 0-.018.011.05.05 0 0 0-.01.059c.237.466.51.908.819 1.329a.05.05 0 0 0 .056.019 13.23 13.23 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-7.726 7.394c-.797 0-1.453-.732-1.453-1.636s.642-1.636 1.453-1.636c.804 0 1.46.738 1.453 1.636 0 .904-.649 1.636-1.453 1.636Zm4.373 0c-.797 0-1.453-.732-1.453-1.636s.642-1.636 1.453-1.636c.804 0 1.46.738 1.453 1.636 0 .904-.649 1.636-1.453 1.636Z"/>
             </svg>
-            <span>Unete al Discord</span>
+            <span>Únete al Discord</span>
           </a>
         </div>
       </div>
@@ -109,6 +109,11 @@ onMounted(() => {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: all 0.25s ease;
   z-index: 10;
+}
+
+.back-button span {
+  font-family: "Exo 2", monospace;
+  font-weight: 500;
 }
 
 .back-button:hover {
@@ -199,6 +204,7 @@ onMounted(() => {
 }
 
 .role-description {
+  font-family: "Exo 2", monospace;
   font-size: 1.1rem;
   line-height: 1.75;
   color: var(--color-light);
@@ -208,6 +214,7 @@ onMounted(() => {
 
 /* --- CONTENEDOR DE BOTONES --- */
 .action-buttons-group {
+  font-family: "Exo 2", monospace;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -218,6 +225,7 @@ onMounted(() => {
 .discord-button {
   display: inline-flex;
   align-items: center;
+  font-family: "Exo 2", monospace;
   justify-content: center;
   vertical-align: middle;
   gap: 10px;
