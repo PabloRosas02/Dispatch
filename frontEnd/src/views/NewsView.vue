@@ -1,105 +1,53 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 
-// Componentes y lógica de edición
+// Componentes
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
 import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
-import { useDesigner } from '@/composables/useDesigner';
 
-// IMPORTACIÓN OFICIAL DESDE TU ARCHIVO DE TIPOS CENTRALIZADO
+// Composables
+import { useDesigner } from '@/composables/useDesigner';
+import { useNews } from '@/composables/useNews';
 import type { NewsArticle } from '@/types/serverTypes';
 
 const route = useRoute();
-const newsList = ref<NewsArticle[]>([]);
-const activeIndex = ref<number>(0);
-const bLoading = ref<boolean>(true);
-
-// Controles de UI y Filtros
-const isSidebarOpen = ref<boolean>(true);
-const searchQuery = ref<string>('');
-
-// Paginación (10 en 10)
-const currentPage = ref<number>(1);
-const ITEMS_PER_PAGE = 10;
-
 const CACHE_KEY = 'news_page_general_config';
+
+// Instanciamos la lógica aislada
+const {
+  newsList, bLoading, searchQuery, currentPage, currentArticle,
+  totalPages, paginatedNewsList, embedVideoUrl, fetchNews,
+  createNewArticleTemplate, deleteCurrentArticle, handleAddImage,
+  removeImageAtIndex, selectArticleFromPage, changePage
+} = useNews(CACHE_KEY);
+
+// Lógica del Diseñador
 const designer = useDesigner({ cacheKey: CACHE_KEY });
-
-// Computados de Validación y Selección
 const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
-const currentArticle = computed(() => newsList.value[activeIndex.value] || null);
 
-// Filtrado de Boletines (Optimizado para evitar búsquedas repetitivas vacías)
-const filteredNewsList = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-  if (!query) return newsList.value;
-  
-  return newsList.value.filter(item => 
-    item.title.toLowerCase().includes(query) ||
-    item.date.toLowerCase().includes(query) ||
-    item.author.toLowerCase().includes(query)
-  );
-});
+// Lógica UI específica de la vista
+const isSidebarOpen = ref<boolean>(true);
 
-// Paginación Computada
-const totalPages = computed(() => Math.ceil(filteredNewsList.value.length / ITEMS_PER_PAGE) || 1);
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
 
-const paginatedNewsList = computed(() => {
-  const start = (currentPage.value - 1) * ITEMS_PER_PAGE;
-  return filteredNewsList.value.slice(start, start + ITEMS_PER_PAGE);
-});
-
-// Resetear paginación al buscar
-watch(searchQuery, () => {
-  currentPage.value = 1;
-});
-
-// Formateador robusto de URLs de YouTube mediante Expresión Regular
-const embedVideoUrl = computed(() => {
-  if (!currentArticle.value?.videoUrl) return '';
-  const url = currentArticle.value.videoUrl;
-
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-
-  return (match && match[2]?.length === 11)
-    ? `https://www.youtube.com/embed/${match[2]}`
-    : url;
-});
-
-// Persistencia: Carga inicial desde la API de caché
-onMounted(async () => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`);
-    if (response.status === 404) {
-      newsList.value = [];
-      return;
-    }
-
-    const result = await response.json();
-    const rawData = result.data ?? result.value ?? result;
-
-    if (rawData && Array.isArray(rawData.news)) {
-      newsList.value = rawData.news;
-    } else if (Array.isArray(rawData)) {
-      newsList.value = rawData;
-    } else {
-      newsList.value = [];
-    }
-  } catch (error) {
-    console.error('[NewsView.vue] Error al cargar noticias de database.json:', error);
-    newsList.value = [];
-  } finally {
-    bLoading.value = false;
+const handleArticleSelection = (item: NewsArticle) => {
+  selectArticleFromPage(item);
+  if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+    isSidebarOpen.value = false;
   }
+};
+
+// Carga inicial controlada por la guardia del composable
+onMounted(() => {
+  fetchNews();
 });
 
-// Persistencia: Guardar o Editar (Sincronización Limpia)
 const handleSaveOrEdit = async () => {
   if (!currentArticle.value) return;
   
-  // Pasamos referencias limpias de los elementos al compositor
   designer.toggleEdit(currentArticle, {
     title: ref(document.querySelector('.news-title')),
     subtitle: ref(document.querySelector('.news-subtitle')),
@@ -111,132 +59,33 @@ const handleSaveOrEdit = async () => {
       await nextTick();
       bLoading.value = true;
       
-      const designerRef = designer as any;
-      if (typeof designerRef.saveCache === 'function') {
-        await designerRef.saveCache();
-      } else if (typeof designerRef.updateCache === 'function') {
-        await designerRef.updateCache({ news: newsList.value });
-      } else {
-        const payload = {
-          key: CACHE_KEY,
-          value: { news: newsList.value }
-        };
+      const payload = { key: CACHE_KEY, value: { news: newsList.value } };
+      const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-        const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
+      if (!response.ok) {
+        await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: CACHE_KEY, data: { news: newsList.value } })
         });
-
-        if (!response.ok) {
-          console.warn('[NewsView.vue] Estructura "value" rechazada. Intentando alternativa...');
-          const alternativePayload = {
-            id: CACHE_KEY,
-            data: { news: newsList.value }
-          };
-
-          await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(alternativePayload)
-          });
-        }
       }
-      console.log('[NewsView.vue] Historial sincronizado correctamente.');
     } catch (error) {
-      console.error('[NewsView.vue] Error crítico al guardar en database.json:', error);
+      console.error('[NewsView.vue] Error crítico al guardar:', error);
     } finally {
       bLoading.value = false;
     }
   }
 };
 
-const createNewArticleTemplate = () => {
-  const newArticle: NewsArticle = {
-    id: `news_${Date.now()}`,
-    title: 'NUEVA NOTICIA DISPONIBLE',
-    subtitle: 'SUMARIO O SUBTÍTULO DEL BOLETÍN',
-    content: 'Comienza a escribir aquí el cuerpo principal de tu newsletter...',
-    date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
-    author: 'Diseñador',
-    category: 'Novedades',
-    images: [],
-    videoUrl: ''
-  };
-  
-  newsList.value.unshift(newArticle);
-  searchQuery.value = ''; 
-  currentPage.value = 1;
-  activeIndex.value = 0;
-};
-
-const deleteCurrentArticle = () => {
-  if (newsList.value.length === 0) return;
-  
-  if (confirm('¿Estás seguro de que deseas eliminar este boletín por completo?')) {
-    newsList.value.splice(activeIndex.value, 1);
-    
-    if (currentPage.value > totalPages.value) {
-      currentPage.value = totalPages.value;
-    }
-    
-    const startGlobalIdx = (currentPage.value - 1) * ITEMS_PER_PAGE;
-    activeIndex.value = Math.max(0, Math.min(startGlobalIdx, newsList.value.length - 1));
-  }
-};
-
-const handleAddImage = (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  if (!input.files?.length || !currentArticle.value) return;
-  
-  const file = input.files[0];
-  if (!file) return;
-
-  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    alert(`El archivo excede el límite máximo permitido de 10 MB.`);
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64Result = e.target?.result as string;
-    if (base64Result && currentArticle.value) {
-      if (!currentArticle.value.images) {
-        currentArticle.value.images = [];
-      }
-      currentArticle.value.images.push(base64Result);
-    }
-  };
-  reader.readAsDataURL(file);
-};
-
-const removeImageAtIndex = (index: number) => {
-  if (!currentArticle.value?.images) return;
-  currentArticle.value.images.splice(index, 1);
-};
-
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value;
-};
-
-const selectArticleFromPage = (item: NewsArticle) => {
-  const globalIdx = newsList.value.findIndex(article => article.id === item.id);
-  if (globalIdx !== -1) {
-    activeIndex.value = globalIdx;
-  }
-  if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
-    isSidebarOpen.value = false;
-  }
-};
-
-const changePage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-  }
+// Inicialización segura garantizando el ciclo de renderizado del contenedor
+const handleInitializeFirstArticle = async () => {
+  createNewArticleTemplate();
+  await nextTick();
+  handleSaveOrEdit();
 };
 </script>
 
@@ -268,7 +117,7 @@ const changePage = (page: number) => {
           v-if="isAuthorizedDesigner && newsList.length === 0"
           href="#"
           class="edit-mode-link"
-          @click.prevent="createNewArticleTemplate(); handleSaveOrEdit();"
+          @click.prevent="handleInitializeFirstArticle"
         >
           ➕ Inicializar Primer Boletín
         </a>
@@ -325,7 +174,7 @@ const changePage = (page: number) => {
             :key="item.id"
             class="sidebar-card"
             :class="{ 'active': currentArticle && item.id === currentArticle.id }"
-            @click="selectArticleFromPage(item)"
+            @click="handleArticleSelection(item)"
           >
             <span class="card-tag">{{ item.category }}</span>
             <h4 class="card-title" v-html="item.title"></h4>
@@ -908,7 +757,8 @@ const changePage = (page: number) => {
   margin-bottom: 30px;
 }
 
-/* RESPONSIVE DESIGN */
+/* RESPONSIVE DESIGN 
+========================================================= */
 @media (max-width: 1024px) {
   .news-panoramic-layout {
     padding: 20px 15px;
@@ -925,10 +775,11 @@ const changePage = (page: number) => {
 
   .news-sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100vh;
+    top: 72px; 
+    left: 0; /*Restauramos el ancho a 320px (como en desktop) para que no se corte */
+    width: 320px; /*max-width garantiza que en celulares muy estrechos no se salga de la pantalla */
+    max-width: 85vw;
+    height: calc(100vh - 72px); 
     z-index: 99;
     background: #0d1721;
     box-shadow: 5px 0 30px rgba(0, 0, 0, 0.8);
@@ -937,6 +788,9 @@ const changePage = (page: number) => {
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     transform: translateX(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto; /*Ajustamos el padding para darle espacio lateral al scrollbar */
+    padding: 20px 15px 90px 15px; /*Fundamental para que el padding no ensanche el menú accidentalmente */
+    box-sizing: border-box;
   }
 
   .news-grid-container.sidebar-collapsed .news-sidebar {
@@ -944,16 +798,15 @@ const changePage = (page: number) => {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    padding: 20px;
   }
 
   .sidebar-overlay {
     display: block;
     position: fixed;
-    top: 0;
+    top: 72px; 
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 72px);
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
     z-index: 90;
@@ -969,8 +822,8 @@ const changePage = (page: number) => {
 
   .sidebar-toggle-arrow {
     position: fixed;
-    top: 25px;
-    left: 290px;
+    top: 95px; /*Movemos la flecha un poco más a la derecha para que coincida con los 320px */
+    left: 310px;
   }
   
   .sidebar-toggle-arrow.collapsed {
@@ -983,6 +836,13 @@ const changePage = (page: number) => {
 
   .news-title {
     font-size: 2.2rem;
+  }
+}
+
+/* Regla de seguridad extra para celulares muy angostos (ej. iPhone SE) */
+@media (max-width: 400px) {
+  .sidebar-toggle-arrow {
+    left: 80vw; /* La flecha se adapta al max-width de 85vw del sidebar */
   }
 }
 </style>
