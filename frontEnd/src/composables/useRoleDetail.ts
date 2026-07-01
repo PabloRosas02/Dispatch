@@ -4,7 +4,7 @@ import { useServerService } from '@/services/serverService';
 
 export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
   filename?: string;
-  images?: string[]; 
+  images?: string[];
 }
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
@@ -13,7 +13,7 @@ const fetchedServers: Record<string, ExtendedRPServer> = {};
 
 export function useRoleDetail(currentServerId: string) {
   const { getServerFromRouteParam, getSvgUrl } = useServerService();
-  
+
   const role = ref<ExtendedRPServer | undefined>(undefined);
   const bLoading = ref<boolean>(true);
   const activeLightboxImage = ref<string | null>(null);
@@ -35,7 +35,7 @@ export function useRoleDetail(currentServerId: string) {
   // Lógica de carga única
   const fetchRoleData = async (forceRefresh = false) => {
     const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
-    
+
     if (!defaultRole) {
       bLoading.value = false;
       return;
@@ -50,11 +50,11 @@ export function useRoleDetail(currentServerId: string) {
 
     const targetCacheKey = `server_page_config_${defaultRole.id}`;
     bLoading.value = true;
-    
+
     try {
-      const response = await fetch(`http://localhost:3000/api/cache/${targetCacheKey}`);
+      const response = await fetch(`/api/cache/${targetCacheKey}`);
       if (response.status === 404) throw new Error('Not found in cache');
-      
+
       const result = await response.json();
       const data = result.data ? result.data : result;
 
@@ -85,17 +85,17 @@ export function useRoleDetail(currentServerId: string) {
   const handleAddImage = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0 || !role.value) return;
-    
+
     const file = input.files[0];
     if (!file) return;
-    
+
     const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
-    
+
     if (file.size > MAX_FILE_SIZE_BYTES) {
       alert(`El archivo excede el límite máximo permitido de 10 MB.`);
       return;
     }
-    
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64Result = e.target?.result as string;
