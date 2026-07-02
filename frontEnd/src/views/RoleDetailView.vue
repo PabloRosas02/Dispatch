@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { ref, onMounted, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import NotFound from '@/components/miscellaneous/NotFound.vue'; 
+import NotFound from '@/components/miscellaneous/NotFound.vue';
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
 import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
 
@@ -12,8 +12,8 @@ import { useRoleDetail } from '@/composables/useRoleDetail';
 const route = useRoute();
 const containerRef = ref<HTMLElement | null>(null);
 
-const routeServerId = Array.isArray(route.params.serverId) 
-  ? route.params.serverId[0] 
+const routeServerId = Array.isArray(route.params.serverId)
+  ? route.params.serverId[0]
   : route.params.serverId;
 const currentServerId = routeServerId || 'leo';
 
@@ -46,14 +46,14 @@ onMounted(() => {
 const handleWheelScroll = (event: WheelEvent) => {
   if (!containerRef.value) return;
   if (event.deltaY !== 0) {
-    event.preventDefault(); 
+    event.preventDefault();
     containerRef.value.scrollBy({ left: event.deltaY * 2.8, behavior: 'auto' });
   }
 };
 
 const handleSaveOrEdit = async () => {
   if (!role.value) return;
-  
+
   designer.toggleEdit(role, {
     title: ref(document.querySelector('.role-title')),
     subtitle: ref(document.querySelector('.role-subtitle')),
@@ -64,16 +64,16 @@ const handleSaveOrEdit = async () => {
     try {
       await nextTick();
       bLoading.value = true;
-      
+
       const payload = { key: cacheKeyStr, value: role.value };
-      const response = await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+      const response = await fetch(`/api/cache/${cacheKeyStr}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+        await fetch(`/api/cache/${cacheKeyStr}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: cacheKeyStr, data: role.value })
@@ -157,10 +157,10 @@ const handleSaveOrEdit = async () => {
         </div>
 
         <div class="gallery-safe-zone">
-          <ImageGalleryManager 
-            v-if="role.images" 
-            v-model:images="role.images" 
-            :isEditing="designer.isEditing.value" 
+          <ImageGalleryManager
+            v-if="role.images"
+            v-model:images="role.images"
+            :isEditing="designer.isEditing.value"
             variant="collage"
             @open-lightbox="activeLightboxImage = $event"
             @add-image="handleAddImage"
@@ -175,7 +175,7 @@ const handleSaveOrEdit = async () => {
   <div v-else-if="!bLoading">
     <NotFound />
   </div>
-  
+
   <div v-else class="loader-placeholder-fullscreen">
     Cargando Datos de Servidor...
   </div>
@@ -195,35 +195,35 @@ const handleSaveOrEdit = async () => {
    INTERFAZ LIGHTBOX Y GENERALES
    ========================================================================== */
 .image-lightbox-modal {
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100vw; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
-  background: rgba(4, 10, 15, 0.96); 
+  background: rgba(4, 10, 15, 0.96);
   backdrop-filter: blur(10px);
-  z-index: 99999; 
-  display: flex; 
-  align-items: center; 
+  z-index: 99999;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 .lightbox-content { max-width: 90%; max-height: 85%; display: flex; align-items: center; justify-content: center; }
-.lightbox-full-image { 
-  max-width: 100%; 
-  max-height: 100vh; 
-  object-fit: contain; 
-  border-radius: 4px; 
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); 
+.lightbox-full-image {
+  max-width: 100%;
+  max-height: 100vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
 }
 .lightbox-close-btn {
-  position: absolute; 
-  top: 30px; 
-  right: 40px; 
-  background: none; 
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  background: none;
   border: none;
-  color: #fff; 
-  font-size: 2.5rem; 
-  cursor: pointer; 
+  color: #fff;
+  font-size: 2.5rem;
+  cursor: pointer;
   transition: color 0.2s;
 }
 .lightbox-close-btn:hover { color: var(--color-accent); }
@@ -231,189 +231,189 @@ const handleSaveOrEdit = async () => {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 .designer-trigger {
-  position: fixed; 
-  top: 24px; 
-  right: 24px; 
+  position: fixed;
+  top: 24px;
+  right: 24px;
   z-index: 10000;
-  background: rgba(236, 175, 68, 0.12); 
+  background: rgba(236, 175, 68, 0.12);
   color: var(--color-accent);
-  border: 1px solid var(--color-accent); 
+  border: 1px solid var(--color-accent);
   padding: 10px 20px;
-  border-radius: 8px; 
-  cursor: pointer; 
+  border-radius: 8px;
+  cursor: pointer;
   font-weight: 600;
-  backdrop-filter: blur(8px); 
+  backdrop-filter: blur(8px);
   transition: all 0.2s;
 }
 .designer-trigger:hover { background: var(--color-accent); color: #111; }
 
 .editable-container {
-  border: 1px dashed var(--color-accent); 
-  outline: none; 
+  border: 1px dashed var(--color-accent);
+  outline: none;
   padding: 6px 12px;
-  border-radius: 8px; 
-  background: rgba(255, 255, 255, 0.02); 
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
   text-align: left;
 }
 
 .detail-page-panoramic {
-  width: 100vw; 
+  width: 100vw;
   height: 100vh;
   background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-primary) 100%), var(--color-primary);
-  overflow-y: hidden; 
-  overflow-x: auto; 
-  display: flex; 
-  align-items: center; 
+  overflow-y: hidden;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
   box-sizing: border-box;
 }
-.panoramic-track { 
-  display: flex; 
-  flex-direction: row; 
-  align-items: center; 
-  height: 100%; 
+.panoramic-track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
   width: 100%;
   padding-right: 80px; }
 .content-container-original {
-  display: flex; 
-  flex-direction: row; 
-  width: 1200px; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 80px; 
-  flex-shrink: 0; 
+  display: flex;
+  flex-direction: row;
+  width: 1200px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 80px;
+  flex-shrink: 0;
   margin-left: calc(50vw - 600px);
 }
 .detail-page-panoramic.is-centered .content-container-original { margin-left: auto; margin-right: auto; }
 
 /* POLAROID CARD */
-.postal-wrapper { 
-  flex-shrink: 0; 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+.postal-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .postal-card {
-  background-color: #fff; 
-  padding: 16px 16px 45px 16px; 
+  background-color: #fff;
+  padding: 16px 16px 45px 16px;
   box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-  border-radius: 4px; 
-  width: 450px; 
-  box-sizing: border-box; 
+  border-radius: 4px;
+  width: 450px;
+  box-sizing: border-box;
   transform: rotate(-3.5deg);
 }
-.image-viewport { 
-  position: relative; 
-  width: 100%; 
-  aspect-ratio: 1/1; 
-  background-color: var(--color-primary); 
+.image-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  background-color: var(--color-primary);
   overflow: hidden; }
-.postal-image { 
-  width: 100%; 
-  height: 100%; 
-  object-fit: contain; 
-  display: block; 
-  border: 1px solid #ededed; 
+.postal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border: 1px solid #ededed;
 }
-.postal-footer { 
-  margin-top: 20px; 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
+.postal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.postal-brand { 
-  font-family: 'Impact', 'Arial Black', 
-  sans-serif; font-size: 1.3rem; 
-  color: #c4c4c4; 
-  letter-spacing: 1.5px; 
+.postal-brand {
+  font-family: 'Impact', 'Arial Black',
+  sans-serif; font-size: 1.3rem;
+  color: #c4c4c4;
+  letter-spacing: 1.5px;
 }
 
 /* INFO WRAPPER */
-.info-wrapper { 
-  flex-shrink: 0; 
-  width: 540px; 
-  color: var(--color-light); 
+.info-wrapper {
+  flex-shrink: 0;
+  width: 540px;
+  color: var(--color-light);
 }
-.role-title { 
-  font-size: 4.2rem; 
-  font-weight: 900; 
-  line-height: 1; 
-  color: var(--color-accent); 
-  text-transform: uppercase; 
+.role-title {
+  font-size: 4.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--color-accent);
+  text-transform: uppercase;
   margin-bottom: 0;
 }
-.role-subtitle { 
-  font-size: 1.4rem; 
-  font-weight: 700; 
-  margin: 12px 0 28px 0; 
-  color: var(--color-secondary); 
-  text-transform: uppercase; 
+.role-subtitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 12px 0 28px 0;
+  color: var(--color-secondary);
+  text-transform: uppercase;
 }
-.role-description { 
-  font-size: 1.1rem; 
-  line-height: 1.75; 
-  color: var(--color-light); 
-  margin-bottom: 35px; 
+.role-description {
+  font-size: 1.1rem;
+  line-height: 1.75;
+  color: var(--color-light);
+  margin-bottom: 35px;
 }
 
 /* BOTONES */
-.action-buttons-group { 
-  display: flex; 
-  gap: 16px; 
+.action-buttons-group {
+  display: flex;
+  gap: 16px;
 }
 .explore-button {
-  display: inline-flex; 
-  align-items: center; 
-  justify-content: center; 
-  height: 50px; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
   padding: 0 32px;
-  font-size: 0.95rem; 
-  font-weight: 800; 
-  text-transform: uppercase; 
-  border-radius: 4px; 
-  background-color: var(--color-accent); 
-  color: var(--color-primary); 
-  border: none; 
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border: none;
   cursor: pointer;
 }
 .discord-button {
-  display: inline-flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 10px; 
-  height: 50px; 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 50px;
   padding: 0 32px;
-  font-size: 0.95rem; 
-  font-weight: 800; 
-  text-transform: uppercase; 
-  border-radius: 4px; 
-  text-decoration: none; 
-  background-color: #5865F2; 
-  color: #fff; 
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 4px;
+  text-decoration: none;
+  background-color: #5865F2;
+  color: #fff;
   border: none;
 }
 .back-button {
-  position: absolute; 
-  top: 40px; 
-  left: 40px; 
-  display: inline-flex; 
-  align-items: center; 
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  display: inline-flex;
+  align-items: center;
   gap: 10px;
-  background-color: var(--color-light); 
-  color: var(--color-primary); 
-  padding: 12px 24px; 
-  border-radius: 30px; 
-  font-weight: 700; 
-  text-decoration: none; 
+  background-color: var(--color-light);
+  color: var(--color-primary);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  text-decoration: none;
   z-index: 100;
 }
 
 .loader-placeholder-fullscreen {
-  height: 100vh; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  color: var(--color-accent); 
-  font-weight: bold; 
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-weight: bold;
   background-color: var(--color-primary);
 }
 
@@ -430,14 +430,14 @@ const handleSaveOrEdit = async () => {
 .gallery-safe-zone :deep(ul) {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-  grid-auto-rows: 240px !important; 
-  grid-auto-flow: dense !important; 
+  grid-auto-rows: 240px !important;
+  grid-auto-flow: dense !important;
   gap: 16px !important;
   padding: 0 !important;
   margin: 0 !important;
   width: 100% !important;
   height: auto !important;
-  min-width: 600px; 
+  min-width: 600px;
 }
 
 /* Limpieza para evitar traslapes en grid */
@@ -474,7 +474,7 @@ const handleSaveOrEdit = async () => {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important; 
+  object-fit: cover !important;
   object-position: center !important;
   transform: none !important;
   transition: transform 0.3s ease, filter 0.3s ease !important;
@@ -489,61 +489,61 @@ const handleSaveOrEdit = async () => {
 
 @media (max-width: 1024px) {
   .detail-page-panoramic {
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    height: auto; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
     min-height: 100vh;
-    display: block; 
+    display: block;
     padding-bottom: 60px;
   }
   .panoramic-track {
-    flex-direction: column; 
-    height: auto; 
-    padding: 100px 20px 40px 20px !important; 
-    gap: 40px; 
+    flex-direction: column;
+    height: auto;
+    padding: 100px 20px 40px 20px !important;
+    gap: 40px;
   }
   .content-container-original {
-    flex-direction: column; 
-    width: 100%; 
-    text-align: center; 
-    margin-left: 0 !important; 
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    margin-left: 0 !important;
     gap: 30px;
   }
-  .postal-card { 
-    width: 100%; 
-    max-width: 300px; 
-    padding: 12px 12px 30px 12px; 
-    margin: 0 auto; 
+  .postal-card {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 12px 30px 12px;
+    margin: 0 auto;
   }
-  .info-wrapper { 
-    width: 100%; 
-    margin-bottom: 20px; 
+  .info-wrapper {
+    width: 100%;
+    margin-bottom: 20px;
   }
-  
-  .role-title { 
-    font-size: 2.8rem; 
+
+  .role-title {
+    font-size: 2.8rem;
   }
-  .role-subtitle { 
-    font-size: 1.15rem; 
-    margin-bottom: 20px; 
+  .role-subtitle {
+    font-size: 1.15rem;
+    margin-bottom: 20px;
   }
-  .role-description { 
-    font-size: 1rem; 
-    margin-bottom: 25px; 
+  .role-description {
+    font-size: 1rem;
+    margin-bottom: 25px;
   }
-  
-  .action-buttons-group { 
-    flex-direction: column; 
-    gap: 12px; 
+
+  .action-buttons-group {
+    flex-direction: column;
+    gap: 12px;
   }
-  .explore-button, .discord-button { 
-    width: 100%; 
-    height: 55px; 
+  .explore-button, .discord-button {
+    width: 100%;
+    height: 55px;
   }
-  .back-button { 
-    position: absolute; 
-    top: 20px; 
-    left: 20px; 
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
   }
 
   .gallery-safe-zone {
