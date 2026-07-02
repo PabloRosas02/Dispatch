@@ -26,9 +26,10 @@ RUN addgroup -g 1001 -S nodejs && \
 
 COPY --from=backend-build /app/node_modules ./node_modules
 COPY --from=backend-build /app/dist ./dist
+COPY --from=backend-build /app/db ./db
 
 # Crear usuario no root
-RUN chown -R nodejs:nodejs /app
+RUN chown -R nodejs:nodejs /app /app/db /app/dist
 
 USER nodejs
 

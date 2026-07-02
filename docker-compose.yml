@@ -75,7 +75,7 @@ services:
     container_name: backend
     restart: unless-stopped
     volumes:
-      - ./database.json:/app/database.json:rw
+      - backend_db:/app/db
     networks:
       - internal-nw
 
@@ -96,6 +96,8 @@ services:
 
 volumes:
   nginx_cache:
+    driver: local
+  backend_db:
     driver: local
 
 networks:
