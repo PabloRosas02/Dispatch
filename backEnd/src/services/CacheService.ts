@@ -7,7 +7,7 @@ export class CacheService {
   private servers: Map<string, RPServer>;
 
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbPath = '/app/database.json';
+  private dbPath = path.join(process.cwd(), 'database.json'); //private dbPath = '/app/database.json'; Docker
 
   // --- VALORES DE FÁBRICA / ORIGINALES (DISEÑO Y TEXTOS SINCRO-DEFAULT) ---
   private readonly factoryCacheDefaults: Record<string, any> = {
