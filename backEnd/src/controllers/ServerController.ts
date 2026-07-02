@@ -8,9 +8,14 @@ export class ServerController extends BaseController {
   public getAll = (req: Request, res: Response): void => {
     try {
       const servers = cacheService.getAllServers();
-      this.sendSuccess(res, servers, 'Lista de servidores recuperada.');
+
+      if (!servers || servers.length === 0) {
+        return this.sendError(res, "No hay servidores registrados", 404);
+      }
+
+      this.sendSuccess(res, servers); // 200 por defecto
     } catch (error: any) {
-      this.sendError(res, 'Error al obtener los servidores', 500, error.message);
+      this.sendError(res, error.message || "Error al obtener los servidores", 500);
     }
   };
 
@@ -18,15 +23,18 @@ export class ServerController extends BaseController {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        return this.sendError(res, "El parámetro 'id' es obligatorio", 400);
+      }
+
       if (!cacheService.hasServer(id)) {
-        this.sendError(res, `El servidor con ID '${id}' no existe en la caché`, 404);
-        return;
+        return this.sendError(res, `El servidor con ID '${id}' no existe`, 404);
       }
 
       const server = cacheService.getServer(id);
-      this.sendSuccess(res, server, `Servidor '${id}' recuperado.`);
+      this.sendSuccess(res, server); // 200 por defecto
     } catch (error: any) {
-      this.sendError(res, 'Error al recuperar el servidor', 500, error.message);
+      this.sendError(res, error.message || "Error al recuperar el servidor", 500);
     }
   };
 
@@ -34,15 +42,22 @@ export class ServerController extends BaseController {
     try {
       const serverData = req.body as RPServer;
 
-      if (!serverData.id || !serverData.title) {
-        this.sendError(res, "Los campos 'id' y 'title' son obligatorios para registrar el servidor", 400);
-        return;
+      if (!serverData || typeof serverData !== "object") {
+        return this.sendError(res, "El cuerpo de la petición debe contener un objeto válido", 400);
+      }
+
+      if (!serverData.id || typeof serverData.id !== "string") {
+        return this.sendError(res, "El campo 'id' es obligatorio y debe ser un string", 400);
+      }
+
+      if (!serverData.title || typeof serverData.title !== "string") {
+        return this.sendError(res, "El campo 'title' es obligatorio y debe ser un string", 400);
       }
 
       cacheService.setServer(serverData.id, serverData);
-      this.sendSuccess(res, serverData, `Servidor '${serverData.title}' guardado con éxito en la caché.`, 201);
+      this.sendSuccess(res, serverData, 201); // Created
     } catch (error: any) {
-      this.sendError(res, 'Error al procesar el servidor', 500, error.message);
+      this.sendError(res, error.message || "Error al procesar el servidor", 500);
     }
   };
 
@@ -50,15 +65,18 @@ export class ServerController extends BaseController {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        return this.sendError(res, "El parámetro 'id' es obligatorio", 400);
+      }
+
       if (!cacheService.hasServer(id)) {
-        this.sendError(res, `No se encontró el servidor con ID '${id}'`, 404);
-        return;
+        return this.sendError(res, `No se encontró el servidor con ID '${id}'`, 404);
       }
 
       cacheService.deleteServer(id);
-      this.sendSuccess(res, null, `Servidor con ID '${id}' eliminado correctamente.`);
+      res.status(204).send(); // No Content
     } catch (error: any) {
-      this.sendError(res, 'Error al eliminar el servidor', 500, error.message);
+      this.sendError(res, error.message || "Error al eliminar el servidor", 500);
     }
   };
 }

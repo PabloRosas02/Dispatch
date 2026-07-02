@@ -7,7 +7,8 @@ export class CacheService {
   private servers: Map<string, RPServer>;
 
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbPath = '/app/database.json';
+  private dbDir = path.resolve("/app", "db");
+  private dbPath = path.join(this.dbDir, "database.json");
 
   // --- VALORES DE FÁBRICA / ORIGINALES (DISEÑO Y TEXTOS SINCRO-DEFAULT) ---
   private readonly factoryCacheDefaults: Record<string, any> = {
@@ -58,17 +59,18 @@ export class CacheService {
   }
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
-  private saveToDisk(): void {
+  private safeSaveToDisk(): void {
     try {
       const dataToSave = {
         cache: Object.fromEntries(this.cache),
         servers: Array.from(this.servers.values())
       };
-      // Guarda en formato JSON formateado con 2 espacios para que sea legible
-      fs.writeFileSync(this.dbPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
-      console.log('[CacheService] Datos persistidos en disco correctamente.');
+      const tmpPath = this.dbPath + ".tmp";
+      fs.writeFileSync(tmpPath, JSON.stringify(dataToSave, null, 2), "utf-8");
+      fs.renameSync(tmpPath, this.dbPath);
     } catch (error) {
-      console.error('[CacheService] Error al guardar en disco:', error);
+      console.error("[CacheService] Error al guardar en disco:", error);
+      throw error; // Propaga para que el controlador pueda devolver 500
     }
   }
 
@@ -115,7 +117,7 @@ export class CacheService {
     });
 
     // Escribir inmediatamente en el archivo físico
-    this.saveToDisk();
+    this.safeSaveToDisk();
   }
 
   // --- MÉTODOS PARA SERVIDORES RP ---
@@ -125,7 +127,7 @@ export class CacheService {
 
   public setServer(id: string, server: RPServer): void {
     this.servers.set(id, server);
-    this.saveToDisk(); // Sincroniza al insertar o actualizar
+    this.safeSaveToDisk(); // Sincroniza al insertar o actualizar
   }
 
   public hasServer(id: string): boolean {
@@ -134,7 +136,7 @@ export class CacheService {
 
   public deleteServer(id: string): boolean {
     const deleted = this.servers.delete(id);
-    if (deleted) this.saveToDisk(); // Sincroniza si la eliminación fue exitosa
+    if (deleted) this.safeSaveToDisk(); // Sincroniza si la eliminación fue exitosa
     return deleted;
   }
 
@@ -148,8 +150,15 @@ export class CacheService {
   }
 
   public set(key: string, value: any): void {
+    if (!key || typeof key !== "string") {
+      throw new Error("La clave debe ser un string válido");
+    }
+    if (value === undefined || value === null) {
+      throw new Error("El valor no puede ser nulo o indefinido");
+    }
+
     this.cache.set(key, value);
-    this.saveToDisk(); // Sincroniza al cambiar la bienvenida u otros strings
+    this.safeSaveToDisk();
   }
 
   public has(key: string): boolean {
@@ -158,7 +167,7 @@ export class CacheService {
 
   public delete(key: string): boolean {
     const deleted = this.cache.delete(key);
-    if (deleted) this.saveToDisk(); // Sincroniza si se borra una llave
+    if (deleted) this.safeSaveToDisk(); // Sincroniza si se borra una llave
     return deleted;
   }
 
@@ -169,7 +178,7 @@ export class CacheService {
   public clearAll(): void {
     this.cache.clear();
     this.servers.clear();
-    this.saveToDisk();
+    this.safeSaveToDisk();
   }
 }
 
