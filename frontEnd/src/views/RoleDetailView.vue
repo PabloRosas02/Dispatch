@@ -32,12 +32,6 @@ const cacheKeyStr = `server_page_config_${currentServerId}`;
 const designer = useDesigner({ cacheKey: cacheKeyStr });
 const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
 
-const isCenteredLayout = computed(() => {
-  if (!role.value || !role.value.images) return true;
-  if (designer.isEditing.value) return false;
-  return role.value.images.length <= 1;
-});
-
 // Carga Inicial Controlada
 onMounted(() => {
   fetchRoleData();
@@ -107,7 +101,6 @@ const handleSaveOrEdit = async () => {
     <main 
       ref="containerRef"
       class="detail-page-panoramic" 
-      :class="{ 'is-centered': isCenteredLayout }"
       :style="{ '--bg-gradient': role.color }"
       @wheel="handleWheelScroll"
     >
@@ -272,7 +265,8 @@ const handleSaveOrEdit = async () => {
   align-items: center; 
   height: 100%; 
   width: 100%;
-  padding-right: 80px; }
+  padding-right: 80px; 
+}
 .content-container-original {
   display: flex; 
   flex-direction: row; 
@@ -281,9 +275,8 @@ const handleSaveOrEdit = async () => {
   justify-content: space-between; 
   gap: 80px; 
   flex-shrink: 0; 
-  margin-left: calc(50vw - 600px);
+  margin-left: calc(50vw - 600px); /* Mantiene la columna fija exactamente donde quieres */
 }
-.detail-page-panoramic.is-centered .content-container-original { margin-left: auto; margin-right: auto; }
 
 /* POLAROID CARD */
 .postal-wrapper { 
@@ -306,7 +299,8 @@ const handleSaveOrEdit = async () => {
   width: 100%; 
   aspect-ratio: 1/1; 
   background-color: var(--color-primary); 
-  overflow: hidden; }
+  overflow: hidden; 
+}
 .postal-image { 
   width: 100%; 
   height: 100%; 
@@ -321,8 +315,8 @@ const handleSaveOrEdit = async () => {
   align-items: center; 
 }
 .postal-brand { 
-  font-family: 'Impact', 'Arial Black', 
-  sans-serif; font-size: 1.3rem; 
+  font-family: 'Impact', 'Arial Black', sans-serif; 
+  font-size: 1.3rem; 
   color: #c4c4c4; 
   letter-spacing: 1.5px; 
 }
@@ -577,24 +571,24 @@ const handleSaveOrEdit = async () => {
   .gallery-safe-zone :deep(li),
   .gallery-safe-zone :deep(.gallery-item) {
     display: block !important;
-    grid-row: span 1 !important; /* Anula el span vertical de escritorio */
-    grid-column: span 1 !important; /* Anula el span horizontal de escritorio */
+    grid-row: span 1 !important; 
+    grid-column: span 1 !important; 
     width: 100% !important;
     height: auto !important;
-    aspect-ratio: 1 / 1 !important; /* Cajas siempre cuadradas matemáticamente */
+    aspect-ratio: 1 / 1 !important; 
     margin: 0 !important;
     padding: 0 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    overflow: hidden !important; /* LA CLAVE: Corta lo que sobre físicamente */
+    overflow: hidden !important; 
     border-radius: 12px !important;
   }
 
   .gallery-safe-zone :deep(li:nth-child(3n)),
   .gallery-safe-zone :deep(.gallery-item:nth-child(3n)) {
     grid-column: span 2 !important;
-    aspect-ratio: 2 / 1 !important; /* Rectángulo horizontal (mitad de alto que ancho) */
+    aspect-ratio: 2 / 1 !important; 
   }
   .gallery-safe-zone :deep(li div),
   .gallery-safe-zone :deep(.gallery-item div),
@@ -602,15 +596,14 @@ const handleSaveOrEdit = async () => {
     display: contents !important;
   }
 
-  /* wLa imagen cubre su celda sin deformarse */
   .gallery-safe-zone :deep(img) {
     display: block !important;
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    object-fit: cover !important; /* Recorta la imagen desde el centro */
-    border-radius: 0 !important; /* El radio ya lo tiene el padre */
+    object-fit: cover !important; 
+    border-radius: 0 !important; 
   }
 }
 </style>
