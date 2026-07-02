@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 // Componentes
@@ -13,6 +13,7 @@ import type { NewsArticle } from '@/types/serverTypes';
 
 const route = useRoute();
 const CACHE_KEY = 'news_page_general_config';
+const LOCAL_STORAGE_KEY = `backup_cache_${CACHE_KEY}`;
 
 // Instanciamos la lógica aislada
 const {
@@ -43,10 +44,40 @@ const handleArticleSelection = (item: NewsArticle) => {
   }
 };
 
-// Carga inicial controlada por la guardia del composable
+// CARGA INICIAL: ¡Solo hace fetch a la API una sola vez al inicio!
 onMounted(() => {
-  fetchNews();
+  if (!newsList.value || newsList.value.length === 0) {
+    const localBackup = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (localBackup) {
+      const parsed = JSON.parse(localBackup);
+      if (parsed && parsed.news) {
+        newsList.value = parsed.news;
+        bLoading.value = false;
+        return; // Evita el fetch si ya tenemos datos locales guardados
+      }
+    }
+    // Si no hay RAM ni LocalStorage, hace la petición única al servidor
+    fetchNews();
+  }
 });
+
+// RESPALDO Y AUTO-SELECCIÓN SEGURA PARA TYPESCRIPT
+watch(
+  () => newsList.value,
+  (newVal) => {
+    if (newVal && newVal.length > 0) {
+      // Guardamos en el disco local para evitar futuras peticiones de red
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ news: newVal }));
+
+      // Extraemos el primer artículo de forma segura para complacer a TypeScript
+      const firstArticle = newVal[0];
+      if (firstArticle && !currentArticle.value) {
+        selectArticleFromPage(firstArticle);
+      }
+    }
+  },
+  { immediate: true }
+);
 
 const handleSaveOrEdit = async () => {
   if (!currentArticle.value) return;
@@ -76,6 +107,9 @@ const handleSaveOrEdit = async () => {
           body: JSON.stringify({ id: CACHE_KEY, data: { news: newsList.value } })
         });
       }
+      
+      // Actualizar el respaldo local tras un guardado exitoso
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ news: newsList.value }));
     } catch (error) {
       console.error('[NewsView.vue] Error crítico al guardar:', error);
     } finally {
@@ -99,7 +133,7 @@ const handleInitializeFirstArticle = async () => {
     :onSave="handleSaveOrEdit" 
   />
 
-  <div class="news-panoramic-layout" v-if="!bLoading">
+  <div class="news-panoramic-layout">
     
     <header class="news-view-header">
       <div class="header-titles">
@@ -127,204 +161,206 @@ const handleInitializeFirstArticle = async () => {
       </div>
     </header>
 
-    <div v-if="newsList.length === 0" class="empty-news-state">
-      <div class="empty-card">
-        <p class="empty-msg">No hay comunicados o boletines publicados en este momento.</p>
-        <span class="empty-sub">Vuelve más tarde para leer las últimas novedades.</span>
-      </div>
+    <div class="loader-placeholder-inline" v-if="bLoading && newsList.length === 0">
+      <span>Sincronizando Boletines...</span>
     </div>
 
-    <div 
-      v-else 
-      class="news-grid-container"
-      :class="{ 'sidebar-collapsed': !isSidebarOpen }"
-    >
-      <div class="sidebar-overlay" @click="toggleSidebar"></div>
+    <template v-else>
+      <div v-if="newsList.length === 0" class="empty-news-state">
+        <div class="empty-card">
+          <p class="empty-msg">No hay comunicados o boletines publicados en este momento.</p>
+          <span class="empty-sub">Vuelve más tarde para leer las últimas novedades.</span>
+        </div>
+      </div>
 
-      <button 
-        v-if="newsList.length > 0" 
-        class="sidebar-toggle-arrow" 
-        :class="{ 'collapsed': !isSidebarOpen }"
-        @click="toggleSidebar"
-        title="Historial de boletines"
+      <div 
+        v-else 
+        class="news-grid-container"
+        :class="{ 'sidebar-collapsed': !isSidebarOpen }"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="arrow-svg">
-          <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
-        </svg>
-      </button>
+        <div class="sidebar-overlay" @click="toggleSidebar"></div>
 
-      <aside class="news-sidebar">
-        <h3 class="sidebar-heading">Historial de Boletines</h3>
-        
-        <div class="sidebar-search-container">
-          <input 
-            type="text" 
-            v-model="searchQuery" 
-            placeholder="Buscar por nombre, fecha o autor..." 
-            class="sidebar-search-input"
-          />
-          <span v-if="searchQuery" class="clear-search-icon" @click="searchQuery = ''">✕</span>
-        </div>
+        <button 
+          v-if="newsList.length > 0" 
+          class="sidebar-toggle-arrow" 
+          :class="{ 'collapsed': !isSidebarOpen }"
+          @click="toggleSidebar"
+          title="Historial de boletines"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="arrow-svg">
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+          </svg>
+        </button>
 
-        <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="sidebar-crud-zone">
-          <button class="btn-crud add" @click="createNewArticleTemplate">➕ Nueva</button>
-          <button class="btn-crud delete" @click="deleteCurrentArticle">🗑️ Eliminar</button>
-        </div>
+        <aside class="news-sidebar">
+          <h3 class="sidebar-heading">Historial de Boletines</h3>
+          
+          <div class="sidebar-search-container">
+            <input 
+              type="text" 
+              v-model="searchQuery" 
+              placeholder="Buscar por nombre, fecha o autor..." 
+              class="sidebar-search-input"
+            />
+            <span v-if="searchQuery" class="clear-search-icon" @click="searchQuery = ''">✕</span>
+          </div>
 
-        <div class="sidebar-track">
-          <div 
-            v-for="item in paginatedNewsList" 
-            :key="item.id"
-            class="sidebar-card"
-            :class="{ 'active': currentArticle && item.id === currentArticle.id }"
-            @click="handleArticleSelection(item)"
-          >
-            <span class="card-tag">{{ item.category }}</span>
-            <h4 class="card-title" v-html="item.title"></h4>
-            <div class="card-footer-info">
-              <span class="card-date">{{ item.date }}</span>
-              <span class="card-author">✍️ {{ item.author }}</span>
+          <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="sidebar-crud-zone">
+            <button class="btn-crud add" @click="createNewArticleTemplate">➕ Nueva</button>
+            <button class="btn-crud delete" @click="deleteCurrentArticle">🗑️ Eliminar</button>
+          </div>
+
+          <div class="sidebar-track">
+            <div 
+              v-for="item in paginatedNewsList" 
+              :key="item.id"
+              class="sidebar-card"
+              :class="{ 'active': currentArticle && item.id === currentArticle.id }"
+              @click="handleArticleSelection(item)"
+            >
+              <span class="card-tag">{{ item.category }}</span>
+              <h4 class="card-title" v-html="item.title"></h4>
+              <div class="card-footer-info">
+                <span class="card-date">{{ item.date }}</span>
+                <span class="card-author">✍️ {{ item.author }}</span>
+              </div>
+            </div>
+
+            <div v-if="paginatedNewsList.length === 0" class="no-search-results">
+              No se encontraron boletines que coincidan.
             </div>
           </div>
 
-          <div v-if="paginatedNewsList.length === 0" class="no-search-results">
-            No se encontraron boletines que coincidan.
+          <div v-if="totalPages > 1" class="sidebar-pagination">
+            <button 
+              class="pag-btn" 
+              :disabled="currentPage === 1" 
+              @click="changePage(currentPage - 1)"
+              title="Anterior"
+            >◀</button>
+            
+            <div class="pag-numeric-indicator">
+              <span class="current-indicator">{{ currentPage }}</span> 
+              <span class="divider">/</span> 
+              <span class="total-indicator">{{ totalPages }}</span>
+            </div>
+
+            <button 
+              class="pag-btn" 
+              :disabled="currentPage === totalPages" 
+              @click="changePage(currentPage + 1)"
+              title="Siguiente"
+            >▶</button>
           </div>
-        </div>
+        </aside>
 
-        <div v-if="totalPages > 1" class="sidebar-pagination">
-          <button 
-            class="pag-btn" 
-            :disabled="currentPage === 1" 
-            @click="changePage(currentPage - 1)"
-            title="Anterior"
-          >◀</button>
-          
-          <div class="pag-numeric-indicator">
-            <span class="current-indicator">{{ currentPage }}</span> 
-            <span class="divider">/</span> 
-            <span class="total-indicator">{{ totalPages }}</span>
-          </div>
-
-          <button 
-            class="pag-btn" 
-            :disabled="currentPage === totalPages" 
-            @click="changePage(currentPage + 1)"
-            title="Siguiente"
-          >▶</button>
-        </div>
-      </aside>
-
-      <main class="news-content-area" v-if="currentArticle">
-        <article class="newsletter-sheet">
-          
-          <div class="newsletter-meta">
-            <input 
-              v-if="isAuthorizedDesigner && designer.isEditing.value" 
-              type="text" 
-              v-model="currentArticle.category" 
-              class="inline-input-meta tag"
-            />
-            <span v-else class="meta-tag">{{ currentArticle.category }}</span>
-
-            <span class="meta-details">
-              {{ currentArticle.date }} • Por 
+        <main class="news-content-area" v-if="currentArticle">
+          <article class="newsletter-sheet">
+            
+            <div class="newsletter-meta">
               <input 
                 v-if="isAuthorizedDesigner && designer.isEditing.value" 
                 type="text" 
-                v-model="currentArticle.author" 
-                class="inline-input-meta author"
+                v-model="currentArticle.category" 
+                class="inline-input-meta tag"
               />
-              <strong v-else>{{ currentArticle.author }}</strong>
-            </span>
-          </div>
+              <span v-else class="meta-tag">{{ currentArticle.category }}</span>
 
-          <h1 
-            v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
-            class="news-title" 
-            v-html="currentArticle.title"
-          ></h1>
-          <div 
-            v-else 
-            contenteditable="true" 
-            class="news-title editable-container" 
-            @input="currentArticle.title = ($event.target as HTMLElement).innerText"
-          >
-            {{ currentArticle.title }}
-          </div>
+              <span class="meta-details">
+                {{ currentArticle.date }} • Por 
+                <input 
+                  v-if="isAuthorizedDesigner && designer.isEditing.value" 
+                  type="text" 
+                  v-model="currentArticle.author" 
+                  class="inline-input-meta author"
+                />
+                <strong v-else>{{ currentArticle.author }}</strong>
+              </span>
+            </div>
 
-          <h2 
-            v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
-            class="news-subtitle" 
-            v-html="currentArticle.subtitle"
-          ></h2>
-          <div 
-            v-else 
-            contenteditable="true" 
-            class="news-subtitle editable-container" 
-            @input="currentArticle.subtitle = ($event.target as HTMLElement).innerText"
-          >
-            {{ currentArticle.subtitle }}
-          </div>
+            <h1 
+              v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
+              class="news-title" 
+              v-html="currentArticle.title"
+            ></h1>
+            <div 
+              v-else 
+              contenteditable="true" 
+              class="news-title editable-container" 
+              @input="currentArticle.title = ($event.target as HTMLElement).innerText"
+            >
+              {{ currentArticle.title }}
+            </div>
 
-          <hr class="newsletter-separator" />
+            <h2 
+              v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
+              class="news-subtitle" 
+              v-html="currentArticle.subtitle"
+            ></h2>
+            <div 
+              v-else 
+              contenteditable="true" 
+              class="news-subtitle editable-container" 
+              @input="currentArticle.subtitle = ($event.target as HTMLElement).innerText"
+            >
+              {{ currentArticle.subtitle }}
+            </div>
 
-          <div class="newsletter-gallery-section">
-            <ImageGalleryManager 
-              v-if="currentArticle.images" 
-              v-model:images="currentArticle.images" 
-              :isEditing="isAuthorizedDesigner && designer.isEditing.value" 
-              variant="normal"
-              @add-image="handleAddImage"
-              @remove-image="removeImageAtIndex"
-              @open-lightbox="activeLightboxImage = $event"
-            />
-          </div>
+            <hr class="newsletter-separator" />
 
-          <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="newsletter-editor-extensions">
-            <div class="extension-input-group">
-              <label>Enlace o ID de Video (YouTube):</label>
-              <input 
-                type="text" 
-                v-model="currentArticle.videoUrl" 
-                placeholder="Ej. https://www.youtube.com/watch?v=..." 
-                class="extension-field"
+            <div class="newsletter-gallery-section">
+              <ImageGalleryManager 
+                v-if="currentArticle.images" 
+                v-model:images="currentArticle.images" 
+                :isEditing="isAuthorizedDesigner && designer.isEditing.value" 
+                variant="normal"
+                @add-image="handleAddImage"
+                @remove-image="removeImageAtIndex"
+                @open-lightbox="activeLightboxImage = $event"
               />
             </div>
-          </div>
 
-          <div v-if="embedVideoUrl" class="newsletter-video-wrapper">
-            <iframe 
-              :src="embedVideoUrl" 
-              frameborder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowfullscreen
-              class="video-frame"
-            ></iframe>
-          </div>
+            <div v-if="isAuthorizedDesigner && designer.isEditing.value" class="newsletter-editor-extensions">
+              <div class="extension-input-group">
+                <label>Enlace o ID de Video (YouTube):</label>
+                <input 
+                  type="text" 
+                  v-model="currentArticle.videoUrl" 
+                  placeholder="Ej. https://www.youtube.com/watch?v=..." 
+                  class="extension-field"
+                />
+              </div>
+            </div>
 
-          <p 
-            v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
-            class="news-content-body" 
-            v-html="currentArticle.content"
-          ></p>
-          <div 
-            v-else 
-            contenteditable="true" 
-            class="news-content-body editable-container" 
-            @input="currentArticle.content = ($event.target as HTMLElement).innerHTML"
-          >
-            {{ currentArticle.content }}
-          </div>
+            <div v-if="embedVideoUrl" class="newsletter-video-wrapper">
+              <iframe 
+                :src="embedVideoUrl" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen
+                class="video-frame"
+              ></iframe>
+            </div>
 
-        </article>
-      </main>
+            <p 
+              v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
+              class="news-content-body" 
+              v-html="currentArticle.content"
+            ></p>
+            <div 
+              v-else 
+              contenteditable="true" 
+              class="news-content-body editable-container" 
+              @input="currentArticle.content = ($event.target as HTMLElement).innerHTML"
+            >
+              {{ currentArticle.content }}
+            </div>
 
-    </div>
-  </div>
-  
-  <div class="loader-placeholder" v-else>
-    <span>Sincronizando Boletines...</span>
+          </article>
+        </main>
+      </div>
+    </template>
+
   </div>
 
   <Transition name="fade">
@@ -363,14 +399,15 @@ const handleInitializeFirstArticle = async () => {
   box-sizing: border-box;
 }
 
-.loader-placeholder {
+.loader-placeholder-inline {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: #060f16;
+  padding: 120px 20px;
   color: var(--color-accent, #ecaf44);
   font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
 }
 
 .news-view-header {
@@ -571,7 +608,7 @@ const handleInitializeFirstArticle = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 100px 20px;
+  padding: 60px 20px;
 }
 .empty-card {
   background: #0d1721;
@@ -796,13 +833,11 @@ const handleInitializeFirstArticle = async () => {
   justify-content: center;
 }
 
-/* Apagamos SOLO la rotación forzada del componente, mantenemos la interactividad */
 .newsletter-gallery-section :deep(.gallery-clean-image) {
   transform: none !important;
   filter: none !important;
 }
 
-/* Convertimos el flujo en una simple columna vertical centrada */
 .newsletter-gallery-section :deep(.extended-gallery-flow) {
   display: flex !important;
   flex-direction: column !important;
@@ -813,8 +848,6 @@ const handleInitializeFirstArticle = async () => {
   width: 100% !important;
 }
 
-/* Destruimos el "cartón" de la Polaroid.
-   TAMAÑO REDUCIDO: max-width 85% */
 .newsletter-gallery-section :deep(.postal-wrapper),
 .newsletter-gallery-section :deep(.gallery-clean-image),
 .newsletter-gallery-section :deep(.add-postal-placeholder) {
@@ -828,22 +861,20 @@ const handleInitializeFirstArticle = async () => {
   box-shadow: none !important;
 }
 
-/* Respetamos el contenedor interactivo pero le quitamos el forzado cuadrado */
 .newsletter-gallery-section :deep(.image-viewport) {
   width: 100% !important;
   height: auto !important;
   aspect-ratio: auto !important; 
   background: transparent !important;
-  border-radius: 6px !important; /* Bordes redondeados del banner */
+  border-radius: 6px !important;
   overflow: hidden !important;
-  position: relative !important; /* Mantiene viva la capa de "Expandir" y "Eliminar" */
+  position: relative !important;
 }
 
-/* La imagen abarca el contenedor reducido */
 .newsletter-gallery-section :deep(.postal-image) {
   width: 100% !important;
   height: auto !important;
-  max-height: 500px !important; /* Opcional: evita que fotos verticales se hagan enormes */
+  max-height: 500px !important;
   object-fit: cover !important;
   display: block !important;
   border: none !important;
@@ -852,7 +883,6 @@ const handleInitializeFirstArticle = async () => {
   padding: 0 !important;
 }
 
-/* Estilo para el botón de "Añadir foto" para que coincida con el nuevo diseño */
 .newsletter-gallery-section :deep(.add-image-btn-zone) {
   border: 1px dashed rgba(102, 192, 244, 0.5) !important;
   background: rgba(102, 192, 244, 0.05) !important;
@@ -943,7 +973,6 @@ const handleInitializeFirstArticle = async () => {
     font-size: 2.2rem;
   }
 
-  /* En móvil, dejamos que la imagen tome casi todo el ancho disponible */
   .newsletter-gallery-section :deep(.postal-wrapper),
   .newsletter-gallery-section :deep(.gallery-clean-image),
   .newsletter-gallery-section :deep(.add-postal-placeholder) {
