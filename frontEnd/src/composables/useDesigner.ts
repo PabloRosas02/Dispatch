@@ -7,13 +7,13 @@ export interface DesignerOptions {
 }
 
 export function useDesigner(options: DesignerOptions) {
-  const { cacheKey, apiEndpoint = 'http://localhost:3000/api/cache' } = options
+  const { cacheKey, apiEndpoint = '/api/cache' } = options
 
   // Estados del Modo Diseñador
   const isEditing = ref<boolean>(false)
   const showColorDropdown = ref<boolean>(false)
   const showAdvancedModal = ref<boolean>(false)
-  
+
   // Estados de Colores
   const activeColor = ref<string>('#ecaf44')
   const tempCustomColor = ref<string>('#ff0000')
@@ -100,7 +100,7 @@ export function useDesigner(options: DesignerOptions) {
     if (!selection || selection.rangeCount === 0) return
 
     const range = selection.getRangeAt(0)
-    if (range.collapsed) return 
+    if (range.collapsed) return
 
     const span = document.createElement('span')
     if (styleProperty === 'font-family') span.style.fontFamily = value
@@ -138,7 +138,7 @@ export function useDesigner(options: DesignerOptions) {
     }
     recentColors.value.push(selectedColor)
     if (recentColors.value.length > 8) recentColors.value.shift()
-    
+
     applyInlineStyle('color', selectedColor)
     showAdvancedModal.value = false
   }
