@@ -283,28 +283,28 @@ const handleInitializeFirstArticle = async () => {
               class="news-title" 
               v-html="currentArticle.title"
             ></h1>
+            <!-- CORRECCIÓN EN TÍTULO EDITABLE -->
             <div 
               v-else 
               contenteditable="true" 
               class="news-title editable-container" 
-              @input="currentArticle.title = ($event.target as HTMLElement).innerText"
-            >
-              {{ currentArticle.title }}
-            </div>
+              @blur="currentArticle.title = ($event.target as HTMLElement).innerHTML"
+              v-html="currentArticle.title"
+            ></div>
 
             <h2 
               v-if="!(isAuthorizedDesigner && designer.isEditing.value)" 
               class="news-subtitle" 
               v-html="currentArticle.subtitle"
             ></h2>
+            <!-- CORRECCIÓN EN SUBTÍTULO EDITABLE -->
             <div 
               v-else 
               contenteditable="true" 
               class="news-subtitle editable-container" 
-              @input="currentArticle.subtitle = ($event.target as HTMLElement).innerText"
-            >
-              {{ currentArticle.subtitle }}
-            </div>
+              @blur="currentArticle.subtitle = ($event.target as HTMLElement).innerHTML"
+              v-html="currentArticle.subtitle"
+            ></div>
 
             <hr class="newsletter-separator" />
 
@@ -351,10 +351,9 @@ const handleInitializeFirstArticle = async () => {
               v-else 
               contenteditable="true" 
               class="news-content-body editable-container" 
-              @input="currentArticle.content = ($event.target as HTMLElement).innerHTML"
-            >
-              {{ currentArticle.content }}
-            </div>
+              @blur="currentArticle.content = ($event.target as HTMLElement).innerHTML"
+              v-html="currentArticle.content"
+            ></div>
 
           </article>
         </main>
