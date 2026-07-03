@@ -57,7 +57,7 @@ export function useRoleDetail(currentServerId: string) {
 
     try {
       // Capa 2: Intentar traer los datos desde el servidor
-      const response = await fetch(`http://localhost:3000/api/cache/${targetCacheKey}`);
+      const response = await fetch(`/api/cache/${targetCacheKey}`);
       if (response.status === 404) throw new Error('Not found in cache');
 
       const result = await response.json();

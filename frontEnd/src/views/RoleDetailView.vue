@@ -60,14 +60,14 @@ const handleSaveOrEdit = async () => {
       bLoading.value = true;
       
       const payload = { key: cacheKeyStr, value: role.value };
-      const response = await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+      const response = await fetch(`/api/cache/${cacheKeyStr}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        await fetch(`http://localhost:3000/api/cache/${cacheKeyStr}`, {
+        await fetch(`/api/cache/${cacheKeyStr}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: cacheKeyStr, data: role.value })
