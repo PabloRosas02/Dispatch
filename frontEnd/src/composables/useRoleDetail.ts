@@ -71,10 +71,11 @@ export function useRoleDetail(currentServerId: string) {
           title: data.title || defaultRole.title,
           subtitle: data.subtitle || defaultRole.subtitle,
           description: data.description || defaultRole.description,
+          discordLink: data.discordLink || defaultRole.discordLink, // 🔥 CORRECCIÓN: Sincroniza el link dinámico de Discord
           images: savedImages
         };
 
-        //Guardamos una copia exacta en el almacenamiento local del navegador
+        // Guardamos una copia exacta en el almacenamiento local del navegador
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       } else {
         throw new Error('Empty data');
@@ -122,7 +123,6 @@ export function useRoleDetail(currentServerId: string) {
         if (!role.value.images) role.value.images = [];
         role.value.images.push(base64Result);
         
-        // Opcional: Actualizar el respaldo local inmediatamente al añadir la imagen
         const targetCacheKey = `server_page_config_${role.value.id}`;
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       }
@@ -135,7 +135,6 @@ export function useRoleDetail(currentServerId: string) {
     if (!role.value || !role.value.images) return;
     role.value.images.splice(index, 1);
     
-    // Opcional: Actualizar el respaldo local inmediatamente al remover la imagen
     const targetCacheKey = `server_page_config_${role.value.id}`;
     localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
   };

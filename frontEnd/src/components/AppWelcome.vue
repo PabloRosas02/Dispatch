@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router' // Importamos el hook para leer los query parameters
+import { useRoute } from 'vue-router' 
 import WelcomeCarousel from './ServerCarrousel.vue'
 import defaultLogoUrl from '/icons/Logoletras.svg'
 
@@ -13,6 +13,7 @@ interface KinsfolkPageConfig {
   welcomeDescription: string
   ctaText: string
   logoUrl: string
+  discordLink: string 
 }
 
 // Configuración inicial espejo (fallbacks locales idénticos a la fábrica)
@@ -20,7 +21,8 @@ const pageConfig = ref<KinsfolkPageConfig>({
   welcomeTitle: 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
   welcomeDescription: 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
   ctaText: 'Únete',
-  logoUrl: defaultLogoUrl
+  logoUrl: defaultLogoUrl,
+  discordLink: 'https://discord.gg/a6TSrUpwr' //Enlace por defecto inicializado
 })
 
 // Referencias de los nodos editables del DOM
@@ -37,7 +39,7 @@ const route = useRoute()
 
 // Validación de seguridad: el panel de edición sólo existirá si se incluye la llave secreta en la URL
 const isAuthorizedDesigner = computed(() => {
-  return route.query.mode === 'admin-designer' //http://localhost:5173/?mode=admin-designer
+  return route.query.mode === 'admin-designer' 
 })
 
 onMounted(async () => {
@@ -53,7 +55,8 @@ onMounted(async () => {
         welcomeTitle: data.welcomeTitle || 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
         welcomeDescription: data.welcomeDescription || 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
         ctaText: data.ctaText || 'Únete',
-        logoUrl: data.logoUrl || defaultLogoUrl
+        logoUrl: data.logoUrl || defaultLogoUrl,
+        discordLink: data.discordLink || 'https://discord.gg/a6TSrUpwr' //Rehidratación desde caché
       }
     }
   } catch (error) {
@@ -126,21 +129,42 @@ const handleSaveOrEdit = () => {
 
     <WelcomeCarousel />
 
+    <!-- 4. SECCIÓN DISCORD DINÁMICA -->
     <div class="discord-section">
+      
+      <!-- Vista en Modo Diseñador Activo -->
+      <div v-if="designer.isEditing.value" class="discord-editor-wrapper">
+        <div class="discord-button mock-disabled">
+          <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
+            <path fill="currentColor" d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.71-11A68.52,68.52,0,0,1,28,80.48c1-.76,2-1.56,3-2.37a75,75,0,0,0,65.2,0c1,.81,2,1.61,3,2.37a68.52,68.52,0,0,1-10.74,4.85,74.37,74.37,0,0,0,6.71,11,105.73,105.73,0,0,0,31-18.83C129.87,49.85,123.65,27,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
+          </svg>
+          <input v-model="pageConfig.ctaText" class="cta-inline-input" placeholder="Texto" />
+        </div>
+        
+        <!-- Caja flotante externa para cambiar la URL cómodamente -->
+        <div class="link-editor-box">
+          <label class="link-editor-label">Enlace Discord:</label>
+          <input 
+            type="text" 
+            v-model="pageConfig.discordLink" 
+            class="link-field-input" 
+            placeholder="https://discord.gg/..."
+          />
+        </div>
+      </div>
+
+      <!-- Vista Pública Normal -->
       <a
-        href="https://discord.gg/a6TSrUpwr"
+        v-else
+        :href="pageConfig.discordLink"
         target="_blank"
         rel="noopener noreferrer"
         class="discord-button"
       >
         <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
-          <path
-            fill="currentColor"
-            d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.71-11A68.52,68.52,0,0,1,28,80.48c1-.76,2-1.56,3-2.37a75,75,0,0,0,65.2,0c1,.81,2,1.61,3,2.37a68.52,68.52,0,0,1-10.74,4.85,74.37,74.37,0,0,0,6.71,11,105.73,105.73,0,0,0,31-18.83C129.87,49.85,123.65,27,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"
-          />
+          <path fill="currentColor" d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.71-11A68.52,68.52,0,0,1,28,80.48c1-.76,2-1.56,3-2.37a75,75,0,0,0,65.2,0c1,.81,2,1.61,3,2.37a68.52,68.52,0,0,1-10.74,4.85,74.37,74.37,0,0,0,6.71,11,105.73,105.73,0,0,0,31-18.83C129.87,49.85,123.65,27,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
         </svg>
-        <span v-if="!designer.isEditing.value">{{ pageConfig.ctaText }}</span>
-        <input v-else v-model="pageConfig.ctaText" class="cta-inline-input" @click.stop />
+        <span>{{ pageConfig.ctaText }}</span>
       </a>
     </div>
   </header>
@@ -232,10 +256,61 @@ const handleSaveOrEdit = () => {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  width: 80px;
+  width: 100px;
   text-align: center;
   outline: none;
 }
+
+/* 5. ESTILOS DE LA CAJA CONFIGURADORA DE ENLACES (NUEVOS) */
+.discord-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.discord-button.mock-disabled {
+  cursor: default;
+  box-shadow: none;
+}
+.discord-button.mock-disabled:hover {
+  transform: none;
+  background-color: transparent;
+  color: var(--color-accent);
+  box-shadow: 0 4px 15px rgba(236, 175, 68, 0.1);
+}
+.link-editor-box {
+  background: #0d1721;
+  border: 1px dashed rgba(236, 175, 68, 0.3);
+  padding: 10px 18px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.link-editor-label {
+  font-family: "Exo 2", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent, #ecaf44);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.link-field-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  width: 260px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.link-field-input:focus {
+  border-color: var(--color-accent, #ecaf44);
+}
+
 
 /* --- TU CSS ORIGINAL PRESERVADO SIN ALTERACIONES --- */
 .hero-container {
@@ -287,14 +362,9 @@ const handleSaveOrEdit = () => {
 .welcome-subtitle {
   color: var(--color-secondary);
   font-family: "Exo 2", sans-serif;
-  font-size: 1.25rem;
-
-  font-family: "Exo 2", sans-serif;
   font-size: 1.3rem;
   font-weight: 600;
-
   line-height: 1.6;
-
   max-width: 600px;
   margin: 16px auto 0 auto;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -307,7 +377,6 @@ const handleSaveOrEdit = () => {
 }
 
 .discord-button {
-  font-family: "Exo 2", sans-serif;
   font-family: "Exo 2", sans-serif;
   display: inline-flex;
   align-items: center;
@@ -326,14 +395,14 @@ const handleSaveOrEdit = () => {
   box-shadow: 0 4px 15px rgba(236, 175, 68, 0.1);
 }
 
-.discord-button:hover {
+.discord-button:hover:not(.mock-disabled) {
   background-color: var(--color-accent);
   color: var(--color-primary);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(236, 175, 68, 0.3);
 }
 
-.discord-button:active {
+.discord-button:active:not(.mock-disabled) {
   transform: translateY(-1px);
 }
 
