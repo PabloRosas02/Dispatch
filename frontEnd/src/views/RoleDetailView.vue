@@ -8,6 +8,7 @@ import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
 // Composables
 import { useDesigner } from '@/composables/useDesigner';
 import { useRoleDetail } from '@/composables/useRoleDetail';
+import { useServerService } from '@/services/serverService';
 
 const route = useRoute();
 const containerRef = ref<HTMLElement | null>(null);
@@ -27,6 +28,8 @@ const {
   removeImageAtIndex
 } = useRoleDetail(currentServerId);
 
+const { initBasic } = useServerService();
+
 // Lógica del Diseñador
 const cacheKeyStr = `server_page_config_${currentServerId}`;
 const designer = useDesigner({ cacheKey: cacheKeyStr });
@@ -39,7 +42,8 @@ const isCenteredLayout = computed(() => {
 });
 
 // Carga Inicial Controlada
-onMounted(() => {
+onMounted(async () => {
+  await initBasic();
   fetchRoleData();
 });
 
@@ -100,7 +104,7 @@ const handleSaveOrEdit = async () => {
     class="designer-trigger"
     @click="handleSaveOrEdit"
   >
-    📝 Modo Diseñador ({{ role.id.toUpperCase() }})
+    📝 Modo Diseñador ({{ role.basic.id.toUpperCase() }})
   </button>
 
   <div v-if="role">
@@ -108,7 +112,7 @@ const handleSaveOrEdit = async () => {
       ref="containerRef"
       class="detail-page-panoramic"
       :class="{ 'is-centered': isCenteredLayout }"
-      :style="{ '--bg-gradient': role.color }"
+        :style="{ '--bg-gradient': role.addit.color }"
       @wheel="handleWheelScroll"
     >
       <RouterLink to="/" class="back-button">
@@ -123,7 +127,7 @@ const handleSaveOrEdit = async () => {
           <div class="postal-wrapper">
             <div class="postal-card main-polaroid">
               <div class="image-viewport">
-                <img :src="role.images && role.images[0]" :alt="role.title" class="postal-image" />
+                <img :src="role.images && role.images[0]" :alt="role.basic.title" class="postal-image" />
               </div>
               <div class="postal-footer">
                 <span class="postal-brand">VISIT KINSFOLK</span>
@@ -132,21 +136,21 @@ const handleSaveOrEdit = async () => {
           </div>
 
           <div class="info-wrapper">
-            <h1 v-if="!designer.isEditing.value" class="role-title" v-html="role.title"></h1>
-            <div v-else contenteditable="true" class="role-title editable-container" v-html="role.title"></div>
+            <h1 v-if="!designer.isEditing.value" class="role-title" v-html="role.basic.title"></h1>
+            <div v-else contenteditable="true" class="role-title editable-container" v-html="role.basic.title"></div>
 
-            <h2 v-if="!designer.isEditing.value" class="role-subtitle" v-html="role.subtitle"></h2>
-            <div v-else contenteditable="true" class="role-subtitle editable-container" v-html="role.subtitle"></div>
+            <h2 v-if="!designer.isEditing.value" class="role-subtitle" v-html="role.basic.subtitle"></h2>
+            <div v-else contenteditable="true" class="role-subtitle editable-container" v-html="role.basic.subtitle"></div>
 
-            <p v-if="!designer.isEditing.value" class="role-description" v-html="role.description"></p>
-            <div v-else contenteditable="true" class="role-description editable-container" v-html="role.description"></div>
+            <p v-if="!designer.isEditing.value" class="role-description" v-html="role.addit.description"></p>
+            <div v-else contenteditable="true" class="role-description editable-container" v-html="role.addit.description"></div>
 
             <div class="action-buttons-group">
               <button class="explore-button">
-                Explora {{ role.title.replace(/<[^>]*>/g, '') }}
+                Explora {{ role.basic.title.replace(/<[^>]*>/g, '') }}
               </button>
 
-              <a v-if="role.discordLink" :href="role.discordLink" target="_blank" rel="noopener noreferrer" class="discord-button">
+              <a v-if="role.addit.discordLink" :href="role.addit.discordLink" target="_blank" rel="noopener noreferrer" class="discord-button">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" fill="currentColor" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;">
                   <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.47,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-10.93,68.6,68.6,0,0,1-10.64-5.12c.91-.67,1.81-1.37,2.65-2.1a75.22,75.22,0,0,0,72.94,0c.84.73,1.74,1.43,2.65,2.1a68.6,68.6,0,0,1-10.64,5.12,74.37,74.37,0,0,0,6.72,10.93,105.73,105.73,0,0,0,31.05-18.83C129.24,50.7,123.4,27.87,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.87,46,53.87,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.11,46,96.11,53,91,65.69,84.69,65.69Z"/>
                 </svg>

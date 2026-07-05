@@ -2,7 +2,7 @@
 <template>
   <main
     class="rules-page"
-    :style="{ '--server-color': serverData.color }"
+    :style="{ '--server-color': serverData.addit.color }"
   >
     <!-- Fondo con gradiente y efectos (sin cambios en la parte visual) -->
     <div class="bg-animation">
@@ -13,8 +13,8 @@
     </div>
 
     <div class="page-header">
-      <h1 class="server-title">Normativa {{ serverData.title }}</h1>
-      <h2 class="server-subtitle">{{ serverData.subtitle }}</h2>
+      <h1 class="server-title">Normativa {{ serverData.basic.title }}</h1>
+      <h2 class="server-subtitle">{{ serverData.basic.subtitle }}</h2>
       <div class="title-decoration">
         <span class="line"></span>
         <span class="dot"></span>
@@ -43,7 +43,7 @@
         </span>
 
         <span class="status-value">
-            {{ serverData.version }}
+            {{ serverData.ver.version }}
         </span>
 
     </div>
@@ -67,7 +67,7 @@
         </span>
 
         <span class="status-value">
-            {{ serverData.lastUpdate }}
+            {{ serverData.ver.lastUpdate }}
         </span>
 
     </div>
@@ -83,7 +83,7 @@
 
     <h3 class="sidebar-title">
       <div class="section-badge">
-        {{ serverData.sections.length }} 
+        {{ serverData.sections.length }}
       </div>
       Categorías
     </h3>
@@ -114,7 +114,7 @@
         </div>
 
     </div>
-      
+
     </button>
 
   </aside>
@@ -159,7 +159,7 @@
 
               :example="rule.example"
 
-              :serverColor="serverData.color"
+              :serverColor="serverData.addit.color"
 
           />
 

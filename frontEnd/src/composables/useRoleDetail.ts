@@ -2,10 +2,11 @@ import { ref, watch, onUnmounted } from 'vue';
 import type * as ServerType from '@/types/serverTypes';
 import { useServerService } from '@/services/serverService';
 
-export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
+export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
+  basic: Omit<ServerType.BasicInfo, 'filename'>;
   filename?: string;
   images?: string[];
-}
+};
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
 // Usamos un objeto indexado por ID de servidor.
@@ -48,7 +49,7 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
-    const targetCacheKey = `server_page_config_${defaultRole.id}`;
+    const targetCacheKey = `server_page_config_${defaultRole.basic.id}`;
     bLoading.value = true;
 
     try {
@@ -59,12 +60,19 @@ export function useRoleDetail(currentServerId: string) {
       const data = result.data ? result.data : result;
 
       if (data && Object.keys(data).length > 0) {
-        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.id)]);
+        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.basic.id)]);
         role.value = {
           ...defaultRole,
-          title: data.title || defaultRole.title,
-          subtitle: data.subtitle || defaultRole.subtitle,
-          description: data.description || defaultRole.description,
+          basic: {
+            id: data.basic.id || defaultRole.basic.id,
+            title: data.basic.title || defaultRole.basic.title,
+            subtitle: data.basic.subtitle || defaultRole.basic.subtitle,
+          },
+          addit: {
+            color: data.addit.color || defaultRole.addit.color,
+            description: data.addit.description || defaultRole.addit.description,
+            discordLink: data.addit.discordLink || defaultRole.addit.discordLink
+          },
           images: savedImages
         };
       } else {
@@ -73,7 +81,7 @@ export function useRoleDetail(currentServerId: string) {
     } catch (error) {
       // Si falla (o devuelve 404), inicializamos con los valores por defecto
       console.warn(`[useRoleDetail] No se encontraron datos cacheados para ${currentServerId}, cargando defaults.`);
-      role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.id) || ''] };
+      role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
     } finally {
       // Guardamos en la memoria global para la próxima vez
       if (role.value) fetchedServers[currentServerId] = role.value;
