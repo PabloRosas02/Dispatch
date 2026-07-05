@@ -154,7 +154,7 @@ const handleSaveOrEdit = async () => {
 
                 <input
                   type="text"
-                  v-model="role.discordLink"
+                  v-model="role.addit.discordLink"
                   class="role-link-field-input"
                   placeholder="Enlace Discord (https://discord.gg/...)"
                 />
