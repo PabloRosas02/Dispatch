@@ -20,11 +20,11 @@ onDeactivated(() => {
 })
 const router = useRouter()
 const swiperInstance = ref<SwiperClass>()
-const { getAllServers, getSvgUrl } = useServerService();
+const { getAllServers, getSvgUrl, initBasic } = useServerService();
 
 const baseCards = getAllServers();
 
-const duplicatedCards = computed(() => [...baseCards, ...baseCards])
+const duplicatedCards = computed(() => [...baseCards.value, ...baseCards.value])
 
 const onSwiper = (swiper: SwiperClass) => {
   swiperInstance.value = swiper;
@@ -34,7 +34,8 @@ const onSlideChange = (swiper: SwiperClass) => {
   localStorage.setItem('kinsfolk_last_slide', `${swiper.activeIndex}`);
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await initBasic();
   const savedIndex  = localStorage.getItem('kinsfolk_last_slide')
   if (savedIndex != null && swiperInstance.value) {
     swiperInstance.value.slideTo(parseInt(savedIndex, 10), 0)
@@ -98,13 +99,13 @@ const openRoleDetail = (roleId: string | null ) => {
     >
       <swiper-slide
         v-for="(card, index) in duplicatedCards"
-        :key="card.id + '-' + index"
-        :data-id="card.id"
+        :key="card.basic.id + '-' + index"
+        :data-id="card.basic.id"
         class="card-slide"
       >
         <img
-          :src="getSvgUrl(card.id)"
-          :alt="card.title"
+          :src="getSvgUrl(card.basic.id)"
+          :alt="card.basic.title"
           class="card-image"
         />
       </swiper-slide>

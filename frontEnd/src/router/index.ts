@@ -25,6 +25,7 @@ const router = createRouter({
         }
       ],
       meta: {
+        hideLayout: true,
         title: 'Roles'
       }
     },
@@ -75,7 +76,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('../components/NotFound.vue'),
+      component: () => import('../components/miscellaneous/NotFound.vue'),
       meta: {
         title: 'Page Not Found'
       },
