@@ -9,7 +9,6 @@ export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
 };
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
-// Usamos un objeto indexado por ID de servidor.
 const fetchedServers: Record<string, ExtendedRPServer> = {};
 
 export function useRoleDetail(currentServerId: string) {
@@ -33,7 +32,12 @@ export function useRoleDetail(currentServerId: string) {
     window.removeEventListener('keydown', handleKeyDown);
   });
 
-  // Lógica de carga única
+  /**
+   * Lógica de carga con triple capa de seguridad:
+   * 1. Memoria RAM volatil (fetchedServers)
+   * 2. Servidor Backend (API Cache / database.json)
+   * 3. Disco local del navegador (localStorage Backup)
+   */
   const fetchRoleData = async (forceRefresh = false) => {
     const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
 
@@ -42,7 +46,7 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
-    // Si ya tenemos los datos en memoria y no forzamos recarga, usamos la caché local.
+    // Capa 1: Si ya tenemos los datos en memoria y no forzamos recarga, usamos la caché local.
     if (fetchedServers[currentServerId] && !forceRefresh) {
       role.value = fetchedServers[currentServerId];
       bLoading.value = false;
@@ -53,6 +57,7 @@ export function useRoleDetail(currentServerId: string) {
     bLoading.value = true;
 
     try {
+      // Capa 2: Intentar traer los datos desde el servidor
       const response = await fetch(`/api/cache/${targetCacheKey}`);
       if (response.status === 404) throw new Error('Not found in cache');
 
@@ -75,21 +80,34 @@ export function useRoleDetail(currentServerId: string) {
           },
           images: savedImages
         };
+
+        // Guardamos una copia exacta en el almacenamiento local del navegador
+        localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       } else {
         throw new Error('Empty data');
       }
     } catch (error) {
-      // Si falla (o devuelve 404), inicializamos con los valores por defecto
-      console.warn(`[useRoleDetail] No se encontraron datos cacheados para ${currentServerId}, cargando defaults.`);
-      role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
+      console.warn(`[useRoleDetail] No se pudo conectar con el servidor para ${currentServerId}. Buscando respaldo local...`);
+
+      // Capa 3: Si el servidor falla o no responde, intentamos extraer el respaldo de localStorage
+      const localBackup = localStorage.getItem(`backup_${targetCacheKey}`);
+
+      if (localBackup) {
+        console.log(`[useRoleDetail] Respaldo local detectado y restaurado con éxito.`);
+        role.value = JSON.parse(localBackup);
+      } else {
+        // Red de seguridad final: Si tampoco hay respaldo local, cargamos los valores por defecto crudos
+        console.warn(`[useRoleDetail] Sin respaldo local disponible. Inicializando con defaults de fábrica.`);
+        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
+      }
     } finally {
-      // Guardamos en la memoria global para la próxima vez
+      // Guardamos en la memoria global para optimizar la navegación actual
       if (role.value) fetchedServers[currentServerId] = role.value;
       bLoading.value = false;
     }
   };
 
-  // Lógica de imágenes
+  // Lógica de carga de imágenes
   const handleAddImage = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0 || !role.value) return;
@@ -97,7 +115,7 @@ export function useRoleDetail(currentServerId: string) {
     const file = input.files[0];
     if (!file) return;
 
-    const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+    const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       alert(`El archivo excede el límite máximo permitido de 10 MB.`);
@@ -110,14 +128,21 @@ export function useRoleDetail(currentServerId: string) {
       if (base64Result && role.value) {
         if (!role.value.images) role.value.images = [];
         role.value.images.push(base64Result);
+
+        const targetCacheKey = `server_page_config_${role.value.basic.id}`;
+        localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       }
     };
     reader.readAsDataURL(file);
   };
 
+  // Lógica de eliminación de imágenes
   const removeImageAtIndex = (index: number) => {
     if (!role.value || !role.value.images) return;
     role.value.images.splice(index, 1);
+
+    const targetCacheKey = `server_page_config_${role.value.basic.id}`;
+    localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
   };
 
   return {
