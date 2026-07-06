@@ -18,12 +18,12 @@ export const rpServers = ref<ServerType.RPServer[]>([
 
   color: "#1b2d4a",
 
-  bannerImage: "/images/banners/leo.webp",
+  bannerImage: "/src/assets/images/leo.webp",
 
   bannerLabel: "L.E.O MANUAL",
 
   bannerDescription:
-    "Estas directrices establecen los procedimientos, responsabilidades y estándares que deben seguir todos los miembros del departamento para mantener el orden, el profesionalismo y una experiencia de rol de alta calidad.",
+    "Manual oficial del departamento policial.",
 
   version: "1.0",
 
@@ -86,7 +86,7 @@ export const rpServers = ref<ServerType.RPServer[]>([
 
   color: "#591919",
 
-  bannerImage: "/images/banners/sams.webp",
+  bannerImage: "/src/assets/images/sams.webp",
 
   bannerLabel: "S.A.M.S MANUAL",
 
@@ -154,7 +154,7 @@ export const rpServers = ref<ServerType.RPServer[]>([
 
   color: "#824316",
 
-  bannerImage: "/images/banners/safd.webp",
+  bannerImage: "/src/assets/images/safd.webp",
 
   bannerLabel: "S.A.F.D MANUAL",
 
@@ -222,7 +222,7 @@ export const rpServers = ref<ServerType.RPServer[]>([
 
   color: "#2c2d30",
 
-  bannerImage: "/images/banners/ilegales.webp",
+  bannerImage: "/src/assets/images/ilegales.webp",
 
   bannerLabel: "UNDERGROUND GUIDE",
 
@@ -290,7 +290,7 @@ export const rpServers = ref<ServerType.RPServer[]>([
 
   color: "#571c75",
 
-  bannerImage: "/images/banners/creator.webp",
+  bannerImage: "/src/assets/images/creator.webp",
 
   bannerLabel: "CONTENT CREATOR PROGRAM",
 
@@ -351,9 +351,9 @@ export function useServerService() {
     return;
   }
 
-  function getAllServers(){
-    return readonly(rpServers.value);
-  }
+function getAllServers(): ServerType.RPServer[] {
+  return rpServers.value;
+}
 
   function getServerById(id: string): ServerType.RPServer | undefined{
     return rpServers.value.find(server => server.id === id);
