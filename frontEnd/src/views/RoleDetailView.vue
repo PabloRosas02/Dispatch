@@ -38,7 +38,7 @@ const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer
 // Carga Inicial Controlada
 onMounted(async () => {
   await initBasic();
-  fetchRoleData();
+  await fetchRoleData();
 });
 
 const handleWheelScroll = (event: WheelEvent) => {
@@ -191,8 +191,9 @@ const handleSaveOrEdit = async () => {
     <NotFound />
   </div>
 
-  <div v-else class="loader-placeholder-fullscreen">
-    Cargando Datos de Servidor...
+  <div v-else class="loading-state">
+    <p>Decryption of Server Directives in progress...</p>
+    <div class="loading-spinner"></div>
   </div>
 
   <Transition name="fade">
