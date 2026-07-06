@@ -17,12 +17,6 @@ x-frontend-base: &frontend-base
 
 x-main-proxy-base: &main-proxy-base
     image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_cache:/tmp/nginx_cache
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -35,13 +29,26 @@ services:
   main-proxy:
     container_name: main-proxy
     profiles: ["prod"]
+    ports:
+      - "80:80"
     <<: *main-proxy-base
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_cache:/tmp/nginx_cache
     depends_on:
       - frontend
+
   main-proxy-dev:
     container_name: main-proxy-dev
     profiles: ["dev"]
+    ports:
+      - 8080:80
     <<: *main-proxy-base
+    volumes:
+      - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_cache_dev:/tmp/nginx_cache
     depends_on:
       - frontend-dev
 
@@ -102,6 +109,8 @@ services:
       - extenal-nw
 
 volumes:
+  nginx_cache_dev:
+    driver: local
   nginx_cache:
     driver: local
   backend_db:
