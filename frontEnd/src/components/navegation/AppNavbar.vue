@@ -3,12 +3,12 @@
       <div class="logo">
         <img :src="Logo" alt="Logo" />
       </div>
-  
+
       <!-- Botón hamburguesa -->
       <button class="hamburger" @click="toggleMenu">
         ☰
       </button>
-  
+
       <!-- Enlaces -->
       <ul class="nav-links" :class="{ open: isOpen }">
         <li>
@@ -33,6 +33,7 @@
           <router-link
             @click="isOpen = false"
             :to="{ name: 'rules-detail', params: { serverId: 'leo' } }"
+            :class="{ 'router-link-active': $route.name === 'rules-detail' }"
           >
             Normativas
           </router-link>
@@ -64,17 +65,17 @@
       </ul>
     </nav>
   </template>
-  
+
   <script lang="ts" setup>
   import { ref } from "vue";
   import Logo from "/icons/Logo.svg";
-  
+
   const isOpen = ref(false);
   const toggleMenu = () => {
     isOpen.value = !isOpen.value;
   };
   </script>
-  
+
   <style scoped>
  .navbar {
   position: relative;
@@ -89,7 +90,7 @@
 
   padding: 10px 20px;
   z-index: 9999;
-  
+
 }
 
 .logo img {
@@ -241,7 +242,7 @@
     opacity: 1;
     visibility: visible;
 
-    transform: translateY(0);  
+    transform: translateY(0);
 }
 
   /* ===================== */
@@ -382,6 +383,6 @@
     background:
       rgba(236,175,68,.8);
   }
-} 
+}
 </style>
-  
+
