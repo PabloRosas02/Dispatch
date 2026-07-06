@@ -2,7 +2,7 @@
 ARG NODE_VERSION=20
 
 # BASE
-FROM node:${NODE_VERSION}-alpine AS backend-build
+FROM node:${NODE_VERSION}-slim AS backend-build
 WORKDIR /app
 COPY package*.json ./
 
@@ -14,15 +14,15 @@ COPY . .
 RUN npm run build
 
 # PRODUCTION
-FROM node:${NODE_VERSION}-alpine AS backend-production
+FROM node:${NODE_VERSION}-slim AS backend-production
 
 # Variables de entorno
 ENV NODE_ENV=production
 
 WORKDIR /app
 
-RUN addgroup -g 1001 -S nodejs && \
-  adduser -S nodejs -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/bash -m nodejs
 
 COPY --from=backend-build /app/node_modules ./node_modules
 COPY --from=backend-build /app/dist ./dist
