@@ -10,8 +10,6 @@ x-frontend-base: &frontend-base
   env_file:
     - ./.env
   restart: unless-stopped
-  depends_on:
-    - backend
   networks:
     - internal-nw
 
@@ -23,6 +21,17 @@ x-main-proxy-base: &main-proxy-base
     networks:
     - extenal-nw
     - internal-nw
+
+x-backend-base: &backend-base
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile
+      target: backend-production
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+    restart: unless-stopped
+    networks:
+      - internal-nw
 
 services:
 
@@ -38,6 +47,28 @@ services:
       - nginx_cache:/tmp/nginx_cache
     depends_on:
       - frontend
+      - backend
+
+  frontend:
+    profiles: ["prod"]
+    build:
+      <<: *frontend-base-build
+      target: production
+    container_name: page-prod
+    security_opt:
+      - no-new-privileges:true
+    <<: *frontend-base
+    depends_on:
+      - backend
+    networks:
+      - internal-nw
+
+  backend:
+    profiles: ["prod"]
+    container_name: backend
+    volumes:
+      - backend_db:/app/db
+    <<: *backend-base
 
   main-proxy-dev:
     container_name: main-proxy-dev
@@ -51,6 +82,14 @@ services:
       - nginx_cache_dev:/tmp/nginx_cache
     depends_on:
       - frontend-dev
+      - backend-dev
+
+  backend-dev:
+    profiles: ["dev"]
+    container_name: backend-dev
+    volumes:
+      - backend_db_dev:/app/db
+    <<: *backend-base
 
   frontend-dev:
     profiles: ["dev"]
@@ -64,35 +103,10 @@ services:
       - ./frontEnd:/app
       - frontend_node_modules:/app/node_modules
     <<: *frontend-base
+    depends_on:
+      - backend-dev
     networks:
       - extenal-nw
-
-  frontend:
-    profiles: ["prod"]
-    build:
-      <<: *frontend-base-build
-      target: production
-    container_name: page-prod
-    security_opt:
-      - no-new-privileges:true
-    <<: *frontend-base
-    networks:
-      - internal-nw
-
-  backend:
-    profiles: ["prod", "dev"]
-    build:
-      context: ./backEnd
-      dockerfile: Dockerfile
-      target: backend-production
-      args:
-        NODE_VERSION: ${NODE_VERSION}
-    container_name: backend
-    restart: unless-stopped
-    volumes:
-      - backend_db:/app/db
-    networks:
-      - internal-nw
 
   ngrok-tunnel:
     profiles: ["prod"]
@@ -115,6 +129,7 @@ volumes:
   nginx_cache:
     driver: local
   backend_db:
+  backend_db_dev:
   frontend_node_modules:
 
 networks:
