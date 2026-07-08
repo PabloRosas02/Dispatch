@@ -26,7 +26,7 @@ RUN groupadd -g 1001 nodejs && \
 
 COPY --from=backend-build /app/node_modules ./node_modules
 COPY --from=backend-build /app/dist ./dist
-COPY --from=backend-build /app/db ./db
+COPY ./db ./db
 
 # Crear usuario no root
 RUN chown -R nodejs:nodejs /app /app/db /app/dist
