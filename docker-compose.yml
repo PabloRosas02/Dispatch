@@ -80,6 +80,7 @@ services:
       - internal-nw
 
   backend:
+    profiles: ["prod", "dev"]
     build:
       context: ./backEnd
       dockerfile: Dockerfile
