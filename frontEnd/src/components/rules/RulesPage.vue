@@ -1,10 +1,10 @@
 <!-- src/components/rules/RulesPage.vue -->
 <template>
-  <main
+    <main
     class="rules-page"
     :style="{ '--server-color': serverData.addit.color }"
   >
-
+  <pre>{{ serverData.banner }}</pre>
     <HeroBanner
 
     :banner-image="serverData.banner.bannerImage"
@@ -92,6 +92,7 @@
 
 </div>
   </main>
+
 </template>
 
 <script setup lang="ts">
@@ -126,6 +127,7 @@ const serverService = useServerService();
 const roles = serverService.getAllServers();
 
 const selectedRole = ref(props.serverData.basic.id);
+console.log(props.serverData);
 
 </script>
 
