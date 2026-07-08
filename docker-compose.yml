@@ -80,6 +80,7 @@ services:
       - internal-nw
 
   backend:
+    profiles: ["prod", "dev"]
     build:
       context: ./backEnd
       dockerfile: Dockerfile
@@ -114,7 +115,6 @@ volumes:
   nginx_cache:
     driver: local
   backend_db:
-    driver: local
   frontend_node_modules:
 
 networks:

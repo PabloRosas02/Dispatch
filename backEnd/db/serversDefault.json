@@ -3,7 +3,7 @@
     {
       "basic": {
         "id": "leo",
-        "title": "L.E.O ROL",
+        "title": "No L.E.O ROL",
         "subtitle": "LAW ENFORCEMENT & ORDER",
         "filename": "L.e.o.svg"
       },
@@ -247,7 +247,7 @@
         "id": "civiles",
         "title": "CIVILES",
         "subtitle": "CITIZEN ECOSYSTEM & JOBS",
-        "filename": "Proyectos civiles.svg"
+        "filename": "civiles.svg"
       },
       "addit": {
          "color": "#133a2d",
