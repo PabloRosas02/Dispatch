@@ -14,7 +14,6 @@ x-frontend-base: &frontend-base
     - internal-nw
 
 x-main-proxy-base: &main-proxy-base
-    image: nginx:alpine
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -38,6 +37,10 @@ services:
   main-proxy:
     container_name: main-proxy
     profiles: ["prod"]
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile
+      target: production
     ports:
       - "80:80"
     <<: *main-proxy-base
@@ -46,22 +49,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - nginx_cache:/tmp/nginx_cache
     depends_on:
-      - frontend
       - backend
-
-  frontend:
-    profiles: ["prod"]
-    build:
-      <<: *frontend-base-build
-      target: production
-    container_name: page-prod
-    security_opt:
-      - no-new-privileges:true
-    <<: *frontend-base
-    depends_on:
-      - backend
-    networks:
-      - internal-nw
 
   backend:
     profiles: ["prod"]
@@ -73,6 +61,7 @@ services:
   main-proxy-dev:
     container_name: main-proxy-dev
     profiles: ["dev"]
+    image: nginx:alpine
     ports:
       - 8080:80
     <<: *main-proxy-base
