@@ -157,24 +157,25 @@ export function useServerService() {
     }
   }
 
-  async function initBasic() {
-    // Solo el primer componente que se monte pasará de aquí
-    if (!isInitBasic.value) {
-      fetchBasicInfo();
-    }
+async function initBasic() {
 
-    if (!isInitAddit.value) {
-      fetchAdditInfo();
-    }
-  };
-
-  async function initRules() {
-
-    if (!isInitVBS.value) {
-      fetchRuleInfo();
-    }
-
+  if (!isInitBasic.value) {
+    await fetchBasicInfo();
   }
+
+  if (!isInitAddit.value) {
+    await fetchAdditInfo();
+  }
+
+}
+
+ async function initRules() {
+
+  if (!isInitVBS.value) {
+    await fetchRuleInfo();
+  }
+
+}
   return {
     initBasic,
     initRules,

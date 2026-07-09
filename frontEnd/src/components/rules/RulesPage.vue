@@ -4,7 +4,6 @@
     class="rules-page"
     :style="{ '--server-color': serverData.addit.color }"
   >
-  <pre>{{ serverData.banner }}</pre>
     <HeroBanner
 
     :banner-image="serverData.banner.bannerImage"

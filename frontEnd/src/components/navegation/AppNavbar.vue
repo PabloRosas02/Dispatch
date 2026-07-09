@@ -32,8 +32,7 @@
         <li>
           <router-link
             @click="isOpen = false"
-            :to="{ name: 'rules-detail', params: { serverId: 'leo' } }"
-            :class="{ 'router-link-active': $route.name === 'rules-detail' }"
+            :to="{ name: 'rules-index' }"
           >
             Normativas
           </router-link>

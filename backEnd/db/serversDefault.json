@@ -1,9 +1,100 @@
 {
   "servers": [
+    
+    {
+      "basic": {
+        "id": "general",
+        "title": "NORMATIVA GENERAL",
+        "subtitle": "SERVER RULES & ROLEPLAY STANDARDS",
+        "filename": "General.svg"
+      },
+      "addit": {
+        "color": "#d8a23c",
+        "description": "Las reglas generales establecen las bases del Roleplay dentro de Kinsfolk. Todo jugador debe conocerlas y respetarlas antes de participar en cualquier actividad del servidor.",
+        "discordLink": "https://discord.gg/"
+      },
+      "banner": {
+        "bannerImage": "rules.webp",
+        "bannerLabel": "SERVER RULEBOOK",
+        "bannerDescription": "Documento oficial que reúne todas las reglas fundamentales del servidor. Su cumplimiento es obligatorio para todos los jugadores."
+      },
+      "ver": {
+        "version": "1.0",
+        "lastUpdate": "08 JUL 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Información General",
+          "rules": [
+            {
+              "title": "Respeto a la comunidad",
+              "description": "Todos los jugadores deben mantener una conducta respetuosa dentro y fuera del servidor.",
+              "example": "Insultar, acosar o discriminar a otros jugadores puede derivar en sanciones."
+            },
+            {
+              "title": "Uso del sentido común",
+              "description": "Toda situación no contemplada explícitamente en las reglas debe resolverse utilizando lógica y priorizando el buen Roleplay.",
+              "example": "Evitar aprovechar vacíos en la normativa para obtener ventajas injustas."
+            }
+          ]
+        },
+        {
+          "title": "Roleplay Básico",
+          "rules": [
+            {
+              "title": "Metagaming (MG)",
+              "description": "Está prohibido utilizar información obtenida fuera del juego para beneficiar a tu personaje.",
+              "example": "Usar información obtenida por Discord para localizar a otro jugador."
+            },
+            {
+              "title": "Powergaming (PG)",
+              "description": "No puedes realizar acciones imposibles o forzar situaciones sin permitir respuesta al otro jugador.",
+              "example": "Escribir '/me lo deja inconsciente' sin darle oportunidad de reaccionar."
+            },
+            {
+              "title": "Value of Life (VoL)",
+              "description": "Tu personaje debe valorar su vida en todo momento.",
+              "example": "Escapar corriendo mientras varias personas te apuntan con armas."
+            }
+          ]
+        },
+        {
+          "title": "Conducta del Jugador",
+          "rules": [
+            {
+              "title": "Combat Logging",
+              "description": "Está prohibido desconectarse para evitar consecuencias dentro del Roleplay.",
+              "example": "Salir del servidor durante una persecución o un arresto."
+            },
+            {
+              "title": "Bug Abuse",
+              "description": "No está permitido aprovechar errores del servidor para obtener beneficios.",
+              "example": "Duplicar objetos mediante un fallo del inventario."
+            },
+            {
+              "title": "Fail RP",
+              "description": "Todas las acciones deben mantener coherencia con el personaje y el entorno.",
+              "example": "Continuar actuando normalmente después de sufrir un accidente grave."
+            }
+          ]
+        },
+        {
+          "title": "Sanciones",
+          "rules": [
+            {
+              "title": "Reporte de infracciones",
+              "description": "Las infracciones podrán ser sancionadas según su gravedad y reincidencia.",
+              "example": "Una falta leve puede terminar en advertencia, mientras que una grave puede implicar suspensión."
+            }
+          ]
+        }
+      ]
+    },
     {
       "basic": {
         "id": "leo",
-        "title": "No L.E.O ROL",
+        "title": "L.E.O ROL",
         "subtitle": "LAW ENFORCEMENT & ORDER",
         "filename": "L.e.o.svg"
       },
@@ -247,7 +338,7 @@
         "id": "civiles",
         "title": "CIVILES",
         "subtitle": "CITIZEN ECOSYSTEM & JOBS",
-        "filename": "civiles.svg"
+        "filename": "Proyectos civiles.svg"
       },
       "addit": {
          "color": "#133a2d",

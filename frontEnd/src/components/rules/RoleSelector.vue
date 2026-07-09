@@ -91,6 +91,8 @@ defineEmits<{
 
     transition:.25s;
 
+    text-decoration: none;
+
 }
 
 .role-chip:hover{
