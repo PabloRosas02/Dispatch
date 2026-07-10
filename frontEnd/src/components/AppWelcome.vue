@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router' 
+import { useRoute } from 'vue-router'
 import WelcomeCarousel from './ServerCarrousel.vue'
 import defaultLogoUrl from '/icons/Logoletras.svg'
 
@@ -13,7 +13,7 @@ interface KinsfolkPageConfig {
   welcomeDescription: string
   ctaText: string
   logoUrl: string
-  discordLink: string 
+  discordLink: string
 }
 
 // Configuración inicial espejo (fallbacks locales idénticos a la fábrica)
@@ -39,7 +39,7 @@ const route = useRoute()
 
 // Validación de seguridad: el panel de edición sólo existirá si se incluye la llave secreta en la URL
 const isAuthorizedDesigner = computed(() => {
-  return route.query.mode === 'admin-designer' 
+  return route.query.mode === 'admin-designer'
 })
 
 onMounted(async () => {
@@ -90,7 +90,10 @@ const handleSaveOrEdit = () => {
       📝 Modo Diseñador
     </button>
 
-    <div class="welcome-section">
+      <h1 v-if="!designer.isEditing.value" class="welcome-title" v-html="pageConfig.welcomeTitle"></h1>
+      <div v-else ref="titleRef" contenteditable="true" class="welcome-title editable-container"></div>
+
+      <div class="welcome-section">
       <div class="logo-wrapper">
         <div class="image-editor-wrapper">
           <img
@@ -120,8 +123,6 @@ const handleSaveOrEdit = () => {
         </div>
       </div>
 
-      <h1 v-if="!designer.isEditing.value" class="welcome-title" v-html="pageConfig.welcomeTitle"></h1>
-      <div v-else ref="titleRef" contenteditable="true" class="welcome-title editable-container"></div>
 
       <p v-if="!designer.isEditing.value" class="welcome-subtitle" v-html="pageConfig.welcomeDescription"></p>
       <div v-else ref="subtitleRef" contenteditable="true" class="welcome-subtitle editable-container"></div>
@@ -131,7 +132,7 @@ const handleSaveOrEdit = () => {
 
     <!-- 4. SECCIÓN DISCORD DINÁMICA -->
     <div class="discord-section">
-      
+
       <!-- Vista en Modo Diseñador Activo -->
       <div v-if="designer.isEditing.value" class="discord-editor-wrapper">
         <div class="discord-button mock-disabled">
@@ -140,14 +141,14 @@ const handleSaveOrEdit = () => {
           </svg>
           <input v-model="pageConfig.ctaText" class="cta-inline-input" placeholder="Texto" />
         </div>
-        
+
         <!-- Caja flotante externa para cambiar la URL cómodamente -->
         <div class="link-editor-box">
           <label class="link-editor-label">Enlace Discord:</label>
-          <input 
-            type="text" 
-            v-model="pageConfig.discordLink" 
-            class="link-field-input" 
+          <input
+            type="text"
+            v-model="pageConfig.discordLink"
+            class="link-field-input"
             placeholder="https://discord.gg/..."
           />
         </div>
