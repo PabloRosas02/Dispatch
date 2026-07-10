@@ -118,7 +118,9 @@ volumes:
   nginx_cache:
     driver: local
   backend_db:
+    driver: local
   backend_db_dev:
+    driver: local
   frontend_node_modules:
 
 networks:
