@@ -50,36 +50,40 @@ export class ServerService {
   }
 
   private loadFromDisk(): void {
-    try {
-      if (fs.existsSync(this.dbPath)) {
-        const fileContent = fs.readFileSync(this.dbPath, "utf-8");
-        const parsedData = JSON.parse(fileContent);
 
-        // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
-        this.servers.clear();
-        if (parsedData && Array.isArray(parsedData.servers)) {
-          parsedData.servers.forEach((rawSrv: any) => {
-            // Hidratamos la estructura de datos completa garantizando todos sus miembros
-            const fullServer = RPServerHelper.hydrateServer(rawSrv);
-            // Verificamos el ID a través del Helper de forma segura
-            const id = RPServerHelper.getId(fullServer);
-
-            if (id && id.trim() !== "") {
-              // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
-              this.servers.set(id, fullServer);
-            } else {
-              console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
-            }
-          });
-        }
-        console.log(`[ServerService] Estado rehidratado exitosamente desde ${path.basename(this.dbPath)}.`);
-      } else {
-        console.log("[ServerService] No se detectó base de datos previa. Inicializando desde valores por defecto (factory)...");
-        this.restoreToFactoryDefaults();
-      }
-    } catch (error) {
-      console.error("[ServerService] Error al leer el disco. Restaurando valores por defecto desde el archivo de fábrica:", error);
+    if (fs.existsSync(this.dbPath) == false) {
+      console.log("[ServerService] No se detectó base de datos previa. Inicializando desde valores por defecto (factory)...");
       this.restoreToFactoryDefaults();
+      return;
+    }
+
+    this.servers.clear();
+    const fd = fs.openSync(this.dbDefaultPath, "r");
+
+    try {
+      const fileContent = fs.readFileSync(fd, "utf-8");
+      const parsedData = JSON.parse(fileContent);
+
+      // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
+      if (parsedData && Array.isArray(parsedData.servers)) {
+        parsedData.servers.forEach((rawSrv: any) => {
+          // Hidratamos la estructura de datos completa garantizando todos sus miembros
+          const fullServer = RPServerHelper.hydrateServer(rawSrv);
+          // Verificamos el ID a través del Helper de forma segura
+          const id = RPServerHelper.getId(fullServer);
+
+          if (id !== "") {
+            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+            this.servers.set(id, fullServer);
+          } else {
+            console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
+          }
+        });
+      }
+      console.log(`[ServerService] Estado rehidratado exitosamente desde ${path.basename(this.dbPath)}.`);
+    } finally {
+      // el archivo se cierra aquí obligatoriamente liberando el recurso.
+      fs.closeSync(fd);
     }
   }
 
@@ -89,35 +93,36 @@ export class ServerService {
   public restoreToFactoryDefaults(): void {
     this.servers.clear();
 
-    if (fs.existsSync(this.dbDefaultPath)) {
-      // 1. Abrimos el descriptor de archivo (File Descriptor)
-      const fd = fs.openSync(this.dbDefaultPath, "r");
+    if (fs.existsSync(this.dbDefaultPath) == false) {
+      return;
+    }
 
-      try {
-        // 2. Leemos todo el contenido usando el descriptor
-        const defaultContent = fs.readFileSync(fd, "utf-8");
-        const parsedData = JSON.parse(defaultContent);
+    // 1. Abrimos el descriptor de archivo (File Descriptor)
+    const fd = fs.openSync(this.dbDefaultPath, "r");
 
-        if (parsedData && Array.isArray(parsedData.servers)) {
-          parsedData.servers.forEach((rawSrv: any) => {
-            // Hidratamos la estructura de datos completa garantizando todos sus miembros
-            const fullServer = RPServerHelper.hydrateServer(rawSrv);
-            // Verificamos el ID a través del Helper de forma segura
-            const id = RPServerHelper.getId(fullServer);
+    try {
+      // 2. Leemos todo el contenido usando el descriptor
+      const defaultContent = fs.readFileSync(fd, "utf-8");
+      const parsedData = JSON.parse(defaultContent);
 
-            if (id && id.trim() !== "") {
-              // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
-              this.servers.set(id, fullServer);
-            } else {
-              console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
-            }
-          });
-        }
+      if (parsedData && Array.isArray(parsedData.servers)) {
+        parsedData.servers.forEach((rawSrv: any) => {
+          // Hidratamos la estructura de datos completa garantizando todos sus miembros
+          const fullServer = RPServerHelper.hydrateServer(rawSrv);
+          // Verificamos el ID a través del Helper de forma segura
+          const id = RPServerHelper.getId(fullServer);
 
-      } finally {
-        // el archivo se cierra aquí obligatoriamente liberando el recurso.
-        fs.closeSync(fd);
+          if (id !== "") {
+            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+            this.servers.set(id, fullServer);
+          } else {
+            console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
+          }
+        });
       }
+    } finally {
+      // el archivo se cierra aquí obligatoriamente liberando el recurso.
+      fs.closeSync(fd);
     }
 
     this.safeSaveToDisk();
@@ -197,7 +202,7 @@ export class ServerService {
 
   // --- MÉTODOS PARA SERVIDORES RP ---
   public getServer(id: string): RPServer | null {
-    return this.servers.get(id) || null;
+    return this.servers.get(id.trim()) || null;
   }
 
   public setServer(id: string, server: RPServer): void {
@@ -273,3 +278,4 @@ export class ServerService {
 }
 
 export const serverService = new ServerService();
+

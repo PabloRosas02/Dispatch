@@ -138,7 +138,7 @@ export class RPServerHelper {
   public static hydrateServer(raw: any): RPServer {
     return {
       basic: {
-        id: raw?.basic?.id || "",
+        id: raw?.basic?.id.trim() || "",
         title: raw?.basic?.title || "",
         subtitle: raw?.basic?.subtitle || "",
         filename: raw?.basic?.filename || ""

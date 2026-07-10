@@ -30,23 +30,29 @@ export class CacheService {
   }
 
   private loadFromDisk(): void {
-    try {
-      if (fs.existsSync(this.dbPath)) {
-        const fileContent = fs.readFileSync(this.dbPath, "utf-8");
-        const parsedData = JSON.parse(fileContent);
 
-        // Rehydrate generic cache map
-        this.cache = new Map(Object.entries(parsedData.cache || {}));
-
-        // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
-        console.log("[CacheService] Estado rehidratado exitosamente desde database.json.");
-      } else {
-        console.log("[CacheService] No se detectó base de datos previa. Inicializando valores de fábrica...");
-        //this.restoreToFactoryDefaults();
-      }
-    } catch (error) {
-      console.error("[CacheService] Error al leer el disco. Cargando valores por defecto:", error);
+    if (fs.existsSync(this.dbPath) == false) {
+      console.log("[CacheService] No se detectó base de datos previa. Inicializando valores de fábrica...");
       //this.restoreToFactoryDefaults();
+      return;
+    }
+
+    this.cache.clear();
+
+    const fd = fs.openSync(this.dbPath, "r");
+
+    try {
+      const fileContent = fs.readFileSync(fd, "utf-8");
+      const parsedData = JSON.parse(fileContent);
+
+      // Rehydrate generic cache map
+      this.cache = new Map(Object.entries(parsedData.cache || {}));
+
+      // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
+      console.log("[CacheService] Estado rehidratado exitosamente desde database.json.");
+    } finally {
+      // el archivo se cierra aquí obligatoriamente liberando el recurso.
+      fs.closeSync(fd);
     }
   }
 
