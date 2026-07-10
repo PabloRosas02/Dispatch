@@ -43,21 +43,20 @@ const props = defineProps<{
     description:string;
 
 }>();
-
+console.log("Banner:", props.bannerImage);
 const bannerStyle = computed(() => ({
-
-    backgroundImage:`
-        linear-gradient(
-            90deg,
-            rgba(8,10,18,.88) 0%,
-            rgba(8,10,18,.78) 35%,
-            rgba(8,10,18,.25) 70%,
-            rgba(8,10,18,.05) 100%
-        ),
-        url(${props.bannerImage})
-    `
-
+  backgroundImage: `
+    linear-gradient(
+      90deg,
+      rgba(8,10,18,.88) 0%,
+      rgba(8,10,18,.78) 35%,
+      rgba(8,10,18,.25) 70%,
+      rgba(8,10,18,.05) 100%
+    ),
+    url(/images/${props.bannerImage})
+  `
 }));
+
 </script>
 
 <style scoped>

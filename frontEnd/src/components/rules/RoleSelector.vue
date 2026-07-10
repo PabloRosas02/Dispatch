@@ -4,22 +4,22 @@
 
     <RouterLink
       v-for="role in availableRoles"
-      :key="role.id"
+      :key="role.basic.id"
       class="role-chip"
-      :class="{ active: role.id === currentRoleId }"
-      :style="{ '--role-color': role.color }"
+      :class="{ active: role.basic.id === currentRoleId }"
+      :style="{ '--role-color': role.addit.color }"
       :to="{
         name: 'rules-detail',
-        params: { serverId: role.id }
+        params: { serverId: role.basic.id }
       }"
     >
       <img
         class="role-icon"
-        :src="`/icons/${role.filename}`"
-        :alt="role.title"
+        :src="`/icons/${role.basic.filename}`"
+        :alt="role.basic.title"
       />
 
-      <span>{{ role.title }}</span>
+      <span>{{ role.basic.title }}</span>
     </RouterLink>
 
   </div>
@@ -90,6 +90,8 @@ defineEmits<{
     cursor:pointer;
 
     transition:.25s;
+
+    text-decoration: none;
 
 }
 

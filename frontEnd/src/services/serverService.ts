@@ -1,392 +1,184 @@
 import { ref, readonly } from 'vue';
 import type * as ServerType from '../types/serverTypes';
 
-export const rpServers = ref<ServerType.RPServer[]>([
-  {
-  id: "leo",
-
-  title: "L.E.O ROL",
-
-  subtitle: "LAW ENFORCEMENT & ORDER",
-
-  description:
-    "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. Diseñado para garantizar profesionalismo, coordinación y una experiencia inmersiva dentro del cuerpo policial de Kinsfolk.",
-
-  filename: "L.e.o.svg",
-
-  discordLink: "https://discord.gg/",
-
-  color: "#1b2d4a",
-
-  bannerImage: "/src/assets/images/leo.webp",
-
-  bannerLabel: "L.E.O MANUAL",
-
-  bannerDescription:
-    "Manual oficial del departamento policial.",
-
-  version: "1.0",
-
-  lastUpdate: "24 JUN 2026",
-
-  status: "VERIFIED",
-
-  sections: [
-    {
-      title: "Core Directives",
-      rules: [
-        {
-          title: "Metagaming",
-          description: "Using external stream or discord info in-game.",
-          example: "Stream-sniping a rival gang raid."
-        },
-        {
-          title: "Value of Life",
-          description: "You must value your life under gunpoint.",
-          example: "Running away while a gun is held to your head."
-        }
-      ]
-    },
-    {
-      title: "Augment Etiquette",
-      rules: [
-        {
-          title: "Powergaming Mods",
-          description: "Implants must have physical drawbacks.",
-          example: "Having an un-hackable, bulletproof skull."
-        }
-      ]
-    },
-    {
-      title: "Netrunning",
-      rules: [
-        {
-          title: "Deep Dive Consent",
-          description: "Brain-wiping another character requires OOC consent.",
-          example:
-            "Permanently deleting a player character's memories without asking."
-        }
-      ]
-    }
-  ]
-},
-{
-  id: "sams",
-
-  title: "S.A.M.S ROL",
-
-  subtitle: "MEDICAL ASSISTANCE & SERVICES",
-
-  description:
-    "Sistema dedicado al personal médico y de emergencias. Incluye protocolos de atención, coordinación hospitalaria y respuesta inmediata para garantizar un rol médico profesional.",
-
-  filename: "SAMS.svg",
-
-  discordLink: "https://discord.gg/YpvBDNRn",
-
-  color: "#591919",
-
-  bannerImage: "/src/assets/images/sams.webp",
-
-  bannerLabel: "S.A.M.S MANUAL",
-
-  bannerDescription:
-    "Manual oficial para el personal médico. Define los protocolos de atención, respuesta a emergencias y comportamiento profesional durante todas las intervenciones dentro de la ciudad.",
-
-  version: "2.0",
-
-  lastUpdate: "24 JUN 2026",
-
-  status: "VERIFIED",
-
-  sections: [
-    {
-      title: "Core Directives",
-      rules: [
-        {
-          title: "Metagaming",
-          description: "Using external stream or discord info in-game.",
-          example: "Stream-sniping a rival gang raid."
-        },
-        {
-          title: "Value of Life",
-          description: "You must value your life under gunpoint.",
-          example: "Running away while a gun is held to your head."
-        }
-      ]
-    },
-    {
-      title: "Augment Etiquette",
-      rules: [
-        {
-          title: "Powergaming Mods",
-          description: "Implants must have physical drawbacks.",
-          example: "Having an un-hackable, bulletproof skull."
-        }
-      ]
-    },
-    {
-      title: "Netrunning",
-      rules: [
-        {
-          title: "Deep Dive Consent",
-          description: "Brain-wiping another character requires OOC consent.",
-          example:
-            "Permanently deleting a player character's memories without asking."
-        }
-      ]
-    }
-  ]
-},
-  {
-  id: "safd",
-
-  title: "S.A.F.D ROL",
-
-  subtitle: "FIRE & RESCUE SOLUTIONS",
-
-  description:
-    "Normativas y procedimientos para el cuerpo de bomberos y rescate. Garantiza una coordinación eficiente durante emergencias, incendios y operaciones de salvamento.",
-
-  filename: "SAFD.svg",
-
-  discordLink: "https://discord.gg/3KQ3JwSw",
-
-  color: "#824316",
-
-  bannerImage: "/src/assets/images/safd.webp",
-
-  bannerLabel: "S.A.F.D MANUAL",
-
-  bannerDescription:
-    "Normativas destinadas al cuerpo de bomberos y rescate. Incluye procedimientos para incidentes, emergencias, rescates y coordinación con los demás servicios de la ciudad.",
-
-  version: "2.0",
-
-  lastUpdate: "24 JUN 2026",
-
-  status: "VERIFIED",
-
-  sections: [
-    {
-      title: "Core Directives",
-      rules: [
-        {
-          title: "Metagaming",
-          description: "Using external stream or discord info in-game.",
-          example: "Stream-sniping a rival gang raid."
-        },
-        {
-          title: "Value of Life",
-          description: "You must value your life under gunpoint.",
-          example: "Running away while a gun is held to your head."
-        }
-      ]
-    },
-    {
-      title: "Augment Etiquette",
-      rules: [
-        {
-          title: "Powergaming Mods",
-          description: "Implants must have physical drawbacks.",
-          example: "Having an un-hackable, bulletproof skull."
-        }
-      ]
-    },
-    {
-      title: "Netrunning",
-      rules: [
-        {
-          title: "Deep Dive Consent",
-          description: "Brain-wiping another character requires OOC consent.",
-          example:
-            "Permanently deleting a player character's memories without asking."
-        }
-      ]
-    }
-  ]
-},
-  {
-  id: "ilegales",
-
-  title: "ILEGALES",
-
-  subtitle: "CRIMINAL ENTERPRISE NETWORKS",
-
-  description:
-    "Manual destinado a organizaciones criminales y actividades ilegales. Define las reglas para enfrentamientos, robos, secuestros y operaciones clandestinas manteniendo el equilibrio entre todas las facciones del servidor.",
-
-  filename: "Ilegales.svg",
-
-  discordLink: "https://discord.gg/BECZxnSWS",
-
-  color: "#2c2d30",
-
-  bannerImage: "/src/assets/images/ilegales.webp",
-
-  bannerLabel: "UNDERGROUND GUIDE",
-
-  bannerDescription:
-    "Normativas destinadas a organizaciones criminales, bandas y actividades ilegales. Establecen los límites del rol criminal para mantener un entorno competitivo, justo e inmersivo.",
-
-  version: "2.0",
-
-  lastUpdate: "24 JUN 2026",
-
-  status: "VERIFIED",
-
-  sections: [
-    {
-      title: "Core Directives",
-      rules: [
-        {
-          title: "Metagaming",
-          description: "Using external stream or discord info in-game.",
-          example: "Stream-sniping a rival gang raid."
-        },
-        {
-          title: "Value of Life",
-          description: "You must value your life under gunpoint.",
-          example: "Running away while a gun is held to your head."
-        }
-      ]
-    },
-    {
-      title: "Augment Etiquette",
-      rules: [
-        {
-          title: "Powergaming Mods",
-          description: "Implants must have physical drawbacks.",
-          example: "Having an un-hackable, bulletproof skull."
-        }
-      ]
-    },
-    {
-      title: "Netrunning",
-      rules: [
-        {
-          title: "Deep Dive Consent",
-          description: "Brain-wiping another character requires OOC consent.",
-          example:
-            "Permanently deleting a player character's memories without asking."
-        }
-      ]
-    }
-  ]
-},
-  {
-  id: "creator",
-
-  title: "CREADORES DE CONTENIDO",
-
-  subtitle: "MEDIA & STREAMING TOOLS",
-
-  description:
-    "Programa oficial para streamers, fotógrafos, cineastas y creadores de contenido. Establece los lineamientos para representar a Kinsfolk mediante contenido audiovisual de calidad.",
-
-  filename: "Content Creator.svg",
-
-  discordLink: "https://discord.gg/e4GhgKx5s",
-
-  color: "#571c75",
-
-  bannerImage: "/src/assets/images/creator.webp",
-
-  bannerLabel: "CONTENT CREATOR PROGRAM",
-
-  bannerDescription:
-    "Normativas y lineamientos para streamers, fotógrafos, cineastas y creadores de contenido que representan a Kinsfolk mediante transmisiones, videos y material multimedia.",
-
-  version: "2.0",
-
-  lastUpdate: "24 JUN 2026",
-
-  status: "VERIFIED",
-
-  sections: [
-    {
-      title: "Core Directives",
-      rules: [
-        {
-          title: "Metagaming",
-          description: "Using external stream or discord info in-game.",
-          example: "Stream-sniping a rival gang raid."
-        },
-        {
-          title: "Value of Life",
-          description: "You must value your life under gunpoint.",
-          example: "Running away while a gun is held to your head."
-        }
-      ]
-    },
-    {
-      title: "Augment Etiquette",
-      rules: [
-        {
-          title: "Powergaming Mods",
-          description: "Implants must have physical drawbacks.",
-          example: "Having an un-hackable, bulletproof skull."
-        }
-      ]
-    },
-    {
-      title: "Netrunning",
-      rules: [
-        {
-          title: "Deep Dive Consent",
-          description: "Brain-wiping another character requires OOC consent.",
-          example:
-            "Permanently deleting a player character's memories without asking."
-        }
-      ]
-    }
-  ]
-}
-]);
+export const rpServers = ref<ServerType.RPServer[]>([]);
+const defaultPath = "/api/servers/";
+const isInitBasic = ref<boolean>(false);
+const isInitAddit = ref<boolean>(false);
+const isInitVBS = ref<boolean>(false);
 
 export function useServerService() {
 
-  function updateServers(){
+  function updateServers() {
 
     return;
   }
 
-function getAllServers(): ServerType.RPServer[] {
-  return rpServers.value;
-}
+  function getAllServers() {
+    return readonly(rpServers);
+  }
 
-  function getServerById(id: string): ServerType.RPServer | undefined{
-    return rpServers.value.find(server => server.id === id);
+  function getServerById(id: string): ServerType.RPServer | undefined {
+    return rpServers.value.find(server => server.basic.id === id);
   }
 
   function getServerColorById(id: string): string {
-    const server:ServerType.RPServer | undefined = rpServers.value.find(server => server.id === id);
+    const server: ServerType.RPServer | undefined = rpServers.value.find(server => server.basic.id === id);
 
-    if(server){
-      return server.color
+    if (server) {
+      return server.addit.color
     }
 
     return '#1b2d4a';
   }
 
-  function getSvgUrl(id: string){
+  function getSvgUrl(id: string) {
     const server: ServerType.RPServer | undefined = getServerById(id);
 
-    if(server){
-      return `/icons/${server.filename}`;
+    if (server) {
+      return `/icons/${server.basic.filename}`;
     }
     return undefined;
   }
 
   function getServerFromRouteParam(serverIdParam: string | string[]):
-  ServerType.RPServer | undefined {
-    console.log(serverIdParam);
+    ServerType.RPServer | undefined {
     const rawId = Array.isArray(serverIdParam) ? serverIdParam[0] : serverIdParam;
     const targetId = rawId || 'leo';
     return getServerById(targetId);
   }
 
+  async function fetchBasicInfo() {
+    try {
+      const url = `${defaultPath}basic-info`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const res = await response.json();
+
+      // Filtra y mapea solo la propiedad basic de cada objeto
+      const filteredData = res.data.map((item: ServerType.BasicInfo): ServerType.RPServer => {
+        return {
+          // Metemos los datos del endpoint de forma segura dentro del objeto 'basic'
+          basic: {
+            id: item.id,
+            title: item.title,
+            subtitle: item.subtitle,
+            filename: item.filename
+          },
+          // Rellenamos el resto de propiedades obligatorias con valores por defecto/vacíos
+          // para que TypeScript no se queje de que faltan campos en RPServer
+          addit: { color: '', description: '', discordLink: '' },
+          banner: { bannerImage: '', bannerLabel: '', bannerDescription: '' },
+          ver: { version: '1.0.0', lastUpdate: '', status: 'unknown' },
+          sections: []
+        };
+      });
+      // Actualiza el estado reactivo con los datos filtrados y mapeados
+      rpServers.value = filteredData;
+      isInitBasic.value = true;
+    } catch (error) {
+      isInitBasic.value = false;
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  async function fetchAdditInfo() {
+    try {
+      const url = `${defaultPath}addit-info`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const res = await response.json();
+
+      // Buscamos y fusionamos los datos dentro de nuestro estado reactivo existente
+      res.data.forEach((info: ServerType.AdditionalInfo & { id: string }) => {
+        const server = rpServers.value.find(s => s.basic.id === info.id);
+        if (server) {
+          server.addit = {
+            color: info.color,
+            description: info.description,
+            discordLink: info.discordLink
+          };
+        }
+      });
+      isInitAddit.value = true;
+    } catch (error) {
+      isInitAddit.value = false;
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  async function fetchRuleInfo() {
+    try {
+      const url = `${defaultPath}rules-info`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const res = await response.json();
+
+      // Buscamos y fusionamos los datos dentro de nuestro estado reactivo existente
+      res.data.forEach((item: {
+        id: string;
+        banner: ServerType.BannerDetails;
+        sections: ServerType.RuleSection[]
+      }) => {
+
+        // Buscamos el servidor que coincida con el ID de la respuesta
+        const server = rpServers.value.find(s => s.basic.id === item.id);
+
+        if (server) {
+          // 1. Emparejamos e inyectamos los datos del banner
+          server.banner = {
+            bannerImage: item.banner.bannerImage,
+            bannerLabel: item.banner.bannerLabel,
+            bannerDescription: item.banner.bannerDescription
+          };
+
+          // 2. Emparejamos e inyectamos el array de secciones directamente
+          server.sections = item.sections;
+        }
+      });
+      isInitVBS.value = true;
+    } catch (error) {
+      isInitVBS.value = false;
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  async function initBasic() {
+
+    if (!isInitBasic.value) {
+      await fetchBasicInfo();
+    }
+
+    if (!isInitAddit.value) {
+      await fetchAdditInfo();
+    }
+
+  }
+
+  async function initRules() {
+
+    if (!isInitVBS.value) {
+      await fetchRuleInfo();
+    }
+
+  }
   return {
+    isInitVBS,
+    initBasic,
+    initRules,
     updateServers,
     getAllServers,
     getServerById,

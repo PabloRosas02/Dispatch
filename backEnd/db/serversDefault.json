@@ -1,0 +1,457 @@
+{
+  "servers": [
+    {
+      "basic": {
+        "id": "general",
+        "title": "NORMATIVA GENERAL",
+        "subtitle": "SERVER RULES & ROLEPLAY STANDARDS",
+        "filename": "General.svg"
+      },
+      "addit": {
+        "color": "#d8a23c",
+        "description": "Las reglas generales establecen las bases del Roleplay dentro de Kinsfolk. Todo jugador debe conocerlas y respetarlas antes de participar en cualquier actividad del servidor.",
+        "discordLink": "https://discord.gg/"
+      },
+      "banner": {
+        "bannerImage": "rules.webp",
+        "bannerLabel": "SERVER RULEBOOK",
+        "bannerDescription": "Documento oficial que reúne todas las reglas fundamentales del servidor. Su cumplimiento es obligatorio para todos los jugadores."
+      },
+      "ver": {
+        "version": "1.0",
+        "lastUpdate": "08 JUL 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Información General",
+          "rules": [
+            {
+              "title": "Respeto a la comunidad",
+              "description": "Todos los jugadores deben mantener una conducta respetuosa dentro y fuera del servidor.",
+              "example": "Insultar, acosar o discriminar a otros jugadores puede derivar en sanciones."
+            },
+            {
+              "title": "Uso del sentido común",
+              "description": "Toda situación no contemplada explícitamente en las reglas debe resolverse utilizando lógica y priorizando el buen Roleplay.",
+              "example": "Evitar aprovechar vacíos en la normativa para obtener ventajas injustas."
+            }
+          ]
+        },
+        {
+          "title": "Roleplay Básico",
+          "rules": [
+            {
+              "title": "Metagaming (MG)",
+              "description": "Está prohibido utilizar información obtenida fuera del juego para beneficiar a tu personaje.",
+              "example": "Usar información obtenida por Discord para localizar a otro jugador."
+            },
+            {
+              "title": "Powergaming (PG)",
+              "description": "No puedes realizar acciones imposibles o forzar situaciones sin permitir respuesta al otro jugador.",
+              "example": "Escribir '/me lo deja inconsciente' sin darle oportunidad de reaccionar."
+            },
+            {
+              "title": "Value of Life (VoL)",
+              "description": "Tu personaje debe valorar su vida en todo momento.",
+              "example": "Escapar corriendo mientras varias personas te apuntan con armas."
+            }
+          ]
+        },
+        {
+          "title": "Conducta del Jugador",
+          "rules": [
+            {
+              "title": "Combat Logging",
+              "description": "Está prohibido desconectarse para evitar consecuencias dentro del Roleplay.",
+              "example": "Salir del servidor durante una persecución o un arresto."
+            },
+            {
+              "title": "Bug Abuse",
+              "description": "No está permitido aprovechar errores del servidor para obtener beneficios.",
+              "example": "Duplicar objetos mediante un fallo del inventario."
+            },
+            {
+              "title": "Fail RP",
+              "description": "Todas las acciones deben mantener coherencia con el personaje y el entorno.",
+              "example": "Continuar actuando normalmente después de sufrir un accidente grave."
+            }
+          ]
+        },
+        {
+          "title": "Sanciones",
+          "rules": [
+            {
+              "title": "Reporte de infracciones",
+              "description": "Las infracciones podrán ser sancionadas según su gravedad y reincidencia.",
+              "example": "Una falta leve puede terminar en advertencia, mientras que una grave puede implicar suspensión."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "leo",
+        "title": "L.E.O ROL",
+        "subtitle": "LAW ENFORCEMENT & ORDER",
+        "filename": "L.e.o.svg"
+      },
+      "addit": {
+        "color": "#1b2d4a",
+        "description": "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. Diseñado para garantizar profesionalismo, coordinación y una experiencia inmersiva dentro del cuerpo policial de Kinsfolk.",
+        "discordLink": "https://discord.gg/"
+      },
+      "banner": {
+        "bannerImage": "leo.webp",
+        "bannerLabel": "L.E.O MANUAL",
+        "bannerDescription": "Manual oficial del departamento policial."
+      },
+      "ver": {
+        "version": "1.0",
+        "lastUpdate": "24 JUN 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "sams",
+        "title": "S.A.M.S ROL",
+        "subtitle": "MEDICAL ASSISTANCE & SERVICES",
+        "filename": "SAMS.svg"
+      },
+      "addit": {
+        "color": "#591919",
+        "description":
+          "Sistema dedicado al personal médico y de emergencias. Incluye protocolos de atención, coordinación hospitalaria y respuesta inmediata para garantizar un rol médico profesional.",
+        "discordLink": "https://discord.gg/YpvBDNRn"
+      },
+      "banner": {
+        "bannerImage": "sams.webp",
+        "bannerLabel": "S.A.M.S MANUAL",
+        "bannerDescription":
+        "Manual oficial para el personal médico. Define los protocolos de atención, respuesta a emergencias y comportamiento profesional durante todas las intervenciones dentro de la ciudad."
+      },
+      "ver": {
+        "version": "2.0",
+        "lastUpdate": "24 JUN 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "safd",
+        "title": "S.A.F.D ROL",
+        "subtitle": "FIRE & RESCUE SOLUTIONS",
+        "filename": "SAFD.svg"
+      },
+      "addit": {
+        "color": "#824316",
+        "description": "Normativas y procedimientos para el cuerpo de bomberos y rescate. Garantiza una coordinación eficiente durante emergencias, incendios y operaciones de salvamento.",
+        "discordLink": "https://discord.gg/3KQ3JwSw"
+      },
+      "banner": {
+        "bannerImage": "safd.webp",
+        "bannerLabel": "S.A.F.D MANUAL",
+        "bannerDescription": "Normativas destinadas al cuerpo de bomberos y rescate. Incluye procedimientos para incidentes, emergencias, rescates y coordinación con los demás servicios de la ciudad."
+      },
+      "ver": {
+        "version": "2.0",
+        "lastUpdate": "24 JUN 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "ilegales",
+        "title": "ILEGALES",
+        "subtitle": "CRIMINAL ENTERPRISE NETWORKS",
+        "filename": "Ilegales.svg"
+      },
+      "addit": {
+        "color": "#2c2d30",
+        "description": "Normativas destinadas a organizaciones criminales y actividades ilegales. Define las reglas para enfrentamientos, robos, secuestros y operaciones clandestinas manteniendo el equilibrio entre todas las facciones del servidor.",
+        "discordLink": "https://discord.gg/BECZxnSWS"
+      },
+      "banner": {
+        "bannerImage": "ilegales.webp",
+        "bannerLabel": "UNDERGROUND GUIDE",
+        "bannerDescription": "Normativas destinadas a organizaciones criminales, bandas y actividades ilegales. Establecen los límites del rol criminal para mantener un entorno competitivo, justo e inmersivo."
+      },
+      "ver": {
+        "version": "2.0",
+        "lastUpdate": "24 JUN 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "civiles",
+        "title": "CIVILES",
+        "subtitle": "CITIZEN ECOSYSTEM & JOBS",
+        "filename": "Proyectos civiles.svg"
+      },
+      "addit": {
+         "color": "#133a2d",
+        "description": "El núcleo de la interacción social y económica. Un entorno dinámico donde los usuarios gestionan identidades, empleos civiles, licencias y propiedades bajo una interfaz estilizada y fluida.",
+        "discordLink": "https://discord.gg/KfN8vKhZ7"
+      },
+      "banner": {
+        "bannerImage": "civiles.webp",
+        "bannerLabel": "",
+        "bannerDescription": ""
+      },
+      "ver": {
+        "version": "1.0.0",
+        "lastUpdate": "",
+        "status": "active"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "basic": {
+        "id": "creator",
+        "title": "CREADORES DE CONTENIDO",
+        "subtitle": "MEDIA & STREAMING TOOLS",
+        "filename": "Content Creator.svg"
+      },
+      "addit": {
+        "color": "#571c75",
+        "description": "Programa oficial para streamers, fotógrafos, cineastas y creadores de contenido. Establece los lineamientos para representar a Kinsfolk mediante contenido audiovisual de calidad.",
+        "discordLink": "https://discord.gg/e4GhgKx5s"
+      },
+      "banner": {
+        "bannerImage": "creator.webp",
+        "bannerLabel": "CONTENT CREATOR PROGRAM",
+        "bannerDescription": "Normativas y lineamientos para streamers, fotógrafos, cineastas y creadores de contenido que representan a Kinsfolk mediante transmisiones, videos y material multimedia."
+      },
+      "ver": {
+        "version": "2.0",
+        "lastUpdate": "24 JUN 2026",
+        "status": "VERIFIED"
+      },
+      "sections": [
+        {
+          "title": "Core Directives",
+          "rules": [
+            {
+              "title": "Metagaming",
+              "description": "Using external stream or discord info in-game.",
+              "example": "Stream-sniping a rival gang raid."
+            },
+            {
+              "title": "Value of Life",
+              "description": "You must value your life under gunpoint.",
+              "example": "Running away while a gun is held to your head."
+            }
+          ]
+        },
+        {
+          "title": "Augment Etiquette",
+          "rules": [
+            {
+              "title": "Powergaming Mods",
+              "description": "Implants must have physical drawbacks.",
+              "example": "Having an un-hackable, bulletproof skull."
+            }
+          ]
+        },
+        {
+          "title": "Netrunning",
+          "rules": [
+            {
+              "title": "Deep Dive Consent",
+              "description": "Brain-wiping another character requires OOC consent.",
+              "example": "Permanently deleting a player character's memories without asking."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

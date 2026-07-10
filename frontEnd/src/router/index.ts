@@ -21,30 +21,29 @@ const router = createRouter({
         {
           path: ':serverId',
           name: 'role-detail',
-          component: ()=> import('../views/RoleDetailView.vue'),
+          component: () => import('../views/RoleDetailView.vue'),
         }
       ],
       meta: {
+        hideLayout: true,
         title: 'Roles'
       }
     },
-
     {
-      path: '/reglas',
-      name: 'rules-root',
-      component: RouterView,
-      children:[
+      path: '/normativas',
+      name: 'rules-index',
+      component: () => import('../views/RulesIndexView.vue'),
+      meta: {
+        title: 'Normativas'
+      },
+      children: [
         {
           path: ':serverId',
           name: 'rules-detail',
-          component: ()=> import ('../views/RulesPageView.vue'),
-        },
-      ],
-      meta: {
-        title: 'Reglas'
-      }
+          component: () => import('../views/RulesPageView.vue'),
+        }
+      ]
     },
-
     {
       path: '/housing',
       name: 'housing',
@@ -75,7 +74,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('../components/NotFound.vue'),
+      component: () => import('../components/miscellaneous/NotFound.vue'),
       meta: {
         title: 'Page Not Found'
       },
@@ -91,8 +90,7 @@ router.beforeEach((to) => {
   const baseTitle = to.meta.title as string || 'Kinsfolk';
 
 
-  switch(to.name)
-  {
+  switch (to.name) {
     case 'role-detail':
     case 'rules-detail':
       const serverId = to.params.serverId as string;

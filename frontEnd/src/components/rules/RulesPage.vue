@@ -1,35 +1,33 @@
 <!-- src/components/rules/RulesPage.vue -->
 <template>
-  <main
+    <main
     class="rules-page"
-    :style="{ '--server-color': serverData.color }"
+    :style="{ '--server-color': serverData.addit.color }"
   >
-
     <HeroBanner
 
-    :banner-image="serverData.bannerImage"
+    :banner-image="serverData.banner.bannerImage"
 
-    :banner-label="serverData.subtitle"
+    :banner-label="serverData.basic.subtitle"
 
     title="NORMATIVA"
 
-    :subtitle="serverData.title"
+    :subtitle="serverData.basic.title"
 
-    :description="serverData.description"
+    :description="serverData.addit.description"
 
 />
 
 <RoleSelector
-    :available-roles="roles"
-    :current-role-id="serverData.id"
+    :available-roles="roles as readonly RPServer[]"
+    :current-role-id="serverData.basic.id"
 />
 
     <StatusBar
-    :version="serverData.version"
-    :lastUpdate="serverData.lastUpdate"
+    :version="serverData.ver.version"
+    :lastUpdate="serverData.ver.lastUpdate"
     :totalRules="totalRules"
 />
-
 
     <div class="rules-content">
 
@@ -43,7 +41,6 @@
       @select="selectedSection = $event"
 
   />
-
 
   <!-- CONTENIDO -->
 
@@ -84,7 +81,7 @@
 
               :example="rule.example"
 
-              :serverColor="serverData.color"
+              :serverColor="serverData.addit.color"
 
           />
 
@@ -94,6 +91,7 @@
 
 </div>
   </main>
+
 </template>
 
 <script setup lang="ts">
@@ -127,7 +125,8 @@ const serverService = useServerService();
 
 const roles = serverService.getAllServers();
 
-const selectedRole = ref(props.serverData.id);
+const selectedRole = ref(props.serverData.basic.id);
+console.log(props.serverData);
 
 </script>
 
