@@ -31,16 +31,12 @@ const router = createRouter({
     },
     {
       path: '/normativas',
-      component: RouterView,
+      name: 'rules-index',
+      component: () => import('../views/RulesIndexView.vue'),
       meta: {
         title: 'Normativas'
       },
       children: [
-        {
-          path: '',
-          name: 'rules-index',
-          component: () => import('../views/RulesIndexView.vue'),
-        },
         {
           path: ':serverId',
           name: 'rules-detail',
