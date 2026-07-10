@@ -43,7 +43,7 @@ const props = defineProps<{
     description:string;
 
 }>();
-console.log("Banner:", props.bannerImage);
+// console.log("Banner:", props.bannerImage);
 const bannerStyle = computed(() => ({
   backgroundImage: `
     linear-gradient(
