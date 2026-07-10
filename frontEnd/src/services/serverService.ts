@@ -43,7 +43,6 @@ export function useServerService() {
 
   function getServerFromRouteParam(serverIdParam: string | string[]):
     ServerType.RPServer | undefined {
-    console.log(serverIdParam);
     const rawId = Array.isArray(serverIdParam) ? serverIdParam[0] : serverIdParam;
     const targetId = rawId || 'leo';
     return getServerById(targetId);
@@ -157,26 +156,27 @@ export function useServerService() {
     }
   }
 
-async function initBasic() {
+  async function initBasic() {
 
-  if (!isInitBasic.value) {
-    await fetchBasicInfo();
+    if (!isInitBasic.value) {
+      await fetchBasicInfo();
+    }
+
+    if (!isInitAddit.value) {
+      await fetchAdditInfo();
+    }
+
   }
 
-  if (!isInitAddit.value) {
-    await fetchAdditInfo();
+  async function initRules() {
+
+    if (!isInitVBS.value) {
+      await fetchRuleInfo();
+    }
+
   }
-
-}
-
- async function initRules() {
-
-  if (!isInitVBS.value) {
-    await fetchRuleInfo();
-  }
-
-}
   return {
+    isInitVBS,
     initBasic,
     initRules,
     updateServers,

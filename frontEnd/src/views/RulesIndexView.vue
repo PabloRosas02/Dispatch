@@ -59,7 +59,8 @@
         Normativas por Departamento
       </h2>
 
-      <div class="rules-grid">
+      <div v-if="isInitVBS"
+        class="rules-grid">
 
         <RouterLink
             v-for="server in servers"
@@ -104,17 +105,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useServerService } from "@/services/serverService";
 
-const serverService = useServerService();
+const {
+  isInitVBS,
+  getAllServers,
+  initBasic,
+  initRules
+}= useServerService();
 
 const servers = computed(() =>
-  serverService
-    .getAllServers()
-    .value
+    getAllServers().value
     .filter(server => server.basic.id !== "general")
 );
+
+onMounted(async () => {
+  await initBasic();
+  await initRules();
+});
+
 </script>
 
 <style scoped>
@@ -529,7 +539,7 @@ const servers = computed(() =>
     height:430px;
 
     background:
-        url("/images/General.webp")
+        url("/images/general.webp")
         center/cover;
 
     border-radius:30px;
