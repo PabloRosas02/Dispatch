@@ -1,8 +1,8 @@
 <template>
     <nav class="navbar">
-      <div class="logo">
+      <routerLink class="logo" :to="{ name: 'home' }" >
         <img :src="Logo" alt="Logo" />
-      </div>
+      </routerLink>
 
       <!-- Botón hamburguesa -->
       <button class="hamburger" @click="toggleMenu">
