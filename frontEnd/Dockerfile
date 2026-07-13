@@ -34,11 +34,10 @@ RUN npm run build
 FROM nginx:alpine AS production
 WORKDIR /usr/share/nginx/html
 
-COPY --from=build /app/dist .
+COPY --from=build /app/dist ./dist
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
+RUN mkdir -p /var/cache/nginx_cache/api_cache && \
+  chown -R nginx:nginx /usr/share/nginx/html && \
   chmod -R 755 /usr/share/nginx/html && \
   chown -R nginx:nginx /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
   touch /var/run/nginx.pid && \

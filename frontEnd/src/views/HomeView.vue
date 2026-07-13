@@ -1,6 +1,9 @@
-<script setup>
+<script setup lang="ts">
 // Importamos el componente usando el alias @ que apunta directamente a src/
-import Welcome from '@/components/Welcome.vue'
+import Welcome from '@/components/AppWelcome.vue'
+defineOptions({
+  name: 'HomeView'
+})
 </script>
 
 <template>

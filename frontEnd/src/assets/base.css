@@ -38,7 +38,7 @@ body {
       rgba(6,15,22,.35) 40%,
       rgba(6,15,22,.60) 100%
     ),
-    url('/vinewood-desktop.webp');
+    url('/los-santos-desktop.webp');
 
   background-size: cover;
   background-position: center top;
@@ -53,7 +53,7 @@ body {
         rgba(6, 15, 22, 0.55),
         rgba(6, 15, 22, 0.70)
       ),
-      url('/vinewood-mobile.webp');
+      url('/los-santos-mobile.webp');
 
     background-attachment: scroll;
   }

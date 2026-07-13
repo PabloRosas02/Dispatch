@@ -3,7 +3,7 @@
     <div class="footer-container">
         <div class="footer-brand">
             <img
-            src="@/assets/icons/Logo.svg"
+            src="/icons/Logo.svg"
             alt="Kinsfolk"
             class="footer-logo"
             />
@@ -41,7 +41,6 @@
 
 <style scoped>
 .footer {
-  margin-top: 100px;
 
   font-family: "Exo 2", sans-serif;
   background: rgba(6, 15, 22, 0.75);
