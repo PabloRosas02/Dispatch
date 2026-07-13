@@ -43,24 +43,20 @@ const props = defineProps<{
     description:string;
 
 }>();
-const bannerStyle = computed(() => {
-  // 1. Resolvemos la ruta dinámica para que Vite la detecte en el build
-  const imageUrl = new URL(`/src/assets/images/${props.bannerImage}`, import.meta.url).href;
+// console.log("Banner:", props.bannerImage);
+const bannerStyle = computed(() => ({
+  backgroundImage: `
+    linear-gradient(
+      90deg,
+      rgba(8,10,18,.88) 0%,
+      rgba(8,10,18,.78) 35%,
+      rgba(8,10,18,.25) 70%,
+      rgba(8,10,18,.05) 100%
+    ),
+    url(/images/${props.bannerImage})
+  `
+}));
 
-  // 2. Retornamos el objeto con la URL ya procesada por Vite
-  return {
-    backgroundImage: `
-        linear-gradient(
-            90deg,
-            rgba(8,10,18,.88) 0%,
-            rgba(8,10,18,.78) 35%,
-            rgba(8,10,18,.25) 70%,
-            rgba(8,10,18,.05) 100%
-        ),
-        url(${imageUrl})
-    `
-  };
-});
 </script>
 
 <style scoped>

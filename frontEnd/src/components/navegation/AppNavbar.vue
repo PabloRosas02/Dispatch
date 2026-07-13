@@ -1,8 +1,8 @@
 <template>
     <nav class="navbar">
-      <div class="logo">
+      <routerLink class="logo" :to="{ name: 'home' }" >
         <img :src="Logo" alt="Logo" />
-      </div>
+      </routerLink>
 
       <!-- Botón hamburguesa -->
       <button class="hamburger" @click="toggleMenu">
@@ -32,8 +32,7 @@
         <li>
           <router-link
             @click="isOpen = false"
-            :to="{ name: 'rules-detail', params: { serverId: 'leo' } }"
-            :class="{ 'router-link-active': $route.name === 'rules-detail' }"
+            :to="{ name: 'rules-index' }"
           >
             Normativas
           </router-link>

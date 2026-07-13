@@ -29,23 +29,24 @@ const router = createRouter({
         title: 'Roles'
       }
     },
-
     {
       path: '/normativas',
-      name: 'rules-root',
-      component: RouterView,
+      meta: {
+        title: 'Normativas'
+      },
       children: [
+        {
+          path: '',
+          name: 'rules-index',
+          component: () => import('../views/RulesIndexView.vue'),
+        },
         {
           path: ':serverId',
           name: 'rules-detail',
           component: () => import('../views/RulesPageView.vue'),
-        },
-      ],
-      meta: {
-        title: 'Normativas'
-      }
+        }
+      ]
     },
-
     {
       path: '/housing',
       name: 'housing',

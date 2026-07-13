@@ -29,6 +29,10 @@ export default defineConfig(async () => {
       },
     },
     server: {
+      host: true,
+      watch: {
+        usePolling: true,
+      },
       proxy: {
         '/api': {
           target: targetBackend,

@@ -10,14 +10,14 @@ import { onActivated, onDeactivated } from 'vue'
 import 'swiper/css'
 
 onActivated(() => {
-  console.log('ACTIVATED')
+  //console.log('ACTIVATED')
 
   swiperInstance.value?.autoplay?.start()
 })
 
-onDeactivated(() => {
+/* onDeactivated(() => {
   console.log('DEACTIVATED')
-})
+})*/
 const router = useRouter()
 const swiperInstance = ref<SwiperClass>()
 const { getAllServers, getSvgUrl, initBasic } = useServerService();

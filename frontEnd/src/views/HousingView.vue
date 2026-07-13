@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import type { CSSProperties } from 'vue'
 
 // Importación de tu mapa PNG o JPG
-import mapImageUrl from '../assets/images/mapa.png'
+import mapImageUrl from '/images/mapa.png'
 
 // --- REFS PARA CONTROL DE DIMENSIONES ---
 const viewportRef = ref<HTMLDivElement | null>(null)
