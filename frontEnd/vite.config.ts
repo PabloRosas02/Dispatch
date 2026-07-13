@@ -6,25 +6,36 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    vue(),
-    vueJsx(),
-    vueDevTools(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+export default defineConfig(async () => {
+  // 1. Validamos si el healthcheck de localhost responde correctamente
+  const isLocalActive = await fetch('http://localhost:3000/api/')
+    .then(res => res.ok)
+    .catch(() => false);
+
+  // 2. Definimos el target dinámico según el estado del backend local
+  const targetBackend = isLocalActive ? 'http://localhost:3000' : 'http://main-proxy-dev';
+
+  console.log(`🚀 API Proxy configurado hacia: ${targetBackend}`);
+
+  return {
+    plugins: [
+      vue(),
+      vueJsx(),
+      vueDevTools(),
+    ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      },
     },
-  },
-  server: {
-    proxy: {
-      // Intercepta todas las llamadas que comiencen con /api y las manda al servidor Express
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
+    server: {
+      proxy: {
+        '/api': {
+          target: targetBackend,
+          changeOrigin: true,
+          secure: false,
+        }
       }
     }
-  }
-})
+  };
+});

@@ -10,20 +10,10 @@ x-frontend-base: &frontend-base
   env_file:
     - ./.env
   restart: unless-stopped
-  depends_on:
-    - backend
   networks:
     - internal-nw
 
 x-main-proxy-base: &main-proxy-base
-    image: nginx:alpine
-    container_name: main-proxy
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_cache:/tmp/nginx_cache
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -31,16 +21,64 @@ x-main-proxy-base: &main-proxy-base
     - extenal-nw
     - internal-nw
 
+x-backend-base: &backend-base
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile
+      target: backend-production
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+    restart: unless-stopped
+    networks:
+      - internal-nw
+
 services:
 
   main-proxy:
+    container_name: main-proxy
     profiles: ["prod"]
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:80"
     <<: *main-proxy-base
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_cache:/tmp/nginx_cache
     depends_on:
-      - frontend
+      - backend
+
+  backend:
+    profiles: ["prod"]
+    container_name: backend
+    volumes:
+      - backend_db:/app/db
+    <<: *backend-base
+
   main-proxy-dev:
+    container_name: main-proxy-dev
     profiles: ["dev"]
+    image: nginx:alpine
+    ports:
+      - 8080:80
     <<: *main-proxy-base
+    volumes:
+      - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_cache_dev:/tmp/nginx_cache
+    depends_on:
+      - frontend-dev
+      - backend-dev
+
+  backend-dev:
+    profiles: ["dev"]
+    container_name: backend-dev
+    volumes:
+      - backend_db_dev:/app/db
+    <<: *backend-base
 
   frontend-dev:
     profiles: ["dev"]
@@ -52,32 +90,12 @@ services:
         - "5173:5173"
     volumes:
       - ./frontEnd:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     <<: *frontend-base
-
-  frontend:
-    profiles: ["prod"]
-    build:
-      <<: *frontend-base-build
-      target: production
-    container_name: page-prod
-    security_opt:
-      - no-new-privileges:true
-    <<: *frontend-base
-
-  backend:
-    build:
-      context: ./backEnd
-      dockerfile: Dockerfile
-      target: backend-production
-      args:
-        NODE_VERSION: ${NODE_VERSION}
-    container_name: backend
-    restart: unless-stopped
-    volumes:
-      - ./database.json:/app/database.json:rw
+    depends_on:
+      - backend-dev
     networks:
-      - internal-nw
+      - extenal-nw
 
   ngrok-tunnel:
     profiles: ["prod"]
@@ -95,8 +113,13 @@ services:
       - extenal-nw
 
 volumes:
+  nginx_cache_dev:
+    driver: local
   nginx_cache:
     driver: local
+  backend_db:
+  backend_db_dev:
+  frontend_node_modules:
 
 networks:
   extenal-nw:

@@ -2,10 +2,11 @@ import { ref, watch, onUnmounted } from 'vue';
 import type * as ServerType from '@/types/serverTypes';
 import { useServerService } from '@/services/serverService';
 
-export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'filename'> {
+export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
+  basic: Omit<ServerType.BasicInfo, 'filename'>;
   filename?: string;
   images?: string[];
-}
+};
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
 const fetchedServers: Record<string, ExtendedRPServer> = {};
@@ -52,7 +53,7 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
-    const targetCacheKey = `server_page_config_${defaultRole.id}`;
+    const targetCacheKey = `server_page_config_${defaultRole.basic.id}`;
     bLoading.value = true;
 
     try {
@@ -64,14 +65,19 @@ export function useRoleDetail(currentServerId: string) {
       const data = result.data ? result.data : result;
 
       if (data && Object.keys(data).length > 0) {
-        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.id)]);
-        
+        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.basic.id)]);
         role.value = {
           ...defaultRole,
-          title: data.title || defaultRole.title,
-          subtitle: data.subtitle || defaultRole.subtitle,
-          description: data.description || defaultRole.description,
-          discordLink: data.discordLink || defaultRole.discordLink, // 🔥 CORRECCIÓN: Sincroniza el link dinámico de Discord
+          basic: {
+            id: data.basic.id || defaultRole.basic.id,
+            title: data.basic.title || defaultRole.basic.title,
+            subtitle: data.basic.subtitle || defaultRole.basic.subtitle,
+          },
+          addit: {
+            color: data.addit.color || defaultRole.addit.color,
+            description: data.addit.description || defaultRole.addit.description,
+            discordLink: data.addit.discordLink || defaultRole.addit.discordLink
+          },
           images: savedImages
         };
 
@@ -82,17 +88,17 @@ export function useRoleDetail(currentServerId: string) {
       }
     } catch (error) {
       console.warn(`[useRoleDetail] No se pudo conectar con el servidor para ${currentServerId}. Buscando respaldo local...`);
-      
+
       // Capa 3: Si el servidor falla o no responde, intentamos extraer el respaldo de localStorage
       const localBackup = localStorage.getItem(`backup_${targetCacheKey}`);
-      
+
       if (localBackup) {
         console.log(`[useRoleDetail] Respaldo local detectado y restaurado con éxito.`);
         role.value = JSON.parse(localBackup);
       } else {
         // Red de seguridad final: Si tampoco hay respaldo local, cargamos los valores por defecto crudos
         console.warn(`[useRoleDetail] Sin respaldo local disponible. Inicializando con defaults de fábrica.`);
-        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.id) || ''] };
+        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
       }
     } finally {
       // Guardamos en la memoria global para optimizar la navegación actual
@@ -108,9 +114,9 @@ export function useRoleDetail(currentServerId: string) {
 
     const file = input.files[0];
     if (!file) return;
-    
+
     const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-    
+
     if (file.size > MAX_FILE_SIZE_BYTES) {
       alert(`El archivo excede el límite máximo permitido de 10 MB.`);
       return;
@@ -122,8 +128,8 @@ export function useRoleDetail(currentServerId: string) {
       if (base64Result && role.value) {
         if (!role.value.images) role.value.images = [];
         role.value.images.push(base64Result);
-        
-        const targetCacheKey = `server_page_config_${role.value.id}`;
+
+        const targetCacheKey = `server_page_config_${role.value.basic.id}`;
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       }
     };
@@ -134,8 +140,8 @@ export function useRoleDetail(currentServerId: string) {
   const removeImageAtIndex = (index: number) => {
     if (!role.value || !role.value.images) return;
     role.value.images.splice(index, 1);
-    
-    const targetCacheKey = `server_page_config_${role.value.id}`;
+
+    const targetCacheKey = `server_page_config_${role.value.basic.id}`;
     localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
   };
 

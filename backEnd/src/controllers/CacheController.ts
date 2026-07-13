@@ -7,23 +7,34 @@ export class CacheController extends BaseController {
   public getAllCache = (req: Request, res: Response): void => {
     try {
       const data = cacheService.getAll();
-      this.sendSuccess(res, data, 'Caché completa recuperada.');
+
+      if (!data || Object.keys(data).length === 0) {
+        return this.sendError(res, "No hay elementos en caché", 404);
+      }
+
+      this.sendSuccess(res, data); // 200 por defecto
     } catch (error: any) {
-      this.sendError(res, 'Error al obtener la caché', 500, error.message);
+      this.sendError(res, error.message || "Error al obtener la caché", 500);
     }
   };
 
   public getByKey = (req: Request, res: Response): void => {
     try {
       const { key } = req.params;
-      
-      // Intentamos recuperar el elemento directamente. 
-      // Si no existe, nuestro CacheService se encargará de gestionar el fallback o retornar null.
+
+      if (!key) {
+        return this.sendError(res, "El parámetro 'key' es obligatorio", 400);
+      }
+
       const data = cacheService.get(key);
-      
-      this.sendSuccess(res, data, `Elemento '${key}' procesado correctamente.`);
+
+      if (!data) {
+        return this.sendError(res, `Elemento '${key}' no encontrado`, 404);
+      }
+
+      this.sendSuccess(res, data); // 200 por defecto
     } catch (error: any) {
-      this.sendError(res, 'Error al recuperar el elemento', 500, error.message);
+      this.sendError(res, error.message || "Error al recuperar el elemento", 500);
     }
   };
 
@@ -31,15 +42,18 @@ export class CacheController extends BaseController {
     try {
       const { key, value } = req.body;
 
-      if (!key) {
-        this.sendError(res, "El campo 'key' es obligatorio en el body", 400);
-        return;
+      if (!key || typeof key !== "string") {
+        return this.sendError(res, "El campo 'key' es obligatorio y debe ser un string", 400);
+      }
+
+      if (value === undefined || value === null) {
+        return this.sendError(res, "El campo 'value' es obligatorio", 400);
       }
 
       cacheService.set(key, value);
-      this.sendSuccess(res, { key, value }, `Elemento '${key}' guardado en caché con éxito.`, 201);
+      this.sendSuccess(res, { key, value }, 201); // Created
     } catch (error: any) {
-      this.sendError(res, 'Error al guardar en caché', 500, error.message);
+      this.sendError(res, error.message || "Error al guardar en caché", 500);
     }
   };
 
@@ -47,16 +61,18 @@ export class CacheController extends BaseController {
     try {
       const { key } = req.params;
 
-      // El DELETE sí se puede mantener con verificación o simplemente intentar borrar directamente
+      if (!key) {
+        return this.sendError(res, "El parámetro 'key' es obligatorio", 400);
+      }
+
       if (!cacheService.has(key)) {
-        this.sendError(res, `La llave '${key}' no existe`, 404);
-        return;
+        return this.sendError(res, `La llave '${key}' no existe`, 404);
       }
 
       cacheService.delete(key);
-      this.sendSuccess(res, null, `Elemento '${key}' eliminado de la caché.`);
+      res.status(204).send(); // No Content
     } catch (error: any) {
-      this.sendError(res, 'Error al eliminar el elemento', 500, error.message);
+      this.sendError(res, error.message || "Error al eliminar el elemento", 500);
     }
   };
 }

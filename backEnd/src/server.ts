@@ -17,11 +17,18 @@ app.use('/api/cache', cacheRoutes);
 app.use('/api/servers', serverRoutes);
 
 // Ruta Base / Health Check
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ 
-    status: "online", 
-    message: "Servidor TS corriendo perfectamente",
+app.get('/api/', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: "online",
     timestamp: new Date()
+  });
+});
+
+// Catch‑all global
+app.use((req: Request, res: Response) => {
+  res.status(500).json({
+    success: false,
+    data: null
   });
 });
 
