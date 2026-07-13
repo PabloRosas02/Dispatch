@@ -5,7 +5,8 @@ FILE_NAME=".env.example"
 ENV_KEYS=(
   "# Node"
   "NODE_VERSION"
-  "EXTERNAL_PORT_FD"
+  "# NGROK"
+  "NGROK_TOKEN"
 )
 
 > "$FILE_NAME"
