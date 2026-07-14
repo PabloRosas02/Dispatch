@@ -101,7 +101,7 @@ export class ServerService {
       const parsedData = JSON.parse(defaultContent) as { servers: RPServer[] };
 
       if (parsedData && Array.isArray(parsedData.servers)) {
-        parsedData.servers.forEach((rawSrv: any) => {
+        parsedData.servers.forEach((rawSrv: RPServer) => {
 
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
           const id = fullServer?.basic?.id;
