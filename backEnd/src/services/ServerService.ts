@@ -51,28 +51,27 @@ export class ServerService {
 
   private loadFromDisk(): void {
 
-    if (fs.existsSync(this.dbPath) == false) {
+    if (!fs.existsSync(this.dbPath)) {
       console.log("[ServerService] No se detectó base de datos previa. Inicializando desde valores por defecto (factory)...");
       this.restoreToFactoryDefaults();
       return;
     }
 
     this.servers.clear();
-    const fd = fs.openSync(this.dbDefaultPath, "r");
 
     try {
-      const fileContent = fs.readFileSync(fd, "utf-8");
-      const parsedData = JSON.parse(fileContent);
+      const fileContent = fs.readFileSync(this.dbPath, "utf-8");
+      const parsedData = JSON.parse(fileContent) as { servers: RPServer[] };
 
       // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
       if (parsedData && Array.isArray(parsedData.servers)) {
-        parsedData.servers.forEach((rawSrv: any) => {
+        parsedData.servers.forEach((rawSrv: RPServer) => {
           // Hidratamos la estructura de datos completa garantizando todos sus miembros
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
           // Verificamos el ID a través del Helper de forma segura
-          const id = RPServerHelper.getId(fullServer);
+          const id = fullServer?.basic?.id;
 
-          if (id !== "") {
+          if (id) {
             // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
@@ -81,9 +80,9 @@ export class ServerService {
         });
       }
       console.log(`[ServerService] Estado rehidratado exitosamente desde ${path.basename(this.dbPath)}.`);
-    } finally {
-      // el archivo se cierra aquí obligatoriamente liberando el recurso.
-      fs.closeSync(fd);
+    } catch (error) {
+      console.error("[ServerService] Error crítico al leer o parsear la base de datos:", error);
+      this.restoreToFactoryDefaults();
     }
   }
 
@@ -93,26 +92,21 @@ export class ServerService {
   public restoreToFactoryDefaults(): void {
     this.servers.clear();
 
-    if (fs.existsSync(this.dbDefaultPath) == false) {
+    if (!fs.existsSync(this.dbDefaultPath)) {
       return;
     }
 
-    // 1. Abrimos el descriptor de archivo (File Descriptor)
-    const fd = fs.openSync(this.dbDefaultPath, "r");
-
     try {
-      // 2. Leemos todo el contenido usando el descriptor
-      const defaultContent = fs.readFileSync(fd, "utf-8");
-      const parsedData = JSON.parse(defaultContent);
+      const defaultContent = fs.readFileSync(this.dbDefaultPath, "utf-8");
+      const parsedData = JSON.parse(defaultContent) as { servers: RPServer[] };
 
       if (parsedData && Array.isArray(parsedData.servers)) {
         parsedData.servers.forEach((rawSrv: any) => {
-          // Hidratamos la estructura de datos completa garantizando todos sus miembros
-          const fullServer = RPServerHelper.hydrateServer(rawSrv);
-          // Verificamos el ID a través del Helper de forma segura
-          const id = RPServerHelper.getId(fullServer);
 
-          if (id !== "") {
+          const fullServer = RPServerHelper.hydrateServer(rawSrv);
+          const id = fullServer?.basic?.id;
+
+          if (id) {
             // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
@@ -120,9 +114,8 @@ export class ServerService {
           }
         });
       }
-    } finally {
-      // el archivo se cierra aquí obligatoriamente liberando el recurso.
-      fs.closeSync(fd);
+    } catch (error) {
+      console.error("[ServerService] Error crítico al leer o parsear la base de datos:", error);
     }
 
     this.safeSaveToDisk();
@@ -201,8 +194,8 @@ export class ServerService {
   }
 
   // --- MÉTODOS PARA SERVIDORES RP ---
-  public getServer(id: string): RPServer | null {
-    return this.servers.get(id.trim()) || null;
+  public getServer(id: string): RPServer | undefined {
+    return this.servers.get(id);
   }
 
   public setServer(id: string, server: RPServer): void {

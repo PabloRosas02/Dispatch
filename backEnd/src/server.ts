@@ -4,7 +4,7 @@ import cacheRoutes from './routes/cacheRoutes';
 import serverRoutes from './routes/serverRoutes';
 
 const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ?? 3000;
 
 // --- MIDDLEWARES CENTRALES ---
 app.use(cors());
