@@ -1,4 +1,14 @@
 {
+  "welcomeConfig": {
+    "welcomeTitle": "Bienvenido a <span class=\"highlight-text\">Kinsfolk</span>",
+    "welcomeDescription": "Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.",
+    "ctaText": "Únete",
+    "logoUrl": "",
+    "discordLink": "https://discord.gg/a6TSrUpwr"
+  },
+  "newsConfig": {
+    "news": []
+  },
   "servers": [
     {
       "basic": {

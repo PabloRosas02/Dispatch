@@ -12,7 +12,7 @@ router.get("/rules-info", serverController.getAllRulePage);
 router.post("/", serverController.saveComplete);
 router.delete("/:id", serverController.delete);
 
-// --- 🎯 ENDPOINTS DE RUTAS FILTRADAS POR MIEMBRO ---
+// --- ENDPOINTS DE RUTAS FILTRADAS POR MIEMBRO ---
 
 // 1. Rutas del miembro 'basic'
 router.get("/:id/basic", serverController.getBasicInfo);

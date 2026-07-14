@@ -6,7 +6,7 @@ export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
   basic: Omit<ServerType.BasicInfo, 'filename'>;
   filename?: string;
   images?: string[];
-};
+}
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
 const fetchedServers: Record<string, ExtendedRPServer> = {};
@@ -35,7 +35,7 @@ export function useRoleDetail(currentServerId: string) {
   /**
    * Lógica de carga con triple capa de seguridad:
    * 1. Memoria RAM volatil (fetchedServers)
-   * 2. Servidor Backend (API Cache / database.json)
+   * 2. Servidor Backend (API Cache / database.json / serversDefault.json)
    * 3. Disco local del navegador (localStorage Backup)
    */
   const fetchRoleData = async (forceRefresh = false) => {
@@ -46,7 +46,7 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
-    // Capa 1: Si ya tenemos los datos en memoria y no forzamos recarga, usamos la caché local.
+    // Capa 1: Caché en memoria RAM
     if (fetchedServers[currentServerId] && !forceRefresh) {
       role.value = fetchedServers[currentServerId];
       bLoading.value = false;
@@ -57,7 +57,7 @@ export function useRoleDetail(currentServerId: string) {
     bLoading.value = true;
 
     try {
-      // Capa 2: Intentar traer los datos desde el servidor
+      // Capa 2: Servidor
       const response = await fetch(`/api/cache/${targetCacheKey}`);
       if (response.status === 404) throw new Error('Not found in cache');
 
@@ -66,22 +66,27 @@ export function useRoleDetail(currentServerId: string) {
 
       if (data && Object.keys(data).length > 0) {
         const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.basic.id)]);
+        
+        // Fusión profunda respetando la nueva arquitectura anidada
         role.value = {
           ...defaultRole,
           basic: {
-            id: data.basic.id || defaultRole.basic.id,
-            title: data.basic.title || defaultRole.basic.title,
-            subtitle: data.basic.subtitle || defaultRole.basic.subtitle,
+            id: data.basic?.id || defaultRole.basic.id,
+            title: data.basic?.title || defaultRole.basic.title,
+            subtitle: data.basic?.subtitle || defaultRole.basic.subtitle,
           },
           addit: {
-            color: data.addit.color || defaultRole.addit.color,
-            description: data.addit.description || defaultRole.addit.description,
-            discordLink: data.addit.discordLink || defaultRole.addit.discordLink
+            color: data.addit?.color || defaultRole.addit.color,
+            description: data.addit?.description || defaultRole.addit.description,
+            discordLink: data.addit?.discordLink || defaultRole.addit.discordLink
           },
+          banner: data.banner || defaultRole.banner,
+          ver: data.ver || defaultRole.ver,
+          sections: data.sections || defaultRole.sections,
           images: savedImages
         };
 
-        // Guardamos una copia exacta en el almacenamiento local del navegador
+        // Respaldo local
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
       } else {
         throw new Error('Empty data');
@@ -89,25 +94,22 @@ export function useRoleDetail(currentServerId: string) {
     } catch (error) {
       console.warn(`[useRoleDetail] No se pudo conectar con el servidor para ${currentServerId}. Buscando respaldo local...`);
 
-      // Capa 3: Si el servidor falla o no responde, intentamos extraer el respaldo de localStorage
+      // Capa 3: Respaldo de localStorage
       const localBackup = localStorage.getItem(`backup_${targetCacheKey}`);
 
       if (localBackup) {
         console.log(`[useRoleDetail] Respaldo local detectado y restaurado con éxito.`);
         role.value = JSON.parse(localBackup);
       } else {
-        // Red de seguridad final: Si tampoco hay respaldo local, cargamos los valores por defecto crudos
         console.warn(`[useRoleDetail] Sin respaldo local disponible. Inicializando con defaults de fábrica.`);
         role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
       }
     } finally {
-      // Guardamos en la memoria global para optimizar la navegación actual
       if (role.value) fetchedServers[currentServerId] = role.value;
       bLoading.value = false;
     }
   };
 
-  // Lógica de carga de imágenes
   const handleAddImage = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0 || !role.value) return;
@@ -136,7 +138,6 @@ export function useRoleDetail(currentServerId: string) {
     reader.readAsDataURL(file);
   };
 
-  // Lógica de eliminación de imágenes
   const removeImageAtIndex = (index: number) => {
     if (!role.value || !role.value.images) return;
     role.value.images.splice(index, 1);

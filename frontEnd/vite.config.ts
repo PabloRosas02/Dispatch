@@ -15,7 +15,7 @@ export default defineConfig(async () => {
   // 2. Definimos el target dinámico según el estado del backend local
   const targetBackend = isLocalActive ? 'http://localhost:3000' : 'http://main-proxy-dev';
 
-  console.log(`🚀 API Proxy configurado hacia: ${targetBackend}`);
+  console.log(`API Proxy configurado hacia: ${targetBackend}`);
 
   return {
     plugins: [

@@ -4,80 +4,93 @@ import * as path from 'path';
 export class CacheService {
   private cache: Map<string, any>;
 
-  // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbDir = path.resolve("/app", "db");
+  // Apuntamos estrictamente a la carpeta 'db' dentro del directorio raíz del backend
+  private dbDir = path.join(process.cwd(), "db");
   private dbPath = path.join(this.dbDir, "database.json");
+  private defaultDbPath = path.join(this.dbDir, "serversDefault.json");
 
   constructor() {
     this.cache = new Map<string, any>();
-    // Al arrancar, intenta cargar los datos previos del disco o inicializa con los de fábrica
     this.loadFromDisk();
   }
 
-  // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
+  // --- OPERACIONES DE SISTEMA DE ARCHIVOS ---
   private safeSaveToDisk(): void {
     try {
+      // Si por alguna razón la carpeta db no existe, la crea automáticamente
+      if (!fs.existsSync(this.dbDir)) {
+        fs.mkdirSync(this.dbDir, { recursive: true });
+      }
+
       const dataToSave = {
         cache: Object.fromEntries(this.cache),
       };
+      
       const tmpPath = this.dbPath + ".tmp";
       fs.writeFileSync(tmpPath, JSON.stringify(dataToSave, null, 2), "utf-8");
       fs.renameSync(tmpPath, this.dbPath);
+      
+      console.log(`[CacheService] Base de datos persistida exitosamente en: ${this.dbPath}`);
     } catch (error) {
-      console.error("[CacheService] Error al guardar en disco:", error);
-      throw error; // Propaga para que el controlador pueda devolver 500
+      console.error("[CacheService] Error crítico al guardar en disco:", error);
     }
   }
 
   private loadFromDisk(): void {
-
-    if (fs.existsSync(this.dbPath) == false) {
-      console.log("[CacheService] No se detectó base de datos previa. Inicializando valores de fábrica...");
-      //this.restoreToFactoryDefaults();
+    if (!fs.existsSync(this.dbPath)) {
+      console.log("[CacheService] database.json no encontrado. Cargando valores por defecto...");
+      this.restoreToFactoryDefaults();
       return;
     }
 
-    this.cache.clear();
-
-    const fd = fs.openSync(this.dbPath, "r");
-
     try {
-      const fileContent = fs.readFileSync(fd, "utf-8");
+      const fileContent = fs.readFileSync(this.dbPath, "utf-8");
       const parsedData = JSON.parse(fileContent);
 
-      // Rehydrate generic cache map
       this.cache = new Map(Object.entries(parsedData.cache || {}));
-
-      // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
-      console.log("[CacheService] Estado rehidratado exitosamente desde database.json.");
-    } finally {
-      // el archivo se cierra aquí obligatoriamente liberando el recurso.
-      fs.closeSync(fd);
+      console.log("[CacheService] Estado rehidratado correctamente desde database.json");
+    } catch (error) {
+      console.error("[CacheService] Error leyendo database.json:", error);
     }
   }
 
-  /**
-   * Restaura la base de datos local y la memoria a su estado inicial de fábrica
-   */
-  /*public restoreToFactoryDefaults(): void {
+  public restoreToFactoryDefaults(): void {
     this.cache.clear();
-    this.servers.clear();
 
-    // Poblar caché de fábrica
-    Object.entries(this.factoryCacheDefaults).forEach(([key, val]) => {
-      this.cache.set(key, val);
-    });
+    try {
+      if (fs.existsSync(this.defaultDbPath)) {
+        const defaultContent = fs.readFileSync(this.defaultDbPath, "utf-8");
+        const parsedDefault = JSON.parse(defaultContent);
 
-    // Poblar servidores de fábrica (Clonación profunda para romper referencias)
-    this.factoryServerDefaults.forEach((server) => {
-      this.servers.set(server.id, JSON.parse(JSON.stringify(server)));
-    });
+        // 1. Restaurar configuraciones genéricas
+        if (parsedDefault.welcomeConfig) {
+          this.cache.set("kinsfolk_page_config", parsedDefault.welcomeConfig);
+        }
+        if (parsedDefault.newsConfig) {
+          this.cache.set("news_page_general_config", parsedDefault.newsConfig);
+        }
 
-    // Escribir inmediatamente en el archivo físico
-    this.safeSaveToDisk();
-  }*/
+        // 2. Restaurar servidores estructurados
+        if (parsedDefault.servers && Array.isArray(parsedDefault.servers)) {
+          parsedDefault.servers.forEach((server: any) => {
+            if (server.basic && server.basic.id) {
+              this.cache.set(`server_page_config_${server.basic.id}`, server);
+            }
+          });
+        }
 
-  // --- MÉTODOS DE CACHÉ GENÉRICA (BIENVENIDAS Y CONFIGURACIONES) ---
+        // 3. Forzar el guardado crea el database.json por primera vez
+        this.safeSaveToDisk();
+        console.log("[CacheService] Valores de fábrica restaurados desde serversDefault.json");
+      } else {
+        console.error(`[CacheService] CRÍTICO: No se encontró el archivo base -> ${this.defaultDbPath}`);
+      }
+    } catch (error) {
+      console.error("[CacheService] Error restaurando defaults (Verifica la sintaxis del JSON):", error);
+    }
+  }
+
+  // --- MÉTODOS DE CACHÉ GENÉRICA ---
   public get(key: string): any {
     return this.cache.get(key) || null;
   }
@@ -91,7 +104,7 @@ export class CacheService {
     }
 
     this.cache.set(key, value);
-    this.safeSaveToDisk();
+    this.safeSaveToDisk(); // Sincroniza al actualizar
   }
 
   public has(key: string): boolean {
@@ -100,7 +113,7 @@ export class CacheService {
 
   public delete(key: string): boolean {
     const deleted = this.cache.delete(key);
-    if (deleted) this.safeSaveToDisk(); // Sincroniza si se borra una llave
+    if (deleted) this.safeSaveToDisk();
     return deleted;
   }
 
@@ -114,5 +127,4 @@ export class CacheService {
   }
 }
 
-// Exportamos una única instancia compartida (Patrón Singleton)
 export const cacheService = new CacheService();

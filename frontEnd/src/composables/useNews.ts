@@ -1,7 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import type { NewsArticle } from '@/types/serverTypes';
 
-// Esta bandera vive fuera de la función useNews para mantener el estado de carga global del módulo
 const hasFetched = ref<boolean>(false);
 
 export function useNews(CACHE_KEY: string) {
@@ -32,9 +31,7 @@ export function useNews(CACHE_KEY: string) {
     return filteredNewsList.value.slice(start, start + ITEMS_PER_PAGE);
   });
 
-  watch(searchQuery, () => {
-    currentPage.value = 1;
-  });
+  watch(searchQuery, () => { currentPage.value = 1; });
 
   const embedVideoUrl = computed(() => {
     if (!currentArticle.value?.videoUrl) return '';
@@ -44,9 +41,8 @@ export function useNews(CACHE_KEY: string) {
     return (match && match[2]?.length === 11) ? `https://www.youtube.com/embed/${match[2]}` : url;
   });
 
-  // --- PETICIÓN DE CONTROL ÚNICO ---
+  // --- PETICIÓN OPTIMIZADA ---
   const fetchNews = async (forceRefresh = false) => {
-    // Si ya se ha cargado previamente y no se está forzando una recarga, detenemos la ejecución
     if (hasFetched.value && !forceRefresh) {
       bLoading.value = false;
       return;
@@ -54,37 +50,40 @@ export function useNews(CACHE_KEY: string) {
 
     bLoading.value = true;
     try {
-      const response = await fetch(`http://localhost:3000/api/cache/${CACHE_KEY}`);
+      const response = await fetch(`/api/cache/${CACHE_KEY}`);
       
-      // Control de seguridad: Si database.json no existe (404), inicializamos un arreglo vacío
-      if (response.status === 404) {
+      // Si el backend no encuentra NADA (ni base de datos ni defaults), devolvemos vacío
+      if (!response.ok) {
+        console.warn('[useNews] API devolvió error, inicializando lista vacía.');
         newsList.value = [];
         hasFetched.value = true;
         return;
       }
       
       const result = await response.json();
-      const rawData = result.data ?? result.value ?? result;
+      
+      // Lógica de extracción de datos flexible:
+      // Acepta { news: [...] } o directamente [...]
+      const rawData = result.news || (result.data ? result.data.news : null) || result;
 
-      if (rawData && Array.isArray(rawData.news)) {
-        newsList.value = rawData.news;
-      } else if (Array.isArray(rawData)) {
-        // CORRECCIÓN: Asignamos los datos directamente a la variable reactiva
+      if (Array.isArray(rawData)) {
         newsList.value = rawData;
       } else {
         newsList.value = [];
       }
       
-      // Marcamos la bandera de control como completada exitosamente
       hasFetched.value = true;
     } catch (error) {
-      console.error('[useNews] Error al conectar con database.json:', error);
+      console.error('[useNews] Error crítico al conectar con el backend:', error);
       newsList.value = [];
     } finally {
       bLoading.value = false;
     }
   };
 
+  // ... [El resto de tus funciones: createNewArticleTemplate, deleteCurrentArticle, etc. se mantienen igual] ...
+
+  // Mantenemos tus funciones auxiliares tal cual las tenías:
   const createNewArticleTemplate = () => {
     const newArticle: NewsArticle = {
       id: `news_${Date.now()}`,
@@ -97,7 +96,6 @@ export function useNews(CACHE_KEY: string) {
       images: [],
       videoUrl: ''
     };
-    
     newsList.value.unshift(newArticle);
     searchQuery.value = ''; 
     currentPage.value = 1;
@@ -106,7 +104,6 @@ export function useNews(CACHE_KEY: string) {
 
   const deleteCurrentArticle = () => {
     if (newsList.value.length === 0) return;
-    
     if (confirm('¿Estás seguro de que deseas eliminar este boletín por completo?')) {
       newsList.value.splice(activeIndex.value, 1);
       if (currentPage.value > totalPages.value) currentPage.value = totalPages.value;
@@ -118,15 +115,9 @@ export function useNews(CACHE_KEY: string) {
   const handleAddImage = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length || !currentArticle.value) return;
-    
     const file = input.files[0];
     if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert(`El archivo excede el límite máximo permitido de 10 MB.`);
-      return;
-    }
-
+    if (file.size > 10 * 1024 * 1024) { alert(`El archivo excede el límite.`); return; }
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64Result = e.target?.result as string;
@@ -155,21 +146,9 @@ export function useNews(CACHE_KEY: string) {
   };
 
   return {
-    newsList, 
-    activeIndex, 
-    bLoading, 
-    searchQuery, 
-    currentPage, 
-    currentArticle, 
-    totalPages, 
-    paginatedNewsList, 
-    embedVideoUrl,
-    fetchNews, 
-    createNewArticleTemplate, 
-    deleteCurrentArticle, 
-    handleAddImage, 
-    removeImageAtIndex, 
-    selectArticleFromPage, 
-    changePage
+    newsList, activeIndex, bLoading, searchQuery, currentPage, 
+    currentArticle, totalPages, paginatedNewsList, embedVideoUrl,
+    fetchNews, createNewArticleTemplate, deleteCurrentArticle, 
+    handleAddImage, removeImageAtIndex, selectArticleFromPage, changePage
   };
 }
