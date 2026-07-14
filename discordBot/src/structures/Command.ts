@@ -1,7 +1,9 @@
-import { 
-  SlashCommandBuilder, 
+import {
+  SlashCommandBuilder,
   CommandInteraction,
   ModalSubmitInteraction,
+  ChatInputCommandInteraction,
+  CacheType,
   EmbedBuilder,
   ColorResolvable
 } from 'discord.js';
@@ -57,7 +59,7 @@ export abstract class Command {
   /**
    * Método principal de ejecución del comando
    */
-  public abstract execute(interaction: CommandInteraction): Promise<void>;
+  public abstract execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void>;
 
   /**
    * Hook para manejar envíos de formularios (modals)

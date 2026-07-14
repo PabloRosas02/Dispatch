@@ -1,5 +1,6 @@
-import { 
-  CommandInteraction, 
+import {
+  ChatInputCommandInteraction,
+  CacheType,
   ModalSubmitInteraction,
   REST,
   Routes
@@ -46,7 +47,7 @@ export class CommandManager {
     }
   }
 
-  public async handleCommand(interaction: CommandInteraction): Promise<void> {
+  public async handleCommand(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
     const command = this._registry.get(interaction.commandName);
 
     if (!command) {
