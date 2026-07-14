@@ -16,17 +16,17 @@
   "author": "Tu Nombre",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.26.4"
+    "discord.js": "^14.26.5"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "undici": "^6.19.7"
+    "undici": "^6.27.0"
   },
   "resolutions": {
-    "undici": "^6.19.7"
+    "undici": "^6.27.0"
   },
   "engines": {
     "node": ">=18.0.0"
