@@ -121,9 +121,8 @@ export class ServerService {
     this.safeSaveToDisk();
   }
 
-  public getServerBasicInfo(id: string): BasicInfo | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getBasicInfo(srv) : null;
+  public getServerBasicInfo(id: string): BasicInfo | undefined {
+    return this.getServer(id)?.basic;
   }
 
   public updateServerBasicInfo(id: string, basic: BasicInfo): void {
@@ -134,9 +133,8 @@ export class ServerService {
   }
 
   // --- 2. ADDITIONAL INFO ---
-  public getServerAdditionalInfo(id: string): AdditionalInfo | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getAdditionalInfo(srv) : null;
+  public getServerAdditionalInfo(id: string): AdditionalInfo | undefined {
+    return this.getServer(id)?.addit;
   }
 
   public updateServerAdditionalInfo(id: string, addit: AdditionalInfo): void {
@@ -147,9 +145,8 @@ export class ServerService {
   }
 
   // --- 3. BANNER DETAILS ---
-  public getServerBannerDetails(id: string): BannerDetails | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getBannerDetails(srv) : null;
+  public getServerBannerDetails(id: string): BannerDetails | undefined {
+    return this.getServer(id)?.banner;
   }
 
   public updateServerBannerDetails(id: string, banner: BannerDetails): void {
@@ -160,9 +157,8 @@ export class ServerService {
   }
 
   // --- 4. VERSION AND STATUS ---
-  public getServerVersionAndStatus(id: string): VersionAndStatus | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getVersionAndStatus(srv) : null;
+  public getServerVersionAndStatus(id: string): VersionAndStatus | undefined {
+    return this.getServer(id)?.ver;
   }
 
   public updateServerVersion(id: string, version: string, status?: string): void {
@@ -174,8 +170,7 @@ export class ServerService {
 
   // --- 5. SECTIONS & RULES ---
   public getServerSections(id: string): RuleSection[] {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getSections(srv) : [];
+    return this.getServer(id)?.sections ?? [];
   }
 
   public addServerSection(id: string, title: string): void {
@@ -213,50 +208,49 @@ export class ServerService {
     return deleted;
   }
 
+  public getAllIds(): string[] {
+    return Array.from(this.servers.keys());
+  }
+
   public getAllServersBasicInfo(): BasicInfo[] {
-    // Extrae los IDs de las llaves del Map, mapea con tu función y remueve los nulos
-    return Array.from(this.servers.keys())
-      .map(id => this.getServerBasicInfo(id))
-      .filter((info): info is BasicInfo => info !== null);
+    const arrayBasicInfo: BasicInfo[] = [];
+    for (const server of this.servers.values()) {
+      if (server?.basic) {
+        arrayBasicInfo.push(server.basic);
+      }
+    }
+
+    return arrayBasicInfo;
   }
 
   public getAllServersAddit(): (AdditionalInfo & { id: string })[] {
-    return Array.from(this.servers.keys())
-      .map(id => {
-        const info = this.getServerAdditionalInfo(id);
-        if (!info) return null; // Si es nulo, lo pasamos para que el filter lo limpie
+    const arrayAdditInfo: (AdditionalInfo & { id: string })[] = [];
 
-        return {
-          id,
-          ...info
-        };
-      })
-      // El filter ahora asegura que lo que queda son objetos válidos con su ID
-      .filter((info): info is (AdditionalInfo & { id: string }) => info !== null);
+    for (const server of this.servers.values()) {
+      if (server?.addit && server.basic?.id) {
+        arrayAdditInfo.push({
+          id: server.basic.id,
+          ...server.addit
+        });
+      }
+    }
+    return arrayAdditInfo;
   }
 
   public getAllServersRules(): ServerRules[] {
-    // Obtenemos los IDs del mapa de servidores
-    return Array.from(this.servers.keys()).map(id => {
-      // 1. Obtenemos el servidor completo usando el ID
-      const server = this.servers.get(id);
+    const result: ServerRules[] = [];
 
-      // Si por alguna razón el servidor no existe en el mapa, devolvemos una estructura vacía
-      if (!server) {
-        return {
-          id,
-          banner: { bannerImage: '', bannerLabel: '', bannerDescription: '' },
-          sections: []
-        };
+    for (const srv of this.servers.values()) {
+
+      if (srv) {
+        result.push({
+          id: srv.basic?.id || '',
+          banner: srv.banner || { bannerImage: '', bannerLabel: '', bannerDescription: '' },
+          sections: srv.sections || []
+        });
       }
-
-      // 2. Utilizamos tus funciones estáticas pasándole el servidor encontrado
-      return {
-        id,
-        banner: RPServerHelper.getBannerDetails(server), // Reemplaza 'NombreDeTuClase' por el nombre real de tu clase backend
-        sections: RPServerHelper.getSections(server)
-      };
-    });
+    }
+    return result;
   }
 
 
