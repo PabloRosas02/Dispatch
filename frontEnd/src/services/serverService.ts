@@ -2,10 +2,31 @@ import { ref, readonly } from 'vue';
 import type * as ServerType from '../types/serverTypes';
 
 export const rpServers = ref<ServerType.RPServer[]>([]);
-const defaultPath = "/api/servers/";
+const defaultPath = "/api/servers";
 const isInitBasic = ref<boolean>(false);
 const isInitAddit = ref<boolean>(false);
 const isInitVBS = ref<boolean>(false);
+
+interface BasicInfoPayload {
+  success: boolean;
+  data: ServerType.BasicInfo[];
+}
+
+interface AdditInfoPayload {
+  success: boolean;
+  data: (ServerType.AdditionalInfo & { id: string })[];
+}
+
+interface RuleInfoItem {
+  id: string;
+  banner: ServerType.BannerDetails;
+  sections: ServerType.RuleSection[];
+}
+
+interface RuleInfoPayload {
+  success: boolean;
+  data: RuleInfoItem[];
+}
 
 export function useServerService() {
 
@@ -48,9 +69,9 @@ export function useServerService() {
     return getServerById(targetId);
   }
 
-  async function fetchBasicInfo() {
+  async function fetchBasicInfo(): Promise<void> {
     try {
-      const url = `${defaultPath}basic-info`;
+      const url = `${defaultPath}/basic-info`;
 
       const response = await fetch(url);
 
@@ -58,10 +79,10 @@ export function useServerService() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const res = await response.json();
+      const res = (await response.json()) as BasicInfoPayload;
 
       // Filtra y mapea solo la propiedad basic de cada objeto
-      const filteredData = res.data.map((item: ServerType.BasicInfo): ServerType.RPServer => {
+      const filteredData = res.data.map((item): ServerType.RPServer => {
         return {
           // Metemos los datos del endpoint de forma segura dentro del objeto 'basic'
           basic: {
@@ -87,28 +108,40 @@ export function useServerService() {
     }
   }
 
-  async function fetchAdditInfo() {
+  async function fetchAdditInfo(): Promise<void> {
+
     try {
-      const url = `${defaultPath}addit-info`;
+      const url = `${defaultPath}/addit-info`;
 
       const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const res = await response.json();
 
-      // Buscamos y fusionamos los datos dentro de nuestro estado reactivo existente
-      res.data.forEach((info: ServerType.AdditionalInfo & { id: string }) => {
-        const server = rpServers.value.find(s => s.basic.id === info.id);
-        if (server) {
-          server.addit = {
-            color: info.color,
-            description: info.description,
-            discordLink: info.discordLink
-          };
-        }
-      });
+      const res = (await response.json()) as AdditInfoPayload;
+
+      if (Array.isArray(res.data)) {
+
+        const serverMap = new Map(
+          rpServers.value
+            .filter((s) => s?.basic?.id)
+            .map((s) => [s.basic.id, s])
+        );
+
+        res.data.forEach((info) => {
+          const server = serverMap.get(info.id);
+
+          if (server) {
+            server.addit = {
+              color: info.color,
+              description: info.description,
+              discordLink: info.discordLink,
+            };
+          }
+        });
+      }
+
       isInitAddit.value = true;
     } catch (error) {
       isInitAddit.value = false;
@@ -116,39 +149,41 @@ export function useServerService() {
     }
   }
 
-  async function fetchRuleInfo() {
+  async function fetchRuleInfo(): Promise<void> {
+
     try {
-      const url = `${defaultPath}rules-info`;
+      const url = `${defaultPath}/rules-info`;
 
       const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const res = await response.json();
+      const res = (await response.json()) as RuleInfoPayload;
 
-      // Buscamos y fusionamos los datos dentro de nuestro estado reactivo existente
-      res.data.forEach((item: {
-        id: string;
-        banner: ServerType.BannerDetails;
-        sections: ServerType.RuleSection[]
-      }) => {
+      if (Array.isArray(res.data)) {
 
-        // Buscamos el servidor que coincida con el ID de la respuesta
-        const server = rpServers.value.find(s => s.basic.id === item.id);
+        const serverMap = new Map(
+          rpServers.value
+            .filter((s) => s?.basic?.id)
+            .map((s) => [s.basic.id, s])
+        );
 
-        if (server) {
-          // 1. Emparejamos e inyectamos los datos del banner
-          server.banner = {
-            bannerImage: item.banner.bannerImage,
-            bannerLabel: item.banner.bannerLabel,
-            bannerDescription: item.banner.bannerDescription
-          };
+        res.data.forEach((item) => {
+          const server = serverMap.get(item.id);
 
-          // 2. Emparejamos e inyectamos el array de secciones directamente
-          server.sections = item.sections;
-        }
-      });
+          if (server) {
+            server.banner = {
+              bannerImage: item.banner.bannerImage,
+              bannerLabel: item.banner.bannerLabel,
+              bannerDescription: item.banner.bannerDescription
+            };
+
+            server.sections = item.sections;
+          }
+        });
+      }
+
       isInitVBS.value = true;
     } catch (error) {
       isInitVBS.value = false;
@@ -175,6 +210,7 @@ export function useServerService() {
     }
 
   }
+
   return {
     isInitVBS,
     initBasic,
