@@ -29,6 +29,22 @@ export class ServerController extends BaseController {
     }
   };
 
+  public getAllIds = (req: Request, res: Response): void => {
+    try {
+      const servers = serverService.getAllIds();
+
+      if (!servers?.length) {
+        this.sendError(res, "No hay servidores registrados", 404);
+        return;
+      }
+
+      this.sendSuccess(res, servers);
+    } catch (error: unknown) {
+      console.error("[ServerController.getAllBasic] Error:", error);
+      this.sendError(res, "Error al obtener servidores", 500);
+    }
+  };
+
   public getAllBasic = (req: Request, res: Response): void => {
     try {
       const servers = serverService.getAllServersBasicInfo();
