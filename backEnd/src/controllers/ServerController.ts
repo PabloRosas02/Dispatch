@@ -6,7 +6,6 @@ import {
   BasicInfo,
   AdditionalInfo,
   BannerDetails,
-  VersionAndStatus,
   RuleSection,
   RuleItem
 } from '../interfaces/ServerInterfaces';
@@ -150,15 +149,21 @@ export class ServerController extends BaseController {
   public updateBasicInfo = (req: Request, res: Response): void => {
     try {
       const { id } = req.params;
-      const basicData = req.body as BasicInfo;
+      const basicData = req.body as Partial<BasicInfo>;
 
-      if (!basicData?.title || !basicData?.filename) {
-        this.sendError(res, "Datos de 'basic' incompletos (requiere title y filename)", 400);
+      if (!basicData ||
+        (basicData.title === undefined && basicData.subtitle === undefined)) {
+        this.sendError(res, "Datos de 'basic' incompletos (requiere al menos 'title' o 'subtitle')", 400);
+        return;
+      }
+
+      if (!serverService.hasServer(id)) {
+        this.sendError(res, "Servidor no encontrado", 404);
         return;
       }
 
       serverService.updateServerBasicInfo(id, basicData);
-      this.sendSuccess(res, { message: "Miembro 'basic' actualizado con éxito", basic: basicData });
+      this.sendSuccess(res, { ms: "Updated" });
     } catch (error: unknown) {
       console.error("[ServerController.updateBasicInfo] Error:", error);
       const msg = error instanceof Error ? error.message : "Error de actualización";
@@ -187,15 +192,29 @@ export class ServerController extends BaseController {
   public updateAdditionalInfo = (req: Request, res: Response): void => {
     try {
       const { id } = req.params;
-      const additData = req.body as AdditionalInfo;
+      const additData = req.body as Partial<AdditionalInfo>;
 
-      if (!additData?.color) {
-        this.sendError(res, "Datos de 'addit' incompletos (requiere color)", 400);
+      // 1. Guard: Ensure at least one valid field is provided
+      const hasColor = additData?.color !== undefined;
+      const hasDiscord = additData?.discordLink !== undefined;
+      const hasDescription = additData?.description !== undefined;
+
+      if (!additData || (!hasColor && !hasDiscord && !hasDescription)) {
+        this.sendError(
+          res,
+          "Datos de 'addit' incompletos (requiere al menos 'color', 'discordLink' o 'description')",
+          400
+        );
+        return;
+      }
+
+      if (!serverService.hasServer(id)) {
+        this.sendError(res, "Servidor no encontrado", 404);
         return;
       }
 
       serverService.updateServerAdditionalInfo(id, additData);
-      this.sendSuccess(res, { message: "Miembro 'addit' actualizado con éxito", addit: additData });
+      this.sendSuccess(res, { msg: "Updated" });
     } catch (error: unknown) {
       console.error("[ServerController.updateAdditionalInfo] Error:", error);
       const msg = error instanceof Error ? error.message : "Error de actualización";
@@ -224,15 +243,29 @@ export class ServerController extends BaseController {
   public updateBannerDetails = (req: Request, res: Response): void => {
     try {
       const { id } = req.params;
-      const bannerData = req.body as BannerDetails;
+      // 1. Cast body as Partial to allow updating one, the other, or both
+      const bannerData = req.body as Partial<BannerDetails>;
 
-      if (!bannerData) {
-        this.sendError(res, "El cuerpo del bloque 'banner' no puede estar vacío", 400);
+      const hasLabel = bannerData?.bannerLabel !== undefined;
+      const hasDescription = bannerData?.bannerDescription !== undefined;
+
+      // 2. Guard: Ensure at least one of the target fields is provided
+      if (!bannerData || (!hasLabel && !hasDescription)) {
+        this.sendError(
+          res,
+          "Datos de 'banner' incompletos (requiere al menos 'bannerLabel' o 'bannerDescription')",
+          400
+        );
+        return;
+      }
+
+      if (!serverService.hasServer(id)) {
+        this.sendError(res, "Servidor no encontrado", 404);
         return;
       }
 
       serverService.updateServerBannerDetails(id, bannerData);
-      this.sendSuccess(res, bannerData);
+      this.sendSuccess(res, { msg: "Updated" });
     } catch (error: unknown) {
       console.error("[ServerController.updateBannerDetails] Error:", error);
       const msg = error instanceof Error ? error.message : "Error de actualización";
@@ -261,17 +294,20 @@ export class ServerController extends BaseController {
   public updateVersionAndStatus = (req: Request, res: Response): void => {
     try {
       const { id } = req.params;
-      const { version, status } = req.body as { version?: string; status?: string };
+      const { status, version } = req.body as { status?: string; version?: string };
 
-      if (version) {
-        serverService.updateServerVersion(id, version);
+      if (status === undefined && version === undefined) {
+        this.sendError(res, "Datos de 'ver' incompletos (requiere 'status' o 'version')", 400);
+        return;
       }
-      //if (status) {
-      //  serverService.updateServerStatus(id, status);
-      //}
 
-      const updatedVer = serverService.getServerVersionAndStatus(id);
-      this.sendSuccess(res, { message: "Miembro 'ver' actualizado con éxito", ver: updatedVer });
+      if (!serverService.hasServer(id)) {
+        this.sendError(res, "Servidor no encontrado", 404);
+        return;
+      }
+
+      serverService.updateServerVersionAndStatus(id, version, status);
+      this.sendSuccess(res, { msg: "Updated" });
     } catch (error: unknown) {
       console.error("[ServerController.updateVersionAndStatus] Error:", error);
       const msg = error instanceof Error ? error.message : "Error de actualización";

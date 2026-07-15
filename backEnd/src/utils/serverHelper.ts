@@ -3,35 +3,65 @@ import {
   BasicInfo,
   AdditionalInfo,
   BannerDetails,
-  VersionAndStatus,
   RuleSection,
   RuleItem
 } from "../interfaces/ServerInterfaces"; // Adjust path as needed
 
 export class RPServerHelper {
 
+  private static getLastUpdate(): string {
+    const MONTHS_ES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const now = new Date();
+
+    const dayNum = now.getDate(); // 1 - 31
+    const monthIdx = now.getMonth(); // 0 - 11
+    const year = now.getFullYear(); // e.g., 2026
+
+    const day = dayNum < 10 ? `0${dayNum}` : `${dayNum}`;
+    const month = MONTHS_ES[monthIdx];
+
+    return `${day} ${month} ${year}`;
+  }
+
   /** Updates the entire basic info block */
-  public static updateBasicInfo(server: RPServer, basic: BasicInfo): void {
-    server.basic = basic;
-  }
+  public static updateBasicInfo(server: RPServer, basic: Partial<BasicInfo>): void {
 
-  /** Specific reference updater for basic.title */
-  public static updateTitle(server: RPServer, title: string): void {
-    server.basic.title = title;
-  }
+    if (!server?.basic) {
+      return;
+    }
 
-  /** Specific reference updater for basic.subtitle */
-  public static updateSubtitle(server: RPServer, subtitle: string): void {
-    server.basic.subtitle = subtitle;
-  }
+    if (basic.title !== undefined) {
+      server.basic.title = basic.title;
+    }
 
+    if (basic.subtitle !== undefined) {
+      server.basic.subtitle = basic.subtitle;
+    }
+
+    if (!server?.ver) {
+      server.ver.lastUpdate = this.getLastUpdate();
+    }
+  }
 
   // ==========================================
   // 2. ADDITIONAL INFO MEMBER FUNCTIONS
   // ==========================================
   /** Updates the entire additional info block */
-  public static updateAdditionalInfo(server: RPServer, addit: AdditionalInfo): void {
-    server.addit = addit;
+  public static updateAdditionalInfo(server: RPServer, addit: Partial<AdditionalInfo>): void {
+    if (!server?.addit) return;
+
+    if (addit.color !== undefined) {
+      server.addit.color = addit.color;
+    }
+    if (addit.discordLink !== undefined) {
+      server.addit.discordLink = addit.discordLink;
+    }
+    if (addit.description !== undefined) {
+      server.addit.description = addit.description;
+    }
+    if (!server?.ver) {
+      server.ver.lastUpdate = this.getLastUpdate();
+    }
   }
 
   /** Safely updates the optional discord link */
@@ -45,24 +75,40 @@ export class RPServerHelper {
   // ==========================================
   /** Updates the entire banner configuration */
   public static updateBannerDetails(server: RPServer, banner: BannerDetails): void {
-    server.banner = banner;
-  }
+    if (!server?.banner) return;
 
-  /** Reference helper to change just the banner image URL */
-  public static updateBannerImage(server: RPServer, imageUrl?: string): void {
-    server.banner.bannerImage = imageUrl;
-  }
+    if (banner.bannerLabel !== undefined) {
+      server.banner.bannerLabel = banner.bannerLabel;
+    }
 
+    if (banner.bannerDescription !== undefined) {
+      server.banner.bannerDescription = banner.bannerDescription;
+    }
+
+    if (!server?.ver) {
+      server.ver.lastUpdate = this.getLastUpdate();
+    }
+  }
 
   // ==========================================
   // 4. VERSION AND STATUS MEMBER FUNCTIONS
   // ==========================================
 
   /** Updates the versioning block and auto-stamps the date string */
-  public static updateVersion(server: RPServer, version: string, status?: string): void {
-    server.ver.version = version;
-    server.ver.status = status ?? server.ver.status;
-    server.ver.lastUpdate = new Date().toISOString(); // Auto-stamping real ISO string
+  public static updateVersionAndStatus(server: RPServer, version?: string, status?: string): void {
+    if (!server?.ver) return;
+
+    // 1. Update status if provided
+    if (status !== undefined) {
+      server.ver.status = status;
+    }
+
+    // 2. Update version if explicitly provided
+    if (version !== undefined) {
+      server.ver.version = version;
+    }
+
+    server.ver.lastUpdate = this.getLastUpdate();
   }
 
 
@@ -72,6 +118,9 @@ export class RPServerHelper {
   /** Adds a completely new rule section (e.g., "General Rules") */
   public static addSection(server: RPServer, title: string): void {
     server.sections.push({ title, rules: [] });
+    if (!server?.ver) {
+      server.ver.lastUpdate = this.getLastUpdate();
+    }
   }
 
   /** * Adds a rule item to a specific section by section title matching

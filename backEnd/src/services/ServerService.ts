@@ -125,9 +125,9 @@ export class ServerService {
     return this.getServer(id)?.basic;
   }
 
-  public updateServerBasicInfo(id: string, basic: BasicInfo): void {
+  public updateServerBasicInfo(id: string, basic: Partial<BasicInfo>): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateBasicInfo(srv, basic);
     this.setServer(id, srv);
   }
@@ -137,9 +137,9 @@ export class ServerService {
     return this.getServer(id)?.addit;
   }
 
-  public updateServerAdditionalInfo(id: string, addit: AdditionalInfo): void {
+  public updateServerAdditionalInfo(id: string, addit: Partial<AdditionalInfo>): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateAdditionalInfo(srv, addit);
     this.setServer(id, srv);
   }
@@ -151,7 +151,7 @@ export class ServerService {
 
   public updateServerBannerDetails(id: string, banner: BannerDetails): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateBannerDetails(srv, banner);
     this.setServer(id, srv);
   }
@@ -161,10 +161,10 @@ export class ServerService {
     return this.getServer(id)?.ver;
   }
 
-  public updateServerVersion(id: string, version: string, status?: string): void {
+  public updateServerVersionAndStatus(id: string, version?: string, status?: string): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
-    RPServerHelper.updateVersion(srv, version, status);
+    if (!srv) return;
+    RPServerHelper.updateVersionAndStatus(srv, version, status);
     this.setServer(id, srv);
   }
 
@@ -194,7 +194,11 @@ export class ServerService {
   }
 
   public setServer(id: string, server: RPServer): void {
-    this.servers.set(id, server);
+
+    if (!this.servers.has(id)) {
+      this.servers.set(id, server);
+    }
+
     this.safeSaveToDisk(); // Sincroniza al insertar o actualizar
   }
 
@@ -252,7 +256,6 @@ export class ServerService {
     }
     return result;
   }
-
 
   public getAllServers(): RPServer[] {
     return Array.from(this.servers.values());
