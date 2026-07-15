@@ -1,11 +1,12 @@
 import {
-  SlashCommandBuilder,
-  CommandInteraction,
-  ModalSubmitInteraction,
-  ChatInputCommandInteraction,
-  CacheType,
   EmbedBuilder,
-  ColorResolvable
+  ColorResolvable,
+  ChatInputCommandInteraction,
+  ModalSubmitInteraction,
+  SlashCommandBuilder,
+  StringSelectMenuInteraction,
+  AutocompleteInteraction,
+  CacheType
 } from 'discord.js';
 
 export abstract class Command {
@@ -57,18 +58,32 @@ export abstract class Command {
   }
 
   /**
-   * Método principal de ejecución del comando
+   * Main execution hook for the command.
    */
   public abstract execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void>;
 
   /**
-   * Hook para manejar envíos de formularios (modals)
-   * Implementación por defecto: responde que el comando no usa formularios
+   * Hook for handling modal (form) submissions.
    */
   public async onModalSubmit(interaction: ModalSubmitInteraction): Promise<void> {
     await interaction.reply({
-      content: '❌ Este comando no utiliza formularios',
-      ephemeral: true
+      content: '❌ Este comando no utiliza formularios.',
     });
+  }
+
+  /**
+   * Hook for handling select menu selections.
+   */
+  public async onSelectMenu(interaction: StringSelectMenuInteraction): Promise<void> {
+    await interaction.reply({
+      content: '❌ Este comando no utiliza menús de selección.',
+    });
+  }
+
+  /**
+   * Hook for handling autocomplete interactions.
+   */
+  public async onAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
+    await interaction.respond([]);
   }
 }

@@ -1,4 +1,10 @@
-import { CommandInteraction, GuildMember, ModalSubmitInteraction, PermissionsBitField } from 'discord.js';
+import {
+  GuildMember,
+  CommandInteraction,
+  ModalSubmitInteraction,
+  StringSelectMenuInteraction,
+  PermissionsBitField
+} from 'discord.js';
 
 export class AdminGuard {
   private static ADMIN_CHANNEL_ID: string;
@@ -9,9 +15,9 @@ export class AdminGuard {
     this.ADMIN_ROLE_IDS = roleIds;
   }
 
-  public static async verify(interaction: CommandInteraction): Promise<{ 
-    allowed: boolean; 
-    message: string 
+  public static async verify(interaction: CommandInteraction | ModalSubmitInteraction | StringSelectMenuInteraction): Promise<{
+    allowed: boolean;
+    message: string
   }> {
     // Verificar canal
     const channelCheck = await this.checkChannel(interaction.channelId);
@@ -31,37 +37,9 @@ export class AdminGuard {
       return roleCheck;
     }
 
-    return { 
-      allowed: true, 
-      message: '✅ Verificado como administrador' 
-    };
-  }
-
-  public static async verifyModal(interaction: ModalSubmitInteraction): Promise<{ 
-    allowed: boolean; 
-    message: string 
-  }> {
-    // Verificar canal
-    const channelCheck = await this.checkChannel(interaction.channelId);
-    if (!channelCheck.allowed) {
-      return channelCheck;
-    }
-
-    // Verificar admin
-    const adminCheck = await this.checkAdmin(interaction.member as GuildMember | null);
-    if (!adminCheck.allowed) {
-      return adminCheck;
-    }
-
-    // Verificar roles específicos
-    const roleCheck = await this.checkRoles(interaction.member as GuildMember | null, interaction.guildId);
-    if (!roleCheck.allowed) {
-      return roleCheck;
-    }
-
-    return { 
-      allowed: true, 
-      message: '✅ Verificado como administrador' 
+    return {
+      allowed: true,
+      message: '✅ Verificado como administrador'
     };
   }
 
@@ -129,7 +107,7 @@ export class AdminGuard {
       };
     }
 
-    const hasRequiredRole = this.ADMIN_ROLE_IDS.some(roleId => 
+    const hasRequiredRole = this.ADMIN_ROLE_IDS.some(roleId =>
       member.roles.cache.has(roleId)
     );
 

@@ -38,7 +38,7 @@ export class RPServerHelper {
       server.basic.subtitle = basic.subtitle;
     }
 
-    if (!server?.ver) {
+    if (server?.ver) {
       server.ver.lastUpdate = this.getLastUpdate();
     }
   }
@@ -59,7 +59,7 @@ export class RPServerHelper {
     if (addit.description !== undefined) {
       server.addit.description = addit.description;
     }
-    if (!server?.ver) {
+    if (server?.ver) {
       server.ver.lastUpdate = this.getLastUpdate();
     }
   }
@@ -85,7 +85,7 @@ export class RPServerHelper {
       server.banner.bannerDescription = banner.bannerDescription;
     }
 
-    if (!server?.ver) {
+    if (server?.ver) {
       server.ver.lastUpdate = this.getLastUpdate();
     }
   }
@@ -118,7 +118,7 @@ export class RPServerHelper {
   /** Adds a completely new rule section (e.g., "General Rules") */
   public static addSection(server: RPServer, title: string): void {
     server.sections.push({ title, rules: [] });
-    if (!server?.ver) {
+    if (server?.ver) {
       server.ver.lastUpdate = this.getLastUpdate();
     }
   }
