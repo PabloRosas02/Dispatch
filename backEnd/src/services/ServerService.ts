@@ -14,6 +14,7 @@ import {
 interface ServerRules {
   id: string;
   banner: BannerDetails;
+  ver: VersionAndStatus;
   sections: RuleSection[];
 }
 
@@ -250,6 +251,7 @@ export class ServerService {
         result.push({
           id: srv.basic?.id || '',
           banner: srv.banner || { bannerImage: '', bannerLabel: '', bannerDescription: '' },
+          ver: srv.ver || { version: '', lastUpdate: '', status: '' },
           sections: srv.sections || []
         });
       }

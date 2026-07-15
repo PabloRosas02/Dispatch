@@ -20,6 +20,7 @@ interface AdditInfoPayload {
 interface RuleInfoItem {
   id: string;
   banner: ServerType.BannerDetails;
+  ver: ServerType.VersionAndStatus;
   sections: ServerType.RuleSection[];
 }
 
@@ -178,6 +179,12 @@ export function useServerService() {
               bannerLabel: item.banner.bannerLabel,
               bannerDescription: item.banner.bannerDescription
             };
+
+            server.ver = {
+              version: item.ver.version,
+              status: item.ver.status,
+              lastUpdate: item.ver.lastUpdate
+            }
 
             server.sections = item.sections;
           }
