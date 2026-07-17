@@ -41,7 +41,7 @@ export class DynamicFormCommand extends Command {
    * Step 1: User runs /update-basic -> Fetches IDs & returns StringSelectMenu dropdown
    */
   public async execute(interaction: ChatInputCommandInteraction<CacheType>): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
       const response = await fetch(`${this._apiBaseUrl}/servers/ids`);
@@ -68,13 +68,13 @@ export class DynamicFormCommand extends Command {
       const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
       await interaction.editReply({
-        content: '⚙️ **Server Configuration Panel:** Select the system ID you wish to update:',
+        content: '⚙️ **Panel de configuration de server:** Selecciona el ID que deseas modificar:',
         components: [row]
       });
 
     } catch (error) {
       console.error(`[Execution Error - ${this.name}]:`, error);
-      const errorEmbed = this.createErrorEmbed('Failed to establish a network handshake with the backend database.');
+      const errorEmbed = this.createErrorEmbed('Error al establecer conexcion con el backend.');
       await interaction.editReply({ embeds: [errorEmbed], components: [] });
     }
   }
@@ -90,7 +90,7 @@ export class DynamicFormCommand extends Command {
 
     try {
       const response = await fetch(`${this._apiBaseUrl}/servers/${serverId}/${this._section}`);
-      if (!response.ok) throw new Error(`Could not fetch data for section ${this._section}`);
+      if (!response.ok) throw new Error(`No se encontro informacion sobre la seccion ${this._section}`);
 
       const result = (await response.json()) as ApiResponse<Record<string, any>>;
       const currentValues = result.success ? result.data : {};
@@ -109,14 +109,17 @@ export class DynamicFormCommand extends Command {
       await interaction.showModal(modal);
 
       await interaction.editReply({
-        content: `📝 **Editing Form Initialized:** Updating \`${this._section.toUpperCase()}\` properties for server **\`${serverId}\`**. Please complete the popped-up form.`,
+        content: `📝 **Formulario de edicion:** Actualizando \`${this._section.toUpperCase()}\` propiedades para el servidor **\`${serverId}\`**. Porfavor completa el Formulario.`,
         components: []
       });
 
     } catch (error) {
       console.error(`[Select Menu Error - ${this.name}]:`, error);
-      const errorEmbed = this.createErrorEmbed(`Failed to load structural properties for ${serverId}.`);
-      await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+      const errorEmbed = this.createErrorEmbed(`Error al cargar las propiedades del servidor ${serverId}.`);
+      await interaction.reply({
+        embeds: [errorEmbed],
+        flags: MessageFlags.Ephemeral
+      });
     }
   }
 
@@ -129,12 +132,12 @@ export class DynamicFormCommand extends Command {
 
     if (!serverId) {
       return void interaction.reply({
-        content: '❌ Your configuration session expired. Please run the command again.',
+        content: '❌ Tu session expiro. Por favor vuelve a correr el comando.',
         flags: MessageFlags.Ephemeral
       });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     this.activeEdits.delete(userId);
 
     const updatedPayload: Record<string, string> = {};
@@ -156,8 +159,8 @@ export class DynamicFormCommand extends Command {
         .join('\n');
 
       const successEmbed = this.createSuccessEmbed(
-        `✅ Section [${this._section.toUpperCase()}] Updated Successfully`,
-        `Properties for server **\`${serverId}\`** were securely patched on your REST API.\n\n${changesBreakdown}`
+        `✅ Seccion [${this._section.toUpperCase()}] Actualizada exitosamente`,
+        `propiedades del servidor **\`${serverId}\`** fueron guardadadas.\n\n${changesBreakdown}`
       );
 
       interaction.editReply({
@@ -166,14 +169,14 @@ export class DynamicFormCommand extends Command {
 
       if (interaction.channel && 'send' in interaction.channel) {
         await interaction.channel.send({
-          content: `🔔 Section updated by <@${interaction.user.id}>`,
+          content: `🔔 Seccion actualizado por <@${interaction.user.id}>`,
           embeds: [successEmbed]
         });
       }
 
     } catch (error) {
       console.error(`[Modal Submission Error - ${this.name}]:`, error);
-      const errorEmbed = this.createErrorEmbed(`Values modified locally, but the remote database failed to save updates.`);
+      const errorEmbed = this.createErrorEmbed(`Valores modificados localmente, pero la base de datos fallo al guardar los cambios.`);
       await interaction.editReply({ embeds: [errorEmbed] });
     }
   }
