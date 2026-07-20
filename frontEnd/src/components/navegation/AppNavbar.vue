@@ -1,3 +1,29 @@
+ <script lang="ts" setup>
+  import { ref } from "vue";
+  import { useRouter } from "vue-router";
+  import Logo from "/icons/Logo.svg";
+  import { useAuth } from "@/composables/useAuth";
+
+  const { isAuthenticated, logout} = useAuth();
+  const router = useRouter();
+
+  const isOpen = ref(false);
+  const toggleMenu = () => {
+    isOpen.value = !isOpen.value;
+  };
+
+  const handleLogout = () => {
+    //Ejecutamos la funcion de cierre de sesion (borra el token/localStorage)
+    logout();
+    //Cerramos el menu en caso de estar en movil
+    isOpen.value = false;
+    //Forzamos la recarga de la pagina
+    // Esto destruye la instancia actual, limpia la memoria y vuelve a cargar la app desde cero, 
+    // lo que automáticamente hará que tu LoadingScreen.vue se muestre de nuevo.
+    window.location.reload();
+  };
+</script>
+
 <template>
     <nav class="navbar">
       <routerLink class="logo" :to="{ name: 'home' }" >
@@ -61,19 +87,15 @@
             Noticias
           </router-link>
         </li>
+        <li v-if="isAuthenticated">
+          <a href="#" class="logout-nav-btn" @click.prevent="handleLogout">
+            Cerrar Sesión
+          </a>
+        </li>
       </ul>
     </nav>
   </template>
 
-  <script lang="ts" setup>
-  import { ref } from "vue";
-  import Logo from "/icons/Logo.svg";
-
-  const isOpen = ref(false);
-  const toggleMenu = () => {
-    isOpen.value = !isOpen.value;
-  };
-  </script>
 
   <style scoped>
  .navbar {
@@ -139,6 +161,16 @@
   font-size: 28px;
 
   cursor: pointer;
+}
+
+.logout-nav-btn {
+  color: #e74c3c !important; 
+  font-weight: 700;
+  border-bottom: none !important;
+}
+
+.logout-nav-btn:hover {
+  color: #c0392b !important;
 }
 
 /* =========================
@@ -290,6 +322,23 @@
     transform .2s ease,
     padding-left .25s ease;
 }
+
+/* Logout */
+.nav-links .logout-nav-btn {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c !important;
+    margin-top: 10px;
+  }
+
+  .nav-links .logout-nav-btn:hover {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: rgba(231, 76, 60, 0.4);
+    color: #ff6b6b !important;
+  }
+  .nav-links .logout-nav-btn::before {
+    background: #e74c3c;
+  }
 
 /* Barra lateral */
 

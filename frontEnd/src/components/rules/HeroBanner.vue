@@ -1,32 +1,3 @@
-<template>
-  <header
-    class="hero-banner"
-    :style="bannerStyle"
-  >
-
-    <div class="hero-content">
-
-      <span class="hero-label">
-        {{ bannerLabel }}
-      </span>
-
-      <h1>
-        {{ title || "NORMATIVA" }}
-      </h1>
-
-      <h2>
-        {{ subtitle }}
-      </h2>
-
-      <p>
-        {{ description }}
-      </p>
-
-    </div>
-
-  </header>
-</template>
-
 <script setup lang="ts">
 import { computed } from "vue";
 
@@ -58,6 +29,35 @@ const bannerStyle = computed(() => ({
 }));
 
 </script>
+
+<template>
+  <header
+    class="hero-banner"
+    :style="bannerStyle"
+  >
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        {{ bannerLabel }}
+      </span>
+
+      <h1>
+        {{ title || "NORMATIVA" }}
+      </h1>
+
+      <h2>
+        {{ subtitle }}
+      </h2>
+
+      <p>
+        {{ description }}
+      </p>
+
+    </div>
+
+  </header>
+</template>
 
 <style scoped>
 

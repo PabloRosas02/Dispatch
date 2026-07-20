@@ -3,6 +3,7 @@ import * as path from 'path';
 
 export class CacheService {
   private cache: Map<string, any>;
+  private defaultCache: Map<string, any>; // NUEVO: Memoria estática de valores de fábrica
 
   // Apuntamos estrictamente a la carpeta 'db' dentro del directorio raíz del backend
   private dbDir = path.join(process.cwd(), "db");
@@ -11,13 +12,51 @@ export class CacheService {
 
   constructor() {
     this.cache = new Map<string, any>();
+    this.defaultCache = new Map<string, any>();
+    
+    // Cargamos siempre los valores por defecto a la memoria estática
+    this.loadDefaultsInMemory();
+    
+    // Luego cargamos la caché dinámica (modificada) del disco
     this.loadFromDisk();
+  }
+
+  // --- NUEVO: CARGA DE DEFAULTS EN MEMORIA ---
+  private loadDefaultsInMemory(): void {
+    try {
+      if (fs.existsSync(this.defaultDbPath)) {
+        const defaultContent = fs.readFileSync(this.defaultDbPath, "utf-8");
+        const parsedDefault = JSON.parse(defaultContent);
+
+        // Mapeamos exactamente igual que en la caché activa
+        if (parsedDefault.welcomeConfig) { //Welcome
+          this.defaultCache.set("kinsfolk_page_config", parsedDefault.welcomeConfig);
+        }
+        if (parsedDefault.newsConfig) { //News
+          this.defaultCache.set("news_page_general_config", parsedDefault.newsConfig);
+        }
+        if (parsedDefault.footerConfig) {//Footer
+          this.defaultCache.set("footer_page_config", parsedDefault.footerConfig);
+        }
+        if (parsedDefault.servers && Array.isArray(parsedDefault.servers)) {
+          parsedDefault.servers.forEach((server: any) => {
+            if (server.basic && server.basic.id) {
+              this.defaultCache.set(`server_page_config_${server.basic.id}`, server);
+            }
+          });
+        }
+        console.log("[CacheService] Valores de fábrica estáticos cargados en memoria.");
+      } else {
+        console.warn(`[CacheService] No se encontró el archivo base -> ${this.defaultDbPath}`);
+      }
+    } catch (error) {
+      console.error("[CacheService] Error leyendo serversDefault.json:", error);
+    }
   }
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS ---
   private safeSaveToDisk(): void {
     try {
-      // Si por alguna razón la carpeta db no existe, la crea automáticamente
       if (!fs.existsSync(this.dbDir)) {
         fs.mkdirSync(this.dbDir, { recursive: true });
       }
@@ -38,8 +77,8 @@ export class CacheService {
 
   private loadFromDisk(): void {
     if (!fs.existsSync(this.dbPath)) {
-      console.log("[CacheService] database.json no encontrado. Cargando valores por defecto...");
-      this.restoreToFactoryDefaults();
+      console.log("[CacheService] database.json no encontrado. Iniciando limpio (usará defaults en peticiones).");
+      // Ya no forzamos restoreToFactoryDefaults aquí, porque get(key) ya sabe buscar en defaultCache.
       return;
     }
 
@@ -55,60 +94,37 @@ export class CacheService {
   }
 
   public restoreToFactoryDefaults(): void {
-    this.cache.clear();
+    this.cache.clear(); // Limpiamos las modificaciones
+    
+    // Clonamos la memoria estática a la caché activa
+    this.defaultCache.forEach((value, key) => {
+      this.cache.set(key, value);
+    });
 
-    try {
-      if (fs.existsSync(this.defaultDbPath)) {
-        const defaultContent = fs.readFileSync(this.defaultDbPath, "utf-8");
-        const parsedDefault = JSON.parse(defaultContent);
-
-        // 1. Restaurar configuraciones genéricas
-        if (parsedDefault.welcomeConfig) {
-          this.cache.set("kinsfolk_page_config", parsedDefault.welcomeConfig);
-        }
-        if (parsedDefault.newsConfig) {
-          this.cache.set("news_page_general_config", parsedDefault.newsConfig);
-        }
-
-        // 2. Restaurar servidores estructurados
-        if (parsedDefault.servers && Array.isArray(parsedDefault.servers)) {
-          parsedDefault.servers.forEach((server: any) => {
-            if (server.basic && server.basic.id) {
-              this.cache.set(`server_page_config_${server.basic.id}`, server);
-            }
-          });
-        }
-
-        // 3. Forzar el guardado crea el database.json por primera vez
-        this.safeSaveToDisk();
-        console.log("[CacheService] Valores de fábrica restaurados desde serversDefault.json");
-      } else {
-        console.error(`[CacheService] CRÍTICO: No se encontró el archivo base -> ${this.defaultDbPath}`);
-      }
-    } catch (error) {
-      console.error("[CacheService] Error restaurando defaults (Verifica la sintaxis del JSON):", error);
-    }
+    this.safeSaveToDisk();
+    console.log("[CacheService] Valores de fábrica restaurados en caché activa.");
   }
 
   // --- MÉTODOS DE CACHÉ GENÉRICA ---
+  
+  // MODIFICADO: Aquí ocurre la magia. Si no hay datos activos, envía los de fábrica.
   public get(key: string): any {
-    return this.cache.get(key) || null;
+    const activeData = this.cache.get(key);
+    const defaultData = this.defaultCache.get(key);
+
+    return activeData || defaultData || null;
   }
 
   public set(key: string, value: any): void {
-    if (!key || typeof key !== "string") {
-      throw new Error("La clave debe ser un string válido");
-    }
-    if (value === undefined || value === null) {
-      throw new Error("El valor no puede ser nulo o indefinido");
-    }
+    if (!key || typeof key !== "string") throw new Error("La clave debe ser un string válido");
+    if (value === undefined || value === null) throw new Error("El valor no puede ser nulo o indefinido");
 
     this.cache.set(key, value);
-    this.safeSaveToDisk(); // Sincroniza al actualizar
+    this.safeSaveToDisk();
   }
 
   public has(key: string): boolean {
-    return this.cache.has(key);
+    return this.cache.has(key) || this.defaultCache.has(key); // MODIFICADO
   }
 
   public delete(key: string): boolean {
@@ -118,7 +134,15 @@ export class CacheService {
   }
 
   public getAll(): Record<string, any> {
-    return Object.fromEntries(this.cache);
+    // Retorna una combinación de los defaults sobreescritos por la caché activa
+    const allKeys = new Set([...this.defaultCache.keys(), ...this.cache.keys()]);
+    const result: Record<string, any> = {};
+    
+    allKeys.forEach(key => {
+      result[key] = this.get(key);
+    });
+    
+    return result;
   }
 
   public clearAll(): void {

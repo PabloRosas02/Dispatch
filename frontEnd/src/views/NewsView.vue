@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
 // Componentes
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
@@ -11,8 +10,9 @@ import NewsContent from '@/components/news/NewsContent.vue';
 import { useDesigner } from '@/composables/useDesigner';
 import { useNews } from '@/composables/useNews';
 import type { NewsArticle } from '@/types/serverTypes';
+import { useAuth } from '@/composables/useAuth';
 
-const route = useRoute();
+const { isAuthenticated } = useAuth();
 const CACHE_KEY = 'news_page_general_config';
 const LOCAL_STORAGE_KEY = `backup_cache_${CACHE_KEY}`;
 
@@ -26,7 +26,7 @@ const {
 
 // Lógica del Diseñador
 const designer = useDesigner({ cacheKey: CACHE_KEY });
-const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
+const isAuthorizedDesigner = computed(() => isAuthenticated.value);
 
 // Lógica UI
 const isSidebarOpen = ref<boolean>(true);
@@ -48,7 +48,7 @@ const handleArticleSelection = (item: NewsArticle) => {
   }
 };
 
-// 2. Carga inicial y Event Listeners
+// Carga inicial y Event Listeners
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown);
 
@@ -58,13 +58,15 @@ onMounted(async () => {
       const parsed = JSON.parse(localBackup);
       if (parsed && parsed.news && parsed.news.length > 0) {
         newsList.value = parsed.news;
-        bLoading.value = false;
-        return;
+        // Quitamos el "return;" para que siempre confirme con el backend.
+        // Muestra la caché para que cargue rápido, pero verifica en 2do plano.
       }
     } catch (e) {
       console.error("Error al leer backup local", e);
     }
   }
+  
+  // Siempre hacemos fetch al backend para mantener todo sincronizado
   await fetchNews();
 });
 
@@ -76,9 +78,11 @@ onUnmounted(() => {
 watch(
   () => newsList.value,
   (newVal) => {
-    if (newVal && newVal.length > 0) {
+    // Si la lista está vacía, también borramos el local storage para no guardar fantasmas
+    if (!newVal || newVal.length === 0) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } else {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ news: newVal }));
-
       if (!currentArticle.value) {
         selectArticleFromPage(newVal[0]!);
       }

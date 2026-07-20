@@ -81,9 +81,6 @@ export function useNews(CACHE_KEY: string) {
     }
   };
 
-  // ... [El resto de tus funciones: createNewArticleTemplate, deleteCurrentArticle, etc. se mantienen igual] ...
-
-  // Mantenemos tus funciones auxiliares tal cual las tenías:
   const createNewArticleTemplate = () => {
     const newArticle: NewsArticle = {
       id: `news_${Date.now()}`,
@@ -112,21 +109,45 @@ export function useNews(CACHE_KEY: string) {
     }
   };
 
-  const handleAddImage = (event: Event) => {
+  // --- SUBIDA DE IMÁGENES FÍSICAS AL SERVIDOR ---
+  const handleAddImage = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length || !currentArticle.value) return;
+    
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { alert(`El archivo excede el límite.`); return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Result = e.target?.result as string;
-      if (base64Result && currentArticle.value) {
+    
+    if (file.size > 10 * 1024 * 1024) { 
+      alert(`El archivo excede el límite máximo permitido de 10 MB.`); 
+      return; 
+    }
+
+    // Preparamos el archivo para enviarlo tal cual (multipart/form-data)
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData // Fetch configura los headers correctamente
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data?.url) {
+        // Si fue exitoso, guardamos la URL limpia (/uploads/...) 
         if (!currentArticle.value.images) currentArticle.value.images = [];
-        currentArticle.value.images.push(base64Result);
+        currentArticle.value.images.push(result.data.url);
+      } else {
+        alert(`Error: ${result.errorDetail || 'No se pudo subir la imagen'}`);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('[useNews] Error de red subiendo imagen:', error);
+      alert('Error de conexión al subir la imagen.');
+    } finally {
+      // Limpiamos el input para que detecte si se sube el mismo archivo otra vez
+      input.value = '';
+    }
   };
 
   const removeImageAtIndex = (index: number) => {

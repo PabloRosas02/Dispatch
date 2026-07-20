@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
 import WelcomeCarousel from './ServerCarrousel.vue'
 import defaultLogoUrl from '/icons/Logoletras.svg'
 
 // Importamos la lógica generalizada del diseñador y la barra común
 import { useDesigner } from '@/composables/useDesigner'
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue'
+
+// Importamos la autenticación global
+import { useAuth } from '@/composables/useAuth'
 
 interface KinsfolkPageConfig {
   welcomeTitle: string
@@ -16,13 +18,14 @@ interface KinsfolkPageConfig {
   discordLink: string
 }
 
-// Configuración inicial espejo (fallbacks locales idénticos a la fábrica)
+// Configuración reactiva inicial. 
+// Servirá solo un milisegundo mientras el servidor responde o si el backend está apagado.
 const pageConfig = ref<KinsfolkPageConfig>({
-  welcomeTitle: 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
-  welcomeDescription: 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
+  welcomeTitle: 'Cargando...',
+  welcomeDescription: 'Conectando con el servidor...',
   ctaText: 'Únete',
   logoUrl: defaultLogoUrl,
-  discordLink: 'https://discord.gg/a6TSrUpwr' //Enlace por defecto inicializado
+  discordLink: '#' 
 })
 
 // Referencias de los nodos editables del DOM
@@ -34,33 +37,31 @@ const designer = useDesigner({
   cacheKey: 'kinsfolk_page_config'
 })
 
-// Instanciamos la ruta activa
-const route = useRoute()
-
-// Validación de seguridad: el panel de edición sólo existirá si se incluye la llave secreta en la URL
-const isAuthorizedDesigner = computed(() => {
-  return route.query.mode === 'admin-designer'
-})
+// Validación de seguridad centralizada (ya no usamos la URL)
+const { isAuthenticated } = useAuth()
+const isAuthorizedDesigner = computed(() => isAuthenticated.value)
 
 onMounted(async () => {
   try {
     const response = await fetch('/api/cache/kinsfolk_page_config')
+    
+    if (!response.ok) {
+      console.warn('[Welcome.vue] API falló, asumiendo que no hay backend activo.')
+      return 
+    }
+
     const result = await response.json()
 
     // Tolerancia en el desempaquetado de datos si el backend retorna { success: true, data: ... } o directo
     const data = result.data ? result.data : result
 
     if (data && Object.keys(data).length > 0) {
-      pageConfig.value = {
-        welcomeTitle: data.welcomeTitle || 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
-        welcomeDescription: data.welcomeDescription || 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
-        ctaText: data.ctaText || 'Únete',
-        logoUrl: data.logoUrl || defaultLogoUrl,
-        discordLink: data.discordLink || 'https://discord.gg/a6TSrUpwr' //Rehidratación desde caché
-      }
+      // Confiamos que el backend (CacheService) 
+      // nos mandó la data modificada o los valores de serversDefault.json
+      pageConfig.value = data as KinsfolkPageConfig
     }
   } catch (error) {
-    console.error('[Welcome.vue] Error al cargar la configuración inicial:', error)
+    console.error('[Welcome.vue] Error de red al cargar la configuración:', error)
   }
 })
 

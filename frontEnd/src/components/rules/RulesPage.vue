@@ -1,4 +1,40 @@
 <!-- src/components/rules/RulesPage.vue -->
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import type { RPServer } from "@/types/serverTypes";
+import RuleCard from "./RuleCard.vue";
+import StatusBar from "./StatusBar.vue";
+import HeroBanner from "./HeroBanner.vue";
+import CategorySidebar from "./CategorySidebar.vue";
+import RoleSelector from "./RoleSelector.vue";
+import { useServerService } from "@/services/serverService";
+
+const props = defineProps<{
+  serverData: RPServer;
+}>();
+
+const selectedSection = ref(0);
+
+const currentSection = computed(() =>
+    props.serverData.sections[selectedSection.value] ?? null
+);
+
+const totalRules = computed(() =>
+    props.serverData.sections.reduce(
+        (total, section) => total + section.rules.length,
+        0
+    )
+);
+
+const serverService = useServerService();
+
+const roles = serverService.getAllServers();
+
+const selectedRole = ref(props.serverData.basic.id);
+//console.log(props.serverData);
+
+</script>
+
 <template>
     <main
     class="rules-page"
@@ -93,42 +129,6 @@
   </main>
 
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from "vue";
-import type { RPServer } from "@/types/serverTypes";
-import RuleCard from "./RuleCard.vue";
-import StatusBar from "./StatusBar.vue";
-import HeroBanner from "./HeroBanner.vue";
-import CategorySidebar from "./CategorySidebar.vue";
-import RoleSelector from "./RoleSelector.vue";
-import { useServerService } from "@/services/serverService";
-
-const props = defineProps<{
-  serverData: RPServer;
-}>();
-
-const selectedSection = ref(0);
-
-const currentSection = computed(() =>
-    props.serverData.sections[selectedSection.value] ?? null
-);
-
-const totalRules = computed(() =>
-    props.serverData.sections.reduce(
-        (total, section) => total + section.rules.length,
-        0
-    )
-);
-
-const serverService = useServerService();
-
-const roles = serverService.getAllServers();
-
-const selectedRole = ref(props.serverData.basic.id);
-//console.log(props.serverData);
-
-</script>
 
 <style scoped>
 

@@ -15,6 +15,9 @@ import { useDesigner } from '@/composables/useDesigner';
 import { useRoleDetail } from '@/composables/useRoleDetail';
 import { useServerService } from '@/services/serverService';
 
+// Importamos la autenticación global
+import { useAuth } from '@/composables/useAuth';
+
 const route = useRoute();
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -37,7 +40,10 @@ const {
 // Lógica del Diseñador
 const cacheKeyStr = `server_page_config_${currentServerId}`;
 const designer = useDesigner({ cacheKey: cacheKeyStr });
-const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
+
+// Validación de seguridad centralizada (reemplaza la verificación por URL)
+const { isAuthenticated } = useAuth();
+const isAuthorizedDesigner = computed(() => isAuthenticated.value);
 
 onMounted(async () => {
   await initBasic();

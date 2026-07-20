@@ -2,7 +2,6 @@
 interface Props {
   images: string[];
   isEditing: boolean;
-  // NUEVA PROP: Controla si se aplica el efecto disperso/collage o se queda normal
   variant?: 'normal' | 'collage';
 }
 
@@ -13,38 +12,54 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:images', 'open-lightbox']);
 
-// Límite máximo: 50 MB en bytes (50 * 1024 * 1024) para evitar errores 413 Payload Too Large
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; 
+// Límite máximo alineado con la configuración de Multer en el Backend: 10 MB
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; 
 
 /**
- * Procesa la carga de una nueva imagen con validación de tamaño
+ * Procesa la carga de una nueva imagen enviándola al servidor físico
  */
-const handleAddImage = (event: Event) => {
+const handleAddImage = async (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (!input || !input.files || input.files.length === 0) return;
 
   const file: File | undefined = input.files[0];
   if (!file) return;
 
-  // VALIDACIÓN: Control de peso del payload antes de procesar la conversión
+  // Control de peso alineado al backend
   if (file.size > MAX_FILE_SIZE_BYTES) {
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-    alert(`La imagen es demasiado pesada (${sizeInMB} MB). El límite máximo permitido es de 2 MB para evitar errores en el servidor.`);
+    alert(`La imagen pesa ${sizeInMB} MB. El límite máximo permitido es de 10 MB para evitar saturar el servidor.`);
     input.value = '';
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64Result = e.target?.result as string;
-    if (base64Result) {
-      const updatedImages = [...props.images, base64Result];
+  // Preparamos el archivo para envío físico
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    // Enviamos el archivo al backend
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData // Fetch gestiona los headers multipart/form-data
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.data?.url) {
+      // Emitimos el arreglo actualizado usando la URL limpia devuelta
+      const updatedImages = [...props.images, result.data.url];
       emit('update:images', updatedImages);
+    } else {
+      alert(`Error: ${result.errorDetail || 'No se pudo subir la imagen'}`);
     }
-  };
-  reader.readAsDataURL(file);
-  
-  input.value = '';
+  } catch (error) {
+    console.error('[ImageGalleryManager] Error de red subiendo imagen:', error);
+    alert('Error de conexión al subir la imagen.');
+  } finally {
+    // Limpiamos el input
+    input.value = '';
+  }
 };
 
 /**

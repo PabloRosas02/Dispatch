@@ -1,6 +1,5 @@
 import { ref, watch, onUnmounted } from 'vue';
 import type * as ServerType from '@/types/serverTypes';
-import { useServerService } from '@/services/serverService';
 
 export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
   basic: Omit<ServerType.BasicInfo, 'filename'>;
@@ -12,8 +11,6 @@ export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
 const fetchedServers: Record<string, ExtendedRPServer> = {};
 
 export function useRoleDetail(currentServerId: string) {
-  const { getServerFromRouteParam, getSvgUrl } = useServerService();
-
   const role = ref<ExtendedRPServer | undefined>(undefined);
   const bLoading = ref<boolean>(true);
   const activeLightboxImage = ref<string | null>(null);
@@ -32,59 +29,39 @@ export function useRoleDetail(currentServerId: string) {
     window.removeEventListener('keydown', handleKeyDown);
   });
 
-  /**
-   * Lógica de carga con triple capa de seguridad:
-   * 1. Memoria RAM volatil (fetchedServers)
-   * 2. Servidor Backend (API Cache / database.json / serversDefault.json)
-   * 3. Disco local del navegador (localStorage Backup)
-   */
   const fetchRoleData = async (forceRefresh = false) => {
-    const defaultRole = getServerFromRouteParam(currentServerId) as ExtendedRPServer;
-
-    if (!defaultRole) {
+    if (!currentServerId) {
       bLoading.value = false;
       return;
     }
 
-    // Capa 1: Caché en memoria RAM
+    // Caché en memoria RAM
     if (fetchedServers[currentServerId] && !forceRefresh) {
       role.value = fetchedServers[currentServerId];
       bLoading.value = false;
       return;
     }
 
-    const targetCacheKey = `server_page_config_${defaultRole.basic.id}`;
+    const targetCacheKey = `server_page_config_${currentServerId}`;
     bLoading.value = true;
 
     try {
-      // Capa 2: Servidor
+      // Servidor (Ahora el servidor SIEMPRE enviará el objeto completo)
       const response = await fetch(`/api/cache/${targetCacheKey}`);
-      if (response.status === 404) throw new Error('Not found in cache');
+      if (!response.ok) throw new Error('Not found in server cache or defaults');
 
       const result = await response.json();
       const data = result.data ? result.data : result;
 
       if (data && Object.keys(data).length > 0) {
-        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.basic.id)]);
-        
-        // Fusión profunda respetando la nueva arquitectura anidada
-        role.value = {
-          ...defaultRole,
-          basic: {
-            id: data.basic?.id || defaultRole.basic.id,
-            title: data.basic?.title || defaultRole.basic.title,
-            subtitle: data.basic?.subtitle || defaultRole.basic.subtitle,
-          },
-          addit: {
-            color: data.addit?.color || defaultRole.addit.color,
-            description: data.addit?.description || defaultRole.addit.description,
-            discordLink: data.addit?.discordLink || defaultRole.addit.discordLink
-          },
-          banner: data.banner || defaultRole.banner,
-          ver: data.ver || defaultRole.ver,
-          sections: data.sections || defaultRole.sections,
-          images: savedImages
-        };
+        // Aseguramos que siempre haya un array de imágenes
+        if (!data.images || data.images.length === 0) {
+          const defaultImg = data.basic?.filename ? `/icons/${data.basic.filename}` : '';
+          data.images = defaultImg ? [defaultImg] : [];
+        }
+
+        // Asignación directa, el backend ya hizo el trabajo sucio
+        role.value = data as ExtendedRPServer;
 
         // Respaldo local
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
@@ -92,17 +69,14 @@ export function useRoleDetail(currentServerId: string) {
         throw new Error('Empty data');
       }
     } catch (error) {
-      console.warn(`[useRoleDetail] No se pudo conectar con el servidor para ${currentServerId}. Buscando respaldo local...`);
+      console.warn(`[useRoleDetail] Fallo API para ${currentServerId}. Buscando respaldo local...`);
 
       // Capa 3: Respaldo de localStorage
       const localBackup = localStorage.getItem(`backup_${targetCacheKey}`);
 
       if (localBackup) {
-        console.log(`[useRoleDetail] Respaldo local detectado y restaurado con éxito.`);
+        console.log(`[useRoleDetail] Respaldo local restaurado con éxito.`);
         role.value = JSON.parse(localBackup);
-      } else {
-        console.warn(`[useRoleDetail] Sin respaldo local disponible. Inicializando con defaults de fábrica.`);
-        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
       }
     } finally {
       if (role.value) fetchedServers[currentServerId] = role.value;
@@ -110,7 +84,8 @@ export function useRoleDetail(currentServerId: string) {
     }
   };
 
-  const handleAddImage = (event: Event) => {
+  // --- SUBIDA DE IMÁGENES FÍSICAS AL SERVIDOR ---
+  const handleAddImage = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0 || !role.value) return;
 
@@ -124,18 +99,36 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Result = e.target?.result as string;
-      if (base64Result && role.value) {
-        if (!role.value.images) role.value.images = [];
-        role.value.images.push(base64Result);
+    // Preparamos el archivo para enviarlo como form-data
+    const formData = new FormData();
+    formData.append('image', file);
 
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData // Fetch configura los headers correctamente para archivos
+      });
+
+      const result = await response.json();
+
+      // Si fue exitoso, guardamos la URL devuelta en lugar de Base64
+      if (result.success && result.data?.url && role.value) {
+        if (!role.value.images) role.value.images = [];
+        role.value.images.push(result.data.url);
+
+        // Guardamos respaldo local de forma segura con el string cortito de la URL
         const targetCacheKey = `server_page_config_${role.value.basic.id}`;
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
+      } else {
+        alert(`Error: ${result.errorDetail || 'No se pudo subir la imagen'}`);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('[useRoleDetail] Error subiendo imagen:', error);
+      alert('Error de conexión al subir la imagen.');
+    } finally {
+      // Limpiamos el input
+      input.value = '';
+    }
   };
 
   const removeImageAtIndex = (index: number) => {
