@@ -40,7 +40,7 @@
         <li>
           <router-link
             @click="isOpen = false"
-            :to="{ name: 'housing' }"
+            :to="{ name: 'housing-home' }"
           >
             Housing
           </router-link>
