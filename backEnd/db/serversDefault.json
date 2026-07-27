@@ -107,6 +107,12 @@
         "bannerLabel": "L.E.O MANUAL",
         "bannerDescription": "Manual oficial del departamento policial."
       },
+      "images": [
+        "/images/roles/leo/leo1.webp",
+        "/images/roles/leo/leo2.webp",
+        "/images/roles/leo/leo3.webp",
+        "/images/roles/leo/leo4.webp"
+      ],
       "ver": {
         "version": "1.0",
         "lastUpdate": "24 JUN 2026",
