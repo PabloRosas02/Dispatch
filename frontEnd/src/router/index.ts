@@ -29,17 +29,22 @@ const router = createRouter({
       path: '/roles',
       name: 'role-root',
       component: RouterView,
+      meta: {
+        hideLayout: false,
+        title: 'Roles'
+      },
       children: [
+        {
+          path: '',
+          name: 'roles-home',
+          component: () => import('../views/RolesHomeView.vue'),
+        },
         {
           path: ':serverId',
           name: 'role-detail',
           component: () => import('../views/RoleDetailView.vue'),
         }
-      ],
-      meta: {
-        hideLayout: true,
-        title: 'Roles'
-      }
+      ]
     },
     {
       path: '/normativas',

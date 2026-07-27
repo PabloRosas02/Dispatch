@@ -23,7 +23,7 @@
         <li>
           <router-link
             @click="isOpen = false"
-            :to="{ name: 'role-detail', params: { serverId: 'leo' } }"
+            :to="{ name: 'roles-home'}"
           >
             Roles
           </router-link>
