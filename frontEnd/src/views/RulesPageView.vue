@@ -23,6 +23,7 @@ const activeServerData = computed(() => {
 });
 
 onMounted(async () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   await initBasic();
   await initRules();
 });

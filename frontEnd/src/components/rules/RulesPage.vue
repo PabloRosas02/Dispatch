@@ -6,6 +6,8 @@
   >
     <HeroBanner
 
+    v-if="isInitVBS"
+
     :banner-image="serverData.banner.bannerImage"
 
     :banner-label="serverData.basic.subtitle"
@@ -121,12 +123,15 @@ const totalRules = computed(() =>
     )
 );
 
-const serverService = useServerService();
+const {
+  isInitVBS,
+  getAllServers
+} = useServerService();
 
-const roles = serverService.getAllServers();
+const roles = getAllServers();
 
 const selectedRole = ref(props.serverData.basic.id);
-console.log(props.serverData);
+//console.log(props.serverData);
 
 </script>
 

@@ -107,6 +107,12 @@
         "bannerLabel": "L.E.O MANUAL",
         "bannerDescription": "Manual oficial del departamento policial."
       },
+      "images": [
+        "/images/roles/leo/leo1.webp",
+        "/images/roles/leo/leo2.webp",
+        "/images/roles/leo/leo3.webp",
+        "/images/roles/leo/leo4.webp"
+      ],
       "ver": {
         "version": "1.0",
         "lastUpdate": "24 JUN 2026",
@@ -452,6 +458,203 @@
         }
       ]
     }
-  ]
+  ],
+
+  "controls": {
+    "hero": {
+      "label": "KINSFOLK ROLEPLAY",
+      "title": "CONTROLES",
+      "description": "Aprende todos los controles esenciales para desenvolverte correctamente dentro del servidor.",
+      "bannerImage": "controls.webp"
+    },
+
+    "featured": {
+      "label": "GUÍA RÁPIDA",
+      "title": "Controles Esenciales",
+      "description": "Estos son los controles que utilizarás con mayor frecuencia durante tu experiencia de Roleplay."
+    },
+
+    "quickAccess": [
+      {
+        "title": "Móvil",
+        "description": "Abre el teléfono del personaje.",
+        "icon": "Smartphone",
+        "key": "F1"
+      },
+      {
+        "title": "Inventario",
+        "description": "Abre el inventario.",
+        "icon": "Backpack",
+        "key": "TAB"
+      },
+      {
+        "title": "Rango de Voz",
+        "description": "Cambia la distancia de voz.",
+        "icon": "Mic",
+        "key": "Z"
+      },
+      {
+        "title": "Manos Arriba",
+        "description": "Levanta las manos.",
+        "icon": "Hand",
+        "key": "X"
+      },
+      {
+        "title": "Animaciones",
+        "description": "Abre el menú de animaciones.",
+        "icon": "Smile",
+        "key": "F3"
+      },
+      {
+        "title": "Radial",
+        "description": "Abre el menú radial.",
+        "icon": "CircleDot",
+        "key": "F6"
+      }
+    ],
+
+    "categories": [
+      {
+        "title": "Movimiento",
+        "description": "Acciones básicas del personaje.",
+        "icon": "Footprints",
+        "controls": [
+          {
+            "title": "Caminar",
+            "description": "Mover al personaje.",
+            "key": "W A S D"
+          },
+          {
+            "title": "Correr",
+            "description": "Sprint.",
+            "key": "SHIFT"
+          },
+          {
+            "title": "Saltar",
+            "description": "Realizar un salto.",
+            "key": "SPACE"
+          },
+          {
+            "title": "Agacharse",
+            "description": "Ponerse en cuclillas.",
+            "key": "CTRL"
+          }
+        ]
+      },
+
+      {
+        "title": "Vehículos",
+        "description": "Controles relacionados con la conducción.",
+        "icon": "Car",
+        "controls": [
+          {
+            "title": "Entrar / Salir",
+            "description": "Entrar o abandonar un vehículo.",
+            "key": "F"
+          },
+          {
+            "title": "Encender Motor",
+            "description": "Prender o apagar el motor.",
+            "key": "Y"
+          },
+          {
+            "title": "Bloquear Vehículo",
+            "description": "Bloquear o desbloquear.",
+            "key": "U"
+          },
+          {
+            "title": "Cinturón",
+            "description": "Colocar o quitar el cinturón.",
+            "key": "B"
+          }
+        ]
+      },
+
+      {
+        "title": "Comunicación",
+        "description": "Interacción con otros jugadores.",
+        "icon": "MessagesSquare",
+        "controls": [
+          {
+            "title": "Chat",
+            "description": "Abrir el chat.",
+            "key": "T"
+          },
+          {
+            "title": "Hablar",
+            "description": "Hablar por proximidad.",
+            "key": "N"
+          },
+          {
+            "title": "Radio",
+            "description": "Hablar por radio.",
+            "key": "CAPS"
+          },
+          {
+            "title": "Megáfono",
+            "description": "Usar megáfono.",
+            "key": "G"
+          }
+        ]
+      },
+
+      {
+        "title": "Interfaz",
+        "description": "Funciones generales del HUD.",
+        "icon": "Monitor",
+        "controls": [
+          {
+            "title": "Mapa",
+            "description": "Abrir mapa.",
+            "key": "M"
+          },
+          {
+            "title": "Cursor",
+            "description": "Mostrar cursor.",
+            "key": "ALT"
+          },
+          {
+            "title": "Pausa",
+            "description": "Abrir menú del juego.",
+            "key": "ESC"
+          },
+          {
+            "title": "HUD",
+            "description": "Mostrar/Ocultar HUD.",
+            "key": "F10"
+          }
+        ]
+      },
+
+      {
+        "title": "Roleplay",
+        "description": "Acciones comunes durante el RP.",
+        "icon": "Shield",
+        "controls": [
+          {
+            "title": "Manos Arriba",
+            "description": "Rendirse.",
+            "key": "X"
+          },
+          {
+            "title": "Señalar",
+            "description": "Apuntar con el dedo.",
+            "key": "B"
+          },
+          {
+            "title": "Animaciones",
+            "description": "Abrir menú de emotes.",
+            "key": "F3"
+          },
+          {
+            "title": "Radial",
+            "description": "Abrir menú radial.",
+            "key": "F6"
+          }
+        ]
+      }
+    ]
+  }
 }
+
 

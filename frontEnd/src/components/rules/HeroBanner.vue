@@ -14,7 +14,7 @@
         {{ title || "NORMATIVA" }}
       </h1>
 
-      <h2>
+      <h2 v-if="subtitle">
         {{ subtitle }}
       </h2>
 
@@ -38,12 +38,12 @@ const props = defineProps<{
 
     title?:string;
 
-    subtitle:string;
+    subtitle?:string;
 
     description:string;
 
 }>();
-console.log("Banner:", props.bannerImage);
+// console.log("Banner:", props.bannerImage);
 const bannerStyle = computed(() => ({
   backgroundImage: `
     linear-gradient(

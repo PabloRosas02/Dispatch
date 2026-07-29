@@ -1,12 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
-  }
+    "target": "ES2022",                          /* Modern JavaScript engine support */
+    "module": "NodeNext",                        /* Standard for Node v26 ES Modules */
+    "moduleResolution": "NodeNext",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]                           /* Allows clean imports like '@/services/user' */
+    },
+    "outDir": "./dist",                          /* Output folder for compiled code */
+    "rootDir": "./src",                          /* Source folder */
+    "strict": true,                              /* Enables strict type-checking */
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,                     /* Emits additional JavaScript to ease imports */
+    "skipLibCheck": true,                        /* Skips type checking of declaration files (faster compilation) */
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
+

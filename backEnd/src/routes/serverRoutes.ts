@@ -9,6 +9,7 @@ router.get("/", serverController.getAll);
 router.get("/basic-info", serverController.getAllBasic);
 router.get("/addit-info", serverController.getAllAddit);
 router.get("/rules-info", serverController.getAllRulePage);
+router.get("/ids", serverController.getAllIds);
 router.post("/", serverController.saveComplete);
 router.delete("/:id", serverController.delete);
 
