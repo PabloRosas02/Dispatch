@@ -20,6 +20,7 @@ export class CacheService {
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
   private safeSaveToDisk(): void {
+    return;
     try {
       const dataToSave = {
         cache: Object.fromEntries(this.cache),
