@@ -42,6 +42,7 @@ export class ServerService {
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
   private safeSaveToDisk(): void {
+    return;
     try {
       const dataToSave = {
         servers: Array.from(this.servers.values())
