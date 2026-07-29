@@ -5,7 +5,11 @@ export class CacheService {
   private cache: Map<string, any>;
 
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbDir = path.resolve("/app", "db");
+  private dbDir = process.env.VERCEL === '1'
+    ? path.join(process.cwd(), 'backEnd', 'db')
+    : process.env.NODE_ENV === 'production'
+      ? '/app/db'
+      : path.resolve('db');
   private dbPath = path.join(this.dbDir, "database.json");
 
   constructor() {

@@ -24,7 +24,11 @@ export class ServerService {
   private servers: Map<string, RPServer>;
 
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbDir = path.resolve("/app", "db");
+  private dbDir = process.env.VERCEL === '1'
+    ? path.join(process.cwd(), 'backEnd', 'db')
+    : process.env.NODE_ENV === 'production'
+      ? '/app/db'
+      : path.resolve('db');
   private dbPath = path.join(this.dbDir, "serverdata.json");
   private dbDefaultPath = path.join(this.dbDir, "serversDefault.json");
 
@@ -244,33 +248,33 @@ export class ServerService {
     return arrayAdditInfo;
   }
 
-public getAllServersRules(): ServerRules[] {
-  const result: ServerRules[] = [];
+  public getAllServersRules(): ServerRules[] {
+    const result: ServerRules[] = [];
 
-  for (const srv of this.servers.values()) {
-    if (srv) {
-      result.push({
-        id: srv.basic?.id || '',
-        banner: srv.banner || {
-          bannerImage: '',
-          bannerLabel: '',
-          bannerDescription: ''
-        },
-        ver: srv.ver || {
-          version: '',
-          lastUpdate: '',
-          status: ''
-        },
-        sections: srv.sections || [],
-        images: srv.images || []
-      });
+    for (const srv of this.servers.values()) {
+      if (srv) {
+        result.push({
+          id: srv.basic?.id || '',
+          banner: srv.banner || {
+            bannerImage: '',
+            bannerLabel: '',
+            bannerDescription: ''
+          },
+          ver: srv.ver || {
+            version: '',
+            lastUpdate: '',
+            status: ''
+          },
+          sections: srv.sections || [],
+          images: srv.images || []
+        });
+      }
+      console.log('SERVER:', srv.basic.id);
+      console.log('IMAGES:', srv.images);
     }
-    console.log('SERVER:', srv.basic.id);
-    console.log('IMAGES:', srv.images);
-  }
 
-  return result;
-}
+    return result;
+  }
 
   public getAllServers(): RPServer[] {
     return Array.from(this.servers.values());
