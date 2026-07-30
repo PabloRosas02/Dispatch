@@ -173,7 +173,9 @@ export class RPServerHelper {
         status: raw?.ver?.status
       },
       // ⚠️ CRÍTICO: Garantizamos que las secciones siempre sean un array iterable
-      sections: Array.isArray(raw?.sections) ? raw.sections : []
+      sections: Array.isArray(raw?.sections) ? raw.sections : [],
+      
+       images: Array.isArray(raw?.images) ? raw.images : []
     };
   }
 

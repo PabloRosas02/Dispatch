@@ -25,19 +25,15 @@ app.get('/api/', (req: Request, res: Response) => {
   });
 });
 
-// Catch‑all global
-app.use((req: Request, res: Response) => {
-  res.status(500).json({
-    success: false,
-    data: null
-  });
-});
-
 // --- ENCENDIDO DEL ENTORNO ---
-app.listen(PORT, () => {
-  console.log(`================================================================`);
-  console.log(`Servidor en TypeScript activo: http://localhost:${PORT}`);
-  console.log(`Enrutador de Servidores RP: http://localhost:${PORT}/api/servers`);
-  console.log(`Enrutador de Caché de Strings: http://localhost:${PORT}/api/cache`);
-  console.log(`================================================================`);
-});
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`================================================================`);
+    console.log(`Servidor en TypeScript activo: http://localhost:${PORT}`);
+    console.log(`Enrutador de Servidores RP: http://localhost:${PORT}/api/servers`);
+    console.log(`Enrutador de Caché de Strings: http://localhost:${PORT}/api/cache`);
+    console.log(`================================================================`);
+  });
+}
+
+export default app;

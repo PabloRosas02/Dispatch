@@ -16,6 +16,7 @@ interface ServerRules {
   banner: BannerDetails;
   ver: VersionAndStatus;
   sections: RuleSection[];
+  images: string[];
 }
 
 
@@ -23,7 +24,11 @@ export class ServerService {
   private servers: Map<string, RPServer>;
 
   // Ruta absoluta hacia el archivo físico de persistencia (database.json en la raíz del proyecto)
-  private dbDir = path.resolve("/app", "db");
+  private dbDir = process.env.VERCEL === '1'
+    ? path.join(process.cwd(), 'backEnd', 'db')
+    : process.env.NODE_ENV === 'production'
+      ? '/app/db'
+      : path.resolve('db');
   private dbPath = path.join(this.dbDir, "serverdata.json");
   private dbDefaultPath = path.join(this.dbDir, "serversDefault.json");
 
@@ -32,10 +37,12 @@ export class ServerService {
 
     // Al arrancar, intenta cargar los datos previos del disco o inicializa con los de fábrica
     this.loadFromDisk();
+    console.log("LEYENDO BASE DE DATOS:", this.dbPath);
   }
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
   private safeSaveToDisk(): void {
+    return;
     try {
       const dataToSave = {
         servers: Array.from(this.servers.values())
@@ -246,16 +253,27 @@ export class ServerService {
     const result: ServerRules[] = [];
 
     for (const srv of this.servers.values()) {
-
       if (srv) {
         result.push({
           id: srv.basic?.id || '',
-          banner: srv.banner || { bannerImage: '', bannerLabel: '', bannerDescription: '' },
-          ver: srv.ver || { version: '', lastUpdate: '', status: '' },
-          sections: srv.sections || []
+          banner: srv.banner || {
+            bannerImage: '',
+            bannerLabel: '',
+            bannerDescription: ''
+          },
+          ver: srv.ver || {
+            version: '',
+            lastUpdate: '',
+            status: ''
+          },
+          sections: srv.sections || [],
+          images: srv.images || []
         });
       }
+      console.log('SERVER:', srv.basic.id);
+      console.log('IMAGES:', srv.images);
     }
+
     return result;
   }
 

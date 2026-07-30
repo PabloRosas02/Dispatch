@@ -42,21 +42,14 @@ defineEmits<{
 <style scoped>
 
 .role-selector {
-
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     gap: 14px;
 
     width: fit-content;
-
     margin: 2rem auto;
-
-    padding: 0.5rem;
-
+    padding: .5rem;
 }
 
 .role-selector::-webkit-scrollbar{
@@ -127,6 +120,39 @@ defineEmits<{
 
     font-weight:600;
 
+}
+
+@media (max-width: 768px) {
+
+    .role-selector {
+
+        justify-content: flex-start;
+
+        width: 100%;
+
+        margin: 2rem 0;
+
+        padding: 0 16px 8px;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .role-selector::-webkit-scrollbar {
+        display: none;
+    }
+
+    .role-chip {
+        flex: 0 0 auto;
+    }
+
+    .role-selector::after {
+        content: "";
+        flex: 0 0 16px;
+    }
 }
 
 </style>

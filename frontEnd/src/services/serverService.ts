@@ -22,6 +22,7 @@ interface RuleInfoItem {
   banner: ServerType.BannerDetails;
   ver: ServerType.VersionAndStatus;
   sections: ServerType.RuleSection[];
+  images?: string[];
 }
 
 interface RuleInfoPayload {
@@ -37,7 +38,7 @@ export function useServerService() {
   }
 
   function getAllServers() {
-    return readonly(rpServers);
+    return rpServers;
   }
 
   function getServerById(id: string): ServerType.RPServer | undefined {
@@ -54,14 +55,13 @@ export function useServerService() {
     return '#1b2d4a';
   }
 
-  function getSvgUrl(id: string) {
-    const server: ServerType.RPServer | undefined = getServerById(id);
+function getSvgUrl(id: string): string {
+  const server = getServerById(id);
 
-    if (server) {
-      return `/icons/${server.basic.filename}`;
-    }
-    return undefined;
-  }
+  return server
+    ? `/icons/${server.basic.filename}`
+    : '/icons/default.svg'; // o cualquier imagen por defecto
+}
 
   function getServerFromRouteParam(serverIdParam: string | string[]):
     ServerType.RPServer | undefined {
@@ -187,6 +187,9 @@ export function useServerService() {
             }
 
             server.sections = item.sections;
+            server.images = item.images ?? [];
+
+
           }
         });
       }

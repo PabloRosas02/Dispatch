@@ -1,12 +1,11 @@
 import { ref, watch, onUnmounted } from 'vue';
 import type * as ServerType from '@/types/serverTypes';
 import { useServerService } from '@/services/serverService';
+import { serverImages } from '@/config/serverImages';
 
-export interface ExtendedRPServer extends Omit<ServerType.RPServer, 'basic'> {
-  basic: Omit<ServerType.BasicInfo, 'filename'>;
-  filename?: string;
+export interface ExtendedRPServer extends ServerType.RPServer {
   images?: string[];
-};
+}
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
 const fetchedServers: Record<string, ExtendedRPServer> = {};
@@ -46,6 +45,8 @@ export function useRoleDetail(currentServerId: string) {
       return;
     }
 
+  defaultRole.images = serverImages[defaultRole.basic.id] ?? [];
+
     // Capa 1: Si ya tenemos los datos en memoria y no forzamos recarga, usamos la caché local.
     if (fetchedServers[currentServerId] && !forceRefresh) {
       role.value = fetchedServers[currentServerId];
@@ -65,21 +66,22 @@ export function useRoleDetail(currentServerId: string) {
       const data = result.data ? result.data : result;
 
       if (data && Object.keys(data).length > 0) {
-        const savedImages = data.images || (data.filename ? [data.filename] : [getSvgUrl(defaultRole.basic.id)]);
+       const savedImages = defaultRole.images;
         role.value = {
-          ...defaultRole,
-          basic: {
-            id: data.basic.id || defaultRole.basic.id,
-            title: data.basic.title || defaultRole.basic.title,
-            subtitle: data.basic.subtitle || defaultRole.basic.subtitle,
-          },
-          addit: {
-            color: data.addit.color || defaultRole.addit.color,
-            description: data.addit.description || defaultRole.addit.description,
-            discordLink: data.addit.discordLink || defaultRole.addit.discordLink
-          },
-          images: savedImages
-        };
+        ...defaultRole,
+        basic: {
+          id: data.basic.id || defaultRole.basic.id,
+          title: data.basic.title || defaultRole.basic.title,
+          subtitle: data.basic.subtitle || defaultRole.basic.subtitle,
+          filename: data.basic.filename || defaultRole.basic.filename,
+        },
+        images: data.images || defaultRole.images,
+        addit: {
+          color: data.addit.color || defaultRole.addit.color,
+          description: data.addit.description || defaultRole.addit.description,
+          discordLink: data.addit.discordLink || defaultRole.addit.discordLink,
+        }
+      };
 
         // Guardamos una copia exacta en el almacenamiento local del navegador
         localStorage.setItem(`backup_${targetCacheKey}`, JSON.stringify(role.value));
@@ -98,7 +100,10 @@ export function useRoleDetail(currentServerId: string) {
       } else {
         // Red de seguridad final: Si tampoco hay respaldo local, cargamos los valores por defecto crudos
         console.warn(`[useRoleDetail] Sin respaldo local disponible. Inicializando con defaults de fábrica.`);
-        role.value = { ...defaultRole, images: [getSvgUrl(defaultRole.basic.id) || ''] };
+        role.value = {
+          ...defaultRole,
+          images: serverImages[defaultRole.basic.id] ?? []
+        };
       }
     } finally {
       // Guardamos en la memoria global para optimizar la navegación actual
