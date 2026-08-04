@@ -79,8 +79,8 @@ export class ServerService {
           // Verificamos el ID a través del Helper de forma segura
           const id = fullServer?.basic?.id;
 
-          if (id) {
-            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+          if (id !== "") {
+            // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
             console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
@@ -114,8 +114,8 @@ export class ServerService {
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
           const id = fullServer?.basic?.id;
 
-          if (id) {
-            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+          if (id !== "") {
+            // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
             console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");

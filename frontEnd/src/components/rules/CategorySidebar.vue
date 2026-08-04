@@ -1,48 +1,3 @@
-<template>
-
-  <aside class="rules-sidebar">
-
-    <h3 class="sidebar-title">
-
-      <span class="section-badge">
-
-        {{ sections.length }}
-
-      </span>
-
-      Categorías
-
-    </h3>
-
-    <button
-      v-for="(section,index) in sections"
-      :key="section.title"
-      class="sidebar-item"
-      :class="{ active:index===selectedIndex }"
-      @click="$emit('select', index)"
-    >
-
-      <div class="sidebar-info">
-
-        <component
-          :is="categoryIcons[section.title]"
-          class="sidebar-icon"
-        />
-
-        <span class="sidebar-name">
-
-          {{ section.title }}
-
-        </span>
-
-      </div>
-
-    </button>
-
-  </aside>
-
-</template>
-
 <script setup lang="ts">
 
 import type { Component } from "vue";
@@ -105,6 +60,51 @@ const categoryIcons:Record<string, Component> = {
 };
 
 </script>
+
+<template>
+
+  <aside class="rules-sidebar">
+
+    <h3 class="sidebar-title">
+
+      <span class="section-badge">
+
+        {{ sections.length }}
+
+      </span>
+
+      Categorías
+
+    </h3>
+
+    <button
+      v-for="(section,index) in sections"
+      :key="section.title"
+      class="sidebar-item"
+      :class="{ active:index===selectedIndex }"
+      @click="$emit('select', index)"
+    >
+
+      <div class="sidebar-info">
+
+        <component
+          :is="categoryIcons[section.title]"
+          class="sidebar-icon"
+        />
+
+        <span class="sidebar-name">
+
+          {{ section.title }}
+
+        </span>
+
+      </div>
+
+    </button>
+
+  </aside>
+
+</template>
 
 <style scoped>
 

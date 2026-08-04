@@ -1,4 +1,25 @@
 {
+  "welcomeConfig": {
+    "welcomeTitle": "Bienvenido a <span class=\"highlight-text\">Kinsfolk</span>",
+    "welcomeDescription": "Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.",
+    "ctaText": "Únete",
+    "logoUrl": "",
+    "discordLink": "https://discord.gg/a6TSrUpwr"
+  },
+  "footerConfig": {
+    "footerText": "Comunidad GTA V Roleplay enfocada en experiencias inmersivas, historias memorables y una comunidad de calidad.",
+    "normativa": "https://www.youtube.com/",
+    "politicapriv": "https://discord.gg/a6TSrUpwr",
+    "politivacookies": "https://discord.gg/a6TSrUpwr",
+    "Terminos": "https://discord.gg/a6TSrUpwr",
+    "discordLink": "https://discord.gg/a6TSrUpwr",
+    "twitterLink": "https://twitter.com/",
+    "staff": "https://discord.gg/a6TSrUpwr",
+    "whitelist": "https://discord.gg/a6TSrUpwr"
+  },
+  "newsConfig": {
+    "news": []
+  },
   "servers": [
     {
       "basic": {

@@ -1,3 +1,16 @@
+<script setup lang="ts">
+import type { RPServer } from "@/types/serverTypes";
+
+defineProps<{
+  availableRoles: ReadonlyArray<RPServer>;
+  currentRoleId: string;
+}>();
+
+defineEmits<{
+  (e: "update:modelValue", value: string): void;
+}>();
+</script>
+
 <template>
 
   <div class="role-selector">
@@ -25,19 +38,6 @@
   </div>
 
 </template>
-
-<script setup lang="ts">
-import type { RPServer } from "@/types/serverTypes";
-
-defineProps<{
-  availableRoles: ReadonlyArray<RPServer>;
-  currentRoleId: string;
-}>();
-
-defineEmits<{
-  (e: "update:modelValue", value: string): void;
-}>();
-</script>
 
 <style scoped>
 

@@ -1,35 +1,55 @@
 @import './base.css';
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  width: 100%;
+  min-height: 100vh;
 }
 
-a,
-.green {
+/* Enlaces globales */
+a {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+  color: var(--color-secondary);
+  transition: color 0.2s ease;
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+a:hover {
+  color: var(--color-accent);
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
+/* -----------------------------------------
+   COMPONENTES REUTILIZABLES DE EDICIÓN
+----------------------------------------- */
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+/* Botones de acción (Agregar/Eliminar) */
+.btn-crud {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.btn-crud.add {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+.btn-crud.delete {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.2);
+}
+
+/* Contenedores de texto editable */
+.editable-container {
+  border: 1px dashed var(--color-accent);
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.01);
+  text-align: left;
 }
