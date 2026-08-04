@@ -9,7 +9,7 @@
       },
       "addit": {
         "color": "#d8a23c",
-        "description": "Las reglas generales establecen las bases del Roleplay dentro de Kinsfolk. Todo jugador debe conocerlas y respetarlas antes de participar en cualquier actividad del servidor.",
+        "description": "Las reglas generales establecen las bases del Roleplay dentro de Dispatch. Todo jugador debe conocerlas y respetarlas antes de participar en cualquier actividad del servidor.",
         "discordLink": "https://discord.gg/"
       },
       "banner": {
@@ -99,7 +99,7 @@
       },
       "addit": {
         "color": "#1b2d4a",
-        "description": "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. Diseñado para garantizar profesionalismo, coordinación y una experiencia inmersiva dentro del cuerpo policial de Kinsfolk.",
+        "description": "Infraestructura avanzada para la gestión, control y automatización de los departamentos de seguridad. Diseñado para garantizar profesionalismo, coordinación y una experiencia inmersiva dentro del cuerpo policial de Dispatch.",
         "discordLink": "https://discord.gg/"
       },
       "banner": {
@@ -407,13 +407,13 @@
       },
       "addit": {
         "color": "#571c75",
-        "description": "Programa oficial para streamers, fotógrafos, cineastas y creadores de contenido. Establece los lineamientos para representar a Kinsfolk mediante contenido audiovisual de calidad.",
+        "description": "Programa oficial para streamers, fotógrafos, cineastas y creadores de contenido. Establece los lineamientos para representar a Dispatch mediante contenido audiovisual de calidad.",
         "discordLink": "https://discord.gg/e4GhgKx5s"
       },
       "banner": {
         "bannerImage": "creator.webp",
         "bannerLabel": "CONTENT CREATOR PROGRAM",
-        "bannerDescription": "Normativas y lineamientos para streamers, fotógrafos, cineastas y creadores de contenido que representan a Kinsfolk mediante transmisiones, videos y material multimedia."
+        "bannerDescription": "Normativas y lineamientos para streamers, fotógrafos, cineastas y creadores de contenido que representan a Dispatch mediante transmisiones, videos y material multimedia."
       },
       "ver": {
         "version": "2.0",
@@ -462,7 +462,7 @@
 
   "controls": {
     "hero": {
-      "label": "KINSFOLK ROLEPLAY",
+      "label": "DISPATCH ROLEPLAY",
       "title": "CONTROLES",
       "description": "Aprende todos los controles esenciales para desenvolverte correctamente dentro del servidor.",
       "bannerImage": "controls.webp"

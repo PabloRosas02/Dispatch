@@ -9,7 +9,7 @@
       <div class="hero-content">
 
         <span class="hero-label">
-          KINSFOLK ROLEPLAY
+          DISPATCH ROLEPLAY
         </span>
 
         <h1>

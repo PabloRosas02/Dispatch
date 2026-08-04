@@ -262,7 +262,7 @@ const postalImage = computed(() => {
 
                             Descubre cómo funciona este departamento,
                             cuáles son sus responsabilidades,
-                            y qué lo hace único dentro de Kinsfolk.
+                            y qué lo hace único dentro de Dispatch.
                         </p>
 
                     </div>
