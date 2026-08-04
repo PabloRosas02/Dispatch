@@ -334,7 +334,7 @@ const handleSaveOrEdit = () => {
 .logo-wrapper {
   width: 100%;
   max-width: 450px;
-  margin: 0 auto 24px auto;
+  margin: 0 auto -64px auto;
 }
 
 .main-logo {
