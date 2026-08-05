@@ -18,11 +18,11 @@ interface KinsfolkPageConfig {
 
 // Configuración inicial espejo (fallbacks locales idénticos a la fábrica)
 const pageConfig = ref<KinsfolkPageConfig>({
-  welcomeTitle: 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
+  welcomeTitle: 'Bienvenido a <span class="highlight-text">Dispatch</span>',
   welcomeDescription: 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
   ctaText: 'Únete',
   logoUrl: defaultLogoUrl,
-  discordLink: 'https://discord.gg/a6TSrUpwr' //Enlace por defecto inicializado
+  discordLink: 'https://discord.gg/' //Enlace por defecto inicializado
 })
 
 // Referencias de los nodos editables del DOM
@@ -52,11 +52,11 @@ onMounted(async () => {
 
     if (data && Object.keys(data).length > 0) {
       pageConfig.value = {
-        welcomeTitle: data.welcomeTitle || 'Bienvenido a <span class="highlight-text">Kinsfolk</span>',
+        welcomeTitle: data.welcomeTitle || 'Bienvenido a <span class="highlight-text">Dispatch</span>',
         welcomeDescription: data.welcomeDescription || 'Explora nuestros proyectos y soluciones de diseño exclusivos integrados en nuestro ecosistema.',
         ctaText: data.ctaText || 'Únete',
         logoUrl: data.logoUrl || defaultLogoUrl,
-        discordLink: data.discordLink || 'https://discord.gg/a6TSrUpwr' //Rehidratación desde caché
+        discordLink: data.discordLink || 'https://discord.gg/' //Rehidratación desde caché
       }
     }
   } catch (error) {

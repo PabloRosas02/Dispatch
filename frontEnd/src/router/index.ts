@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, RouterView } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
-   scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
     }
@@ -21,7 +21,7 @@ const router = createRouter({
       name: 'home',
       component: () => import('../views/HomeView.vue'),
       meta: {
-        title: 'Kinsfolk'
+        title: 'Dispatch'
       }
     },
 
@@ -122,7 +122,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const baseTitle = to.meta.title as string || 'Kinsfolk';
+  const baseTitle = to.meta.title as string || 'Dispatch';
 
 
   switch (to.name) {
