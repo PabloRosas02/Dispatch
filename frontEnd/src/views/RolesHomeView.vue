@@ -16,7 +16,7 @@ import RoleGrid from "@/components/roles/RoleGrid.vue";
           </h2>
 
           <h3>
-            Conoce cada departamento, sus responsabilidades y encuentra el lugar donde comenzará tu historia dentro de Kinsfolk.
+            Conoce cada departamento, sus responsabilidades y encuentra el lugar donde comenzará tu historia dentro de Dispatch.
           </h3>
 
         </header>

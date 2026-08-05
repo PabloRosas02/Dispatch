@@ -1,4 +1,4 @@
-name: kinsfolk
+name: dispatch
 
 x-frontend-base-build: &frontend-base-build
   context: ./frontEnd

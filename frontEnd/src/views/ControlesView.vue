@@ -3,7 +3,7 @@ import CategoryCard from "@/components/controls/CategoryCard.vue";
 import HeroBanner from "@/components/rules/HeroBanner.vue";
 
 const hero = {
-  label: "KINSFOLK ROLEPLAY",
+  label: "DISPATCH ROLEPLAY",
   title: "CONTROLES",
   description:
     "Aprende todos los controles esenciales para desenvolverte correctamente dentro del servidor.",
