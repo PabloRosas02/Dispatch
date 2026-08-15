@@ -118,6 +118,11 @@ const router = createRouter({
         description: 'La direccion URL no existe.',
       },
     },
+    {
+      path: '/login', 
+      name: 'login',
+      component: () => import('../views/LoginView.vue')
+    },
   ],
 })
 

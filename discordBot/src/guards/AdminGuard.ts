@@ -80,12 +80,9 @@ export class AdminGuard {
         message: '❌ No se pudo verificar tu identidad'
       };
     }
-    const hasRequiredRole = member.roles.cache.some(role =>
-      this.ADMIN_ROLE_IDS.includes(role.id)
-    );
 
     // Verificar si tiene permisos de administrador
-    if (!hasRequiredRole) {
+    if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
       return {
         allowed: false,
         message: '❌ Necesitas ser administrador del servidor'

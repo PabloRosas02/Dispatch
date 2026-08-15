@@ -45,3 +45,15 @@ export interface RPServer {
   sections: RuleSection[];
   images?: string[];
 }
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  subtitle: string;
+  content: string;
+  date: string;
+  author: string;
+  category: string;
+  images: string[];
+  videoUrl?: string;
+}

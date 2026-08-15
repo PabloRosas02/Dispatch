@@ -143,19 +143,45 @@ export function useDesigner(options: DesignerOptions) {
     showAdvancedModal.value = false
   }
 
-  // --- NUEVA LÓGICA GENERALIZADA DE IMÁGENES (SUBIR, CAMBIAR, ELIMINAR) ---
-  const handleImageUpload = (event: Event, targetConfigObject: any, propertyKey: string): void => {
+  // --- LÓGICA DE IMÁGENES FÍSICAS (SUBIR, CAMBIAR, ELIMINAR) ---
+  const handleImageUpload = async (event: Event, targetConfigObject: any, propertyKey: string) => {
     const target = event.target as HTMLInputElement
-    if (target.files && target.files[0]) {
-      const file = target.files[0]
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          // Guardamos en formato Base64 de forma local temporal para el guardado posterior
-          targetConfigObject[propertyKey] = e.target.result as string
-        }
+    if (!target.files || target.files.length === 0) return
+    
+    const file = target.files[0]
+    if (!file) return
+
+    // Añadimos la misma seguridad de peso que en los otros archivos
+    const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      alert(`El archivo excede el límite máximo permitido de 10 MB.`)
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      // Usamos el endpoint global de subida
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.data?.url) {
+        // Asignamos la URL limpia devuelta por el servidor a la propiedad dinámica
+        targetConfigObject[propertyKey] = result.data.url
+      } else {
+        alert(`Error: ${result.errorDetail || 'No se pudo subir la imagen'}`)
       }
-      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('[useDesigner] Error de red subiendo imagen:', error)
+      alert('Error de conexión al subir la imagen.')
+    } finally {
+      // Limpiamos el input para permitir volver a cargar la misma imagen de ser necesario
+      target.value = ''
     }
   }
 

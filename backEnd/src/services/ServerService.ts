@@ -79,8 +79,8 @@ export class ServerService {
           // Verificamos el ID a través del Helper de forma segura
           const id = fullServer?.basic?.id;
 
-          if (id) {
-            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+          if (id !== "") {
+            // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
             console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
@@ -114,8 +114,8 @@ export class ServerService {
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
           const id = fullServer?.basic?.id;
 
-          if (id) {
-            // 🎯 Insertamos el servidor completo mapeado perfectamente con todos sus miembros
+          if (id !== "") {
+            // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
             this.servers.set(id, fullServer);
           } else {
             console.warn("[ServerService] Servidor omitido durante la carga: El campo 'basic.id' está vacío o inválido.");
@@ -249,33 +249,33 @@ export class ServerService {
     return arrayAdditInfo;
   }
 
-  public getAllServersRules(): ServerRules[] {
-    const result: ServerRules[] = [];
+public getAllServersRules(): ServerRules[] {
+  const result: ServerRules[] = [];
 
-    for (const srv of this.servers.values()) {
-      if (srv) {
-        result.push({
-          id: srv.basic?.id || '',
-          banner: srv.banner || {
-            bannerImage: '',
-            bannerLabel: '',
-            bannerDescription: ''
-          },
-          ver: srv.ver || {
-            version: '',
-            lastUpdate: '',
-            status: ''
-          },
-          sections: srv.sections || [],
-          images: srv.images || []
-        });
-      }
-      console.log('SERVER:', srv.basic.id);
-      console.log('IMAGES:', srv.images);
+  for (const srv of this.servers.values()) {
+    if (srv) {
+      result.push({
+        id: srv.basic?.id || '',
+        banner: srv.banner || {
+          bannerImage: '',
+          bannerLabel: '',
+          bannerDescription: ''
+        },
+        ver: srv.ver || {
+          version: '',
+          lastUpdate: '',
+          status: ''
+        },
+        sections: srv.sections || [],
+        images: srv.images || []
+      });
     }
-
-    return result;
+    console.log('SERVER:', srv.basic.id);
+    console.log('IMAGES:', srv.images);
   }
+
+  return result;
+}
 
   public getAllServers(): RPServer[] {
     return Array.from(this.servers.values());
