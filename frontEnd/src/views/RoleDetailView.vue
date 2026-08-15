@@ -28,7 +28,7 @@ const {
     fetchRoleData
 } = useRoleDetail(currentServerId);
 
-const { initBasic } = useServerService(); // Quitamos initRules si ya no existe
+const { initBasic } = useServerService();
 const cacheKey = `server_page_config_${currentServerId}`;
 
 const designer = useDesigner({ cacheKey });
@@ -104,7 +104,7 @@ const handleSaveOrEdit = async () => {
         <main
             ref="containerRef"
             class="detail-page-panoramic"
-            :style="{ '--bg-gradient': role.addit.color }"
+            :style="{ '--bg-gradient': role?.addit?.color || '#1e3a8a' }" 
             @wheel="handleWheelScroll"
         >
             <RouterLink to="/roles" class="back-button">
@@ -156,10 +156,6 @@ const handleSaveOrEdit = async () => {
 </template>
 
 <style>
-/* 
- * AVISO: Nota que este style ya NO tiene el atributo "scoped". 
- * Esto permite que las clases `.panel` sean compartidas globalmente por los hijos. 
- */
 .detail-page-panoramic {
     width: 100%;
     height: 100vh;
@@ -167,7 +163,7 @@ const handleSaveOrEdit = async () => {
     overflow-y: hidden;
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-primary) 100%), var(--color-primary);
+    background: linear-gradient(135deg, var(--bg-gradient, var(--color-primary)) 0%, var(--color-primary) 100%);
     font-family: "Exo 2", sans-serif;
 }
 .detail-page-panoramic::-webkit-scrollbar {
