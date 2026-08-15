@@ -42,6 +42,8 @@ const selectedRole = ref(props.serverData.basic.id);
   >
     <HeroBanner
 
+    v-if="isInitVBS"
+
     :banner-image="serverData.banner.bannerImage"
 
     :banner-label="serverData.basic.subtitle"

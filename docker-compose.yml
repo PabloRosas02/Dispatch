@@ -58,6 +58,28 @@ services:
       - backend_db:/app/db
     <<: *backend-base
 
+  discord-bot:
+    profiles: ["prod"]
+    container_name: discord-bot
+    build:
+      context: ./discordBot
+      dockerfile: Dockerfile
+      target: discord-production
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+    secrets:
+      - ADMIN_ROLE_IDS
+      - ADMIN_CHANNEL_ID
+      - CLIENT_ID
+      - DISCORD_TOKEN
+      - GUILD_ID
+
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - extenal-nw
+
   main-proxy-dev:
     container_name: main-proxy-dev
     profiles: ["dev"]
@@ -122,6 +144,18 @@ volumes:
   backend_db_dev:
     driver: local
   frontend_node_modules:
+
+secrets:
+  ADMIN_CHANNEL_ID:
+    file: ./.local_secrets/ADMIN_CHANNEL_ID.txt
+  ADMIN_ROLE_IDS:
+    file: ./.local_secrets/ADMIN_ROLE_IDS.txt
+  CLIENT_ID:
+    file: ./.local_secrets/CLIENT_ID.txt
+  DISCORD_TOKEN:
+    file: ./.local_secrets/DISCORD_TOKEN.txt
+  GUILD_ID:
+    file: ./.local_secrets/GUILD_ID.txt
 
 networks:
   extenal-nw:

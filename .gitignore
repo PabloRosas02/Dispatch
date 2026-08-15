@@ -52,4 +52,4 @@ playwright-report/
 /docker_data/
 /db-data/
 .docker_data/
-
+.local_secrets/

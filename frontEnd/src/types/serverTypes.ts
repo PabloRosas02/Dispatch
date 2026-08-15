@@ -43,6 +43,7 @@ export interface RPServer {
   banner: BannerDetails;
   ver: VersionAndStatus;
   sections: RuleSection[];
+  images?: string[];
 }
 
 export interface NewsArticle {

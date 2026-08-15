@@ -3,6 +3,18 @@ import { createRouter, createWebHistory, RouterView } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
+   scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    }
+
+    return {
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    };
+  },
+
   routes: [
     {
       path: '/',
@@ -17,17 +29,22 @@ const router = createRouter({
       path: '/roles',
       name: 'role-root',
       component: RouterView,
+      meta: {
+        hideLayout: false,
+        title: 'Roles'
+      },
       children: [
+        {
+          path: '',
+          name: 'roles-home',
+          component: () => import('../views/RolesHomeView.vue'),
+        },
         {
           path: ':serverId',
           name: 'role-detail',
           component: () => import('../views/RoleDetailView.vue'),
         }
-      ],
-      meta: {
-        hideLayout: true,
-        title: 'Roles'
-      }
+      ]
     },
     {
       path: '/normativas',
@@ -48,14 +65,29 @@ const router = createRouter({
       ]
     },
     {
-      path: '/housing',
-      name: 'housing',
-      component: () => import('../views/HousingView.vue'),
+      path: "/housing",
+      name: "housing-home",
+      component: () => import("../views/housing/HousingHomeView.vue"),
       meta: {
-        title: 'Housing'
-      }
+        title: "Housing",
+      },
     },
-
+    {
+      path: "/housing/:zoneId",
+      name: "housing-zone",
+      component: () => import("../views/housing/HousingZoneView.vue"),
+      meta: {
+        title: "Housing",
+      },
+    },
+    {
+      path: "/housing/:zoneId/:interiorId",
+      name: "housing-interior",
+      component: () => import("../views/housing/HousingInteriorView.vue"),
+      meta: {
+        title: "Housing",
+      },
+    },
     {
       path: '/controles',
       name: 'controls',

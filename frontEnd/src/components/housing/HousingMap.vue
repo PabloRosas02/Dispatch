@@ -4,6 +4,12 @@ import type { CSSProperties } from 'vue'
 
 // Importación de tu mapa PNG o JPG
 import mapImageUrl from '/images/mapa.png'
+import {
+  Plus,
+  Minus,
+  RotateCcw
+} from "lucide-vue-next";
+
 
 // --- REFS PARA CONTROL DE DIMENSIONES ---
 const viewportRef = ref<HTMLDivElement | null>(null)
@@ -222,181 +228,280 @@ const mapTransformStyle = computed<CSSProperties>(() => {
   }
 })
 </script>
-
 <template>
-  <div class="page-container">
-    <div class="header">
-      <h1>Housing</h1>
-    </div>
-    <div class="map-card">
+  <section class="housing-map">
 
-      <h2 class="map-title">MAPA INTERACTIVO DE ZONAS</h2>
+    <div class="map-header">
 
-      <div
-        ref="viewportRef"
-        class="map-viewport"
-        :class="{ 'is-grabbing': isDragging }"
-        @wheel="handleWheel"
-        @mousedown="startPanMouse"
-        @mousemove="onPanMouse"
-        @mouseup="stopDragging"
-        @mouseleave="stopDragging"
-        @touchstart="handleTouchStart"
-        @touchmove="handleTouchMove"
-        @touchend="stopDragging"
-      >
+      <div class="map-header-content">
+        <h2>Mapa Interactivo</h2>
+        <p>
+          Explora todas las zonas residenciales disponibles dentro de Kinsfolk Roleplay.
+        </p>
+      </div>
 
-        <div class="map-controls">
-          <button @click.stop="zoomIn" class="control-btn" title="Acercar">+</button>
-          <button @click.stop="zoomOut" class="control-btn" title="Alejar">-</button>
-          <button @click.stop="resetMap" class="control-btn" title="Reiniciar">↻</button>
-        </div>
+      <div class="map-controls">
 
-        <div class="map-transform-layer" :style="mapTransformStyle">
-          <img
-            :src="mapImageUrl"
-            alt="SAGA Map"
-            class="map-image"
-            draggable="false"
-            @load="onImageLoad"
-          />
-        </div>
+        <button class="control-btn" @click.stop="zoomIn">
+            <Plus :size="18" />
+        </button>
+
+        <button class="control-btn" @click.stop="zoomOut">
+            <Minus :size="18" />
+        </button>
+
+        <button class="control-btn" @click.stop="resetMap">
+            <RotateCcw :size="18" />
+            </button>
 
       </div>
 
     </div>
-  </div>
+
+    <div
+      ref="viewportRef"
+      class="map-viewport"
+      :class="{ 'is-grabbing': isDragging }"
+      @wheel="handleWheel"
+      @mousedown="startPanMouse"
+      @mousemove="onPanMouse"
+      @mouseup="stopDragging"
+      @mouseleave="stopDragging"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+      @touchend="stopDragging"
+    >
+
+      <div
+        class="map-transform-layer"
+        :style="mapTransformStyle"
+      >
+
+        <img
+          :src="mapImageUrl"
+          alt="Mapa de Los Santos"
+          class="map-image"
+          draggable="false"
+          @load="onImageLoad"
+        />
+
+        <!--
+          AQUÍ IRÁN MÁS ADELANTE LOS SVG DE LAS ZONAS
+
+          <svg class="zone-overlay">
+              <polygon ... />
+          </svg>
+
+        -->
+
+      </div>
+
+    </div>
+
+  </section>
 </template>
-
 <style scoped>
-.page-container {
-  /*min-height: 100vh;*/
-  color: var(--color-primary);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px;
-  user-select: none;
-}
 
-.header{
-  align-items: top;
-  padding-bottom: 20px;
-}
-
-.map-card {
+.housing-map {
   width: 100%;
-  max-width: 1200px;
-  background: rgba(6, 15, 22, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(99, 166, 218, 0.1);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-}
+  max-width: 1400px;
+  margin: 0 auto;
 
-.map-title {
-  text-align: center;
-  color: var(--color-secondary);
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
-  text-shadow: 0 0 15px rgba(236, 175, 68, 0.2);
-}
+  background: linear-gradient(
+    180deg,
+    rgba(26, 34, 48, 0.96),
+    rgba(17, 23, 34, 0.98)
+  );
 
-.map-viewport {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 22px;
   overflow: hidden;
-  border: 1px solid rgba(99, 166, 218, 0.3);
-  background-color: var(--color-primary);
-  cursor: grab;
-  touch-action: none;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 20px 40px rgba(0,0,0,.35);
 }
 
-.map-viewport.is-grabbing {
-  cursor: grabbing;
+/* ===========================
+   Header
+=========================== */
+
+.map-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:2rem;
+
+  padding:1.75rem 2rem;
 }
 
-.map-transform-layer {
-  position: absolute;
-  width: 100%;
-  top: 0;
-  left: 0;
-  will-change: transform;
+.map-header-content h2{
+  color:var(--color-light);
+  font-size:1.6rem;
+  font-weight:700;
+  margin:0;
 }
 
-.map-image {
-  width: 100%;
-  height: auto;
-  display: block;
+.map-header-content p{
+  margin-top:.45rem;
+  color:rgba(255,255,255,.65);
+  line-height:1.6;
+  max-width:520px;
 }
 
-.map-controls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  gap: 8px;
-  z-index: 10;
+/* ===========================
+   Controls
+=========================== */
+
+.map-controls{
+  display:flex;
+  gap:.75rem;
 }
 
-.control-btn {
-  background: var(--color-primary);
-  border: 1px solid var(--color-secondary);
-  color: var(--color-light);
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+.control-btn{
+  width:44px;
+  height:44px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:12px;
+
+  border:1px solid rgba(255,255,255,.08);
+
+  background:linear-gradient(
+    180deg,
+    rgba(35,43,57,.96),
+    rgba(20,27,38,.98)
+  );
+
+  color:var(--color-secondary);
+
+  font-size:1.2rem;
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease,
+    background .25s ease;
 }
 
-.control-btn:hover {
-  background: var(--color-secondary);
-  color: var(--color-primary);
-  box-shadow: 0 0 12px rgba(99, 166, 218, 0.4);
+.control-btn:hover{
+
+  transform:translateY(-2px);
+
+  border-color:var(--color-secondary);
+
+  box-shadow:
+      0 8px 18px rgba(0,0,0,.35),
+      0 0 16px rgba(236,175,68,.25);
+
 }
 
-@media (max-width: 768px) {
-  .page-container {
-    padding: 12px;
+.control-btn:active{
+  transform:scale(.96);
+}
+
+/* ===========================
+   Viewport
+=========================== */
+
+.map-viewport{
+
+  position:relative;
+
+  width:100%;
+
+  aspect-ratio:16/9;
+
+  overflow:hidden;
+
+  background:#111822;
+
+  cursor:grab;
+
+  touch-action:none;
+
+}
+
+.map-viewport.is-grabbing{
+  cursor:grabbing;
+}
+
+.map-transform-layer{
+
+  position:absolute;
+
+  inset:0;
+
+  will-change:transform;
+
+}
+
+.map-image{
+
+  width:100%;
+
+  height:auto;
+
+  display:block;
+
+  user-select:none;
+
+  pointer-events:none;
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width:768px){
+
+  .housing-map{
+    border-radius:16px;
   }
 
-  .map-card {
-    padding: 16px;
-    border-radius: 12px;
+  .map-header{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:1.25rem;
+
+    padding:1.25rem;
+
   }
 
-  .map-title {
-    font-size: 1.1rem;
-    margin-bottom: 14px;
+  .map-controls{
+
+    width:100%;
+
+    justify-content:flex-end;
+
   }
 
-  .map-viewport {
-    aspect-ratio: 1 / 1;
+  .map-viewport{
+
+    aspect-ratio:1/1;
+
   }
 
-  .map-controls {
-    top: 12px;
-    right: 12px;
-    gap: 10px;
+  .control-btn{
+
+    width:48px;
+
+    height:48px;
+
+    font-size:1.3rem;
+
   }
 
-  .control-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1.4rem;
-    background: rgba(6, 15, 22, 0.9);
-  }
 }
+
 </style>

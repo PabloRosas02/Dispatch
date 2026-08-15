@@ -8,6 +8,8 @@ import LoadingScreen from './components/miscellaneous/LoadingScreen.vue'
 import Navbar from './components/navegation/AppNavbar.vue'
 // Importar el footer
 import Footer from './components/navegation/AppFooter.vue'
+// Importar el componente ScrollToTop
+import ScrollToTop from "./components/navegation/ScrollToTop.vue";
 
 // Inicializamos la ruta activa para verificar sus meta-datos
 const route = useRoute()
@@ -29,6 +31,7 @@ const route = useRoute()
   
   <!-- Oculta el Footer si la ruta activa tiene meta.hideLayout -->
   <Footer v-if="!route.meta.hideLayout" />
+  <ScrollToTop />
 </template>
 
 <style>

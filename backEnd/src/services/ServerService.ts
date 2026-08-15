@@ -14,7 +14,9 @@ import {
 interface ServerRules {
   id: string;
   banner: BannerDetails;
+  ver: VersionAndStatus;
   sections: RuleSection[];
+  images: string[];
 }
 
 
@@ -31,6 +33,7 @@ export class ServerService {
 
     // Al arrancar, intenta cargar los datos previos del disco o inicializa con los de fábrica
     this.loadFromDisk();
+    console.log("LEYENDO BASE DE DATOS:", this.dbPath);
   }
 
   // --- OPERACIONES DE SISTEMA DE ARCHIVOS (PERSISTENCIA FÍSICA) ---
@@ -51,26 +54,25 @@ export class ServerService {
 
   private loadFromDisk(): void {
 
-    if (fs.existsSync(this.dbPath) == false) {
+    if (!fs.existsSync(this.dbPath)) {
       console.log("[ServerService] No se detectó base de datos previa. Inicializando desde valores por defecto (factory)...");
       this.restoreToFactoryDefaults();
       return;
     }
 
     this.servers.clear();
-    const fd = fs.openSync(this.dbDefaultPath, "r");
 
     try {
-      const fileContent = fs.readFileSync(fd, "utf-8");
-      const parsedData = JSON.parse(fileContent);
+      const fileContent = fs.readFileSync(this.dbPath, "utf-8");
+      const parsedData = JSON.parse(fileContent) as { servers: RPServer[] };
 
       // Rehydrate server map using RPServerHelper to correctly reference server.basic.id
       if (parsedData && Array.isArray(parsedData.servers)) {
-        parsedData.servers.forEach((rawSrv: any) => {
+        parsedData.servers.forEach((rawSrv: RPServer) => {
           // Hidratamos la estructura de datos completa garantizando todos sus miembros
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
           // Verificamos el ID a través del Helper de forma segura
-          const id = RPServerHelper.getId(fullServer);
+          const id = fullServer?.basic?.id;
 
           if (id !== "") {
             // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
@@ -81,9 +83,9 @@ export class ServerService {
         });
       }
       console.log(`[ServerService] Estado rehidratado exitosamente desde ${path.basename(this.dbPath)}.`);
-    } finally {
-      // el archivo se cierra aquí obligatoriamente liberando el recurso.
-      fs.closeSync(fd);
+    } catch (error) {
+      console.error("[ServerService] Error crítico al leer o parsear la base de datos:", error);
+      this.restoreToFactoryDefaults();
     }
   }
 
@@ -93,24 +95,19 @@ export class ServerService {
   public restoreToFactoryDefaults(): void {
     this.servers.clear();
 
-    if (fs.existsSync(this.dbDefaultPath) == false) {
+    if (!fs.existsSync(this.dbDefaultPath)) {
       return;
     }
 
-    // 1. Abrimos el descriptor de archivo (File Descriptor)
-    const fd = fs.openSync(this.dbDefaultPath, "r");
-
     try {
-      // 2. Leemos todo el contenido usando el descriptor
-      const defaultContent = fs.readFileSync(fd, "utf-8");
-      const parsedData = JSON.parse(defaultContent);
+      const defaultContent = fs.readFileSync(this.dbDefaultPath, "utf-8");
+      const parsedData = JSON.parse(defaultContent) as { servers: RPServer[] };
 
       if (parsedData && Array.isArray(parsedData.servers)) {
         parsedData.servers.forEach((rawSrv: any) => {
           // Hidratamos la estructura de datos completa garantizando todos sus miembros
           const fullServer = RPServerHelper.hydrateServer(rawSrv);
-          // Verificamos el ID a través del Helper de forma segura
-          const id = RPServerHelper.getId(fullServer);
+          const id = fullServer?.basic?.id;
 
           if (id !== "") {
             // Insertamos el servidor completo mapeado perfectamente con todos sus miembros
@@ -120,69 +117,63 @@ export class ServerService {
           }
         });
       }
-    } finally {
-      // el archivo se cierra aquí obligatoriamente liberando el recurso.
-      fs.closeSync(fd);
+    } catch (error) {
+      console.error("[ServerService] Error crítico al leer o parsear la base de datos:", error);
     }
 
     this.safeSaveToDisk();
   }
 
-  public getServerBasicInfo(id: string): BasicInfo | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getBasicInfo(srv) : null;
+  public getServerBasicInfo(id: string): BasicInfo | undefined {
+    return this.getServer(id)?.basic;
   }
 
-  public updateServerBasicInfo(id: string, basic: BasicInfo): void {
+  public updateServerBasicInfo(id: string, basic: Partial<BasicInfo>): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateBasicInfo(srv, basic);
     this.setServer(id, srv);
   }
 
   // --- 2. ADDITIONAL INFO ---
-  public getServerAdditionalInfo(id: string): AdditionalInfo | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getAdditionalInfo(srv) : null;
+  public getServerAdditionalInfo(id: string): AdditionalInfo | undefined {
+    return this.getServer(id)?.addit;
   }
 
-  public updateServerAdditionalInfo(id: string, addit: AdditionalInfo): void {
+  public updateServerAdditionalInfo(id: string, addit: Partial<AdditionalInfo>): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateAdditionalInfo(srv, addit);
     this.setServer(id, srv);
   }
 
   // --- 3. BANNER DETAILS ---
-  public getServerBannerDetails(id: string): BannerDetails | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getBannerDetails(srv) : null;
+  public getServerBannerDetails(id: string): BannerDetails | undefined {
+    return this.getServer(id)?.banner;
   }
 
   public updateServerBannerDetails(id: string, banner: BannerDetails): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
+    if (!srv) return;
     RPServerHelper.updateBannerDetails(srv, banner);
     this.setServer(id, srv);
   }
 
   // --- 4. VERSION AND STATUS ---
-  public getServerVersionAndStatus(id: string): VersionAndStatus | null {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getVersionAndStatus(srv) : null;
+  public getServerVersionAndStatus(id: string): VersionAndStatus | undefined {
+    return this.getServer(id)?.ver;
   }
 
-  public updateServerVersion(id: string, version: string, status?: string): void {
+  public updateServerVersionAndStatus(id: string, version?: string, status?: string): void {
     const srv = this.getServer(id);
-    if (!srv) throw new Error(`Server ${id} not found`);
-    RPServerHelper.updateVersion(srv, version, status);
+    if (!srv) return;
+    RPServerHelper.updateVersionAndStatus(srv, version, status);
     this.setServer(id, srv);
   }
 
   // --- 5. SECTIONS & RULES ---
   public getServerSections(id: string): RuleSection[] {
-    const srv = this.getServer(id);
-    return srv ? RPServerHelper.getSections(srv) : [];
+    return this.getServer(id)?.sections ?? [];
   }
 
   public addServerSection(id: string, title: string): void {
@@ -201,12 +192,16 @@ export class ServerService {
   }
 
   // --- MÉTODOS PARA SERVIDORES RP ---
-  public getServer(id: string): RPServer | null {
-    return this.servers.get(id.trim()) || null;
+  public getServer(id: string): RPServer | undefined {
+    return this.servers.get(id);
   }
 
   public setServer(id: string, server: RPServer): void {
-    this.servers.set(id, server);
+
+    if (!this.servers.has(id)) {
+      this.servers.set(id, server);
+    }
+
     this.safeSaveToDisk(); // Sincroniza al insertar o actualizar
   }
 
@@ -220,52 +215,62 @@ export class ServerService {
     return deleted;
   }
 
+  public getAllIds(): string[] {
+    return Array.from(this.servers.keys());
+  }
+
   public getAllServersBasicInfo(): BasicInfo[] {
-    // Extrae los IDs de las llaves del Map, mapea con tu función y remueve los nulos
-    return Array.from(this.servers.keys())
-      .map(id => this.getServerBasicInfo(id))
-      .filter((info): info is BasicInfo => info !== null);
+    const arrayBasicInfo: BasicInfo[] = [];
+    for (const server of this.servers.values()) {
+      if (server?.basic) {
+        arrayBasicInfo.push(server.basic);
+      }
+    }
+
+    return arrayBasicInfo;
   }
 
   public getAllServersAddit(): (AdditionalInfo & { id: string })[] {
-    return Array.from(this.servers.keys())
-      .map(id => {
-        const info = this.getServerAdditionalInfo(id);
-        if (!info) return null; // Si es nulo, lo pasamos para que el filter lo limpie
+    const arrayAdditInfo: (AdditionalInfo & { id: string })[] = [];
 
-        return {
-          id,
-          ...info
-        };
-      })
-      // El filter ahora asegura que lo que queda son objetos válidos con su ID
-      .filter((info): info is (AdditionalInfo & { id: string }) => info !== null);
-  }
-
-  public getAllServersRules(): ServerRules[] {
-    // Obtenemos los IDs del mapa de servidores
-    return Array.from(this.servers.keys()).map(id => {
-      // 1. Obtenemos el servidor completo usando el ID
-      const server = this.servers.get(id);
-
-      // Si por alguna razón el servidor no existe en el mapa, devolvemos una estructura vacía
-      if (!server) {
-        return {
-          id,
-          banner: { bannerImage: '', bannerLabel: '', bannerDescription: '' },
-          sections: []
-        };
+    for (const server of this.servers.values()) {
+      if (server?.addit && server.basic?.id) {
+        arrayAdditInfo.push({
+          id: server.basic.id,
+          ...server.addit
+        });
       }
-
-      // 2. Utilizamos tus funciones estáticas pasándole el servidor encontrado
-      return {
-        id,
-        banner: RPServerHelper.getBannerDetails(server), // Reemplaza 'NombreDeTuClase' por el nombre real de tu clase backend
-        sections: RPServerHelper.getSections(server)
-      };
-    });
+    }
+    return arrayAdditInfo;
   }
 
+public getAllServersRules(): ServerRules[] {
+  const result: ServerRules[] = [];
+
+  for (const srv of this.servers.values()) {
+    if (srv) {
+      result.push({
+        id: srv.basic?.id || '',
+        banner: srv.banner || {
+          bannerImage: '',
+          bannerLabel: '',
+          bannerDescription: ''
+        },
+        ver: srv.ver || {
+          version: '',
+          lastUpdate: '',
+          status: ''
+        },
+        sections: srv.sections || [],
+        images: srv.images || []
+      });
+    }
+    console.log('SERVER:', srv.basic.id);
+    console.log('IMAGES:', srv.images);
+  }
+
+  return result;
+}
 
   public getAllServers(): RPServer[] {
     return Array.from(this.servers.values());
