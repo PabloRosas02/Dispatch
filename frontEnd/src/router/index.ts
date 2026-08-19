@@ -21,7 +21,7 @@ const router = createRouter({
       name: 'home',
       component: () => import('../views/HomeView.vue'),
       meta: {
-        title: 'Kinsfolk'
+        title: 'Dispatch'
       }
     },
 

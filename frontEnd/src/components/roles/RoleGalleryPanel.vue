@@ -14,7 +14,8 @@ defineEmits(['open-lightbox']);
 </script>
 
 <template>
-    <section class="panel gallery-panel">
+    <!-- Se agregó la clase gallery-panel-container para aplicar el layout lado a lado -->
+    <section class="panel gallery-panel gallery-panel-container">
         <div class="gallery-title">
             <h2>GALERÍA</h2>
             <span class="section-label">Imágenes destacadas del rol</span>
@@ -24,7 +25,7 @@ defineEmits(['open-lightbox']);
             :modules="[Navigation, Pagination]"
             :slides-per-view="1"
             :space-between="0"
-            :loop="true"
+            :loop="role?.images?.length > 1"
             :navigation="true"
             :pagination="{ clickable: true }"
             :speed="700"
@@ -46,23 +47,51 @@ defineEmits(['open-lightbox']);
 </template>
 
 <style scoped>
-.gallery-panel {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 60px;
+/* Contenedor del panel para alinear el texto y la imagen */
+.gallery-panel-container {
+    display: flex;
     align-items: center;
+    gap: 60px; 
 }
+
+/* Contenedor específico de los textos */
 .gallery-title {
-    width: 100%;
-    margin-bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
+
+/* Estilo exacto para el H2 ("GALERÍA") */
 .gallery-title h2 {
-    font-size: 3rem;
+    font-size: 4rem;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+    line-height: 1;
+    
+    /* El degradado de amarillo brillante a naranja oscuro */
+    background: linear-gradient(180deg, #ffce54 0%, #dd6a1f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
 }
+
+/* Estilo para el subtítulo ("Imágenes destacadas del rol") */
+.gallery-title .section-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    color: #c97f34; 
+    letter-spacing: 0.5px;
+}
+
 .showcase-gallery {
     max-width: 760px;
     margin: 0 auto;
 }
+
 .showcase-image {
     width: 100%;
     height: auto;
@@ -73,6 +102,7 @@ defineEmits(['open-lightbox']);
     transition: 0.35s;
     box-shadow: 0 25px 70px rgba(0,0,0,0.45);
 }
+
 .showcase-image:hover {
     transform: scale(1.02);
 }
@@ -86,20 +116,24 @@ defineEmits(['open-lightbox']);
     color: white;
     opacity: 0.55;
 }
+
 .showcase-gallery :deep(.swiper-button-prev:hover),
 .showcase-gallery :deep(.swiper-button-next:hover) {
     opacity: 1;
     color: var(--color-accent);
     transform: scale(1.15);
 }
+
 .showcase-gallery :deep(.swiper-pagination) {
     bottom: -40px;
 }
+
 .showcase-gallery :deep(.swiper-pagination-bullet) {
     width: 10px;
     height: 10px;
     opacity: 0.3;
 }
+
 .showcase-gallery :deep(.swiper-pagination-bullet-active) {
     width: 34px;
     border-radius: 20px;
@@ -108,6 +142,10 @@ defineEmits(['open-lightbox']);
 }
 
 @media (max-width: 1024px) {
+    .gallery-panel-container {
+        flex-direction: column;
+        gap: 30px;
+    }
     .gallery-panel {
         width: 100%;
         display: flex;
@@ -117,7 +155,7 @@ defineEmits(['open-lightbox']);
     .gallery-title {
         width: 100%;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 0px;
     }
     .gallery-title h2 {
         font-size: 2.4rem;
