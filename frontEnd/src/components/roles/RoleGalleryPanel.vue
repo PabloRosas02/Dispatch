@@ -5,17 +5,27 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+// Definimos la estructura exacta que esperamos recibir
+export interface RoleData {
+    basic: {
+        title: string;
+    };
+    images?: string[];
+}
+
 defineProps<{
-    role: any;
+    role: RoleData;
 }>();
 
-// Emitimos un evento al componente padre para abrir el Lightbox
-defineEmits(['open-lightbox']);
+// Tipado estricto para los emits
+defineEmits<{
+    (e: 'open-lightbox', imageUrl: string): void;
+}>();
 </script>
 
 <template>
-    <!-- Se agregó la clase gallery-panel-container para aplicar el layout lado a lado -->
-    <section class="panel gallery-panel gallery-panel-container">
+    <!-- Solo se muestra si existen imágenes -->
+    <section v-if="role?.images?.length" class="panel gallery-panel gallery-panel-container">
         <div class="gallery-title">
             <h2>GALERÍA</h2>
             <span class="section-label">Imágenes destacadas del rol</span>
@@ -25,21 +35,24 @@ defineEmits(['open-lightbox']);
             :modules="[Navigation, Pagination]"
             :slides-per-view="1"
             :space-between="0"
-            :loop="role?.images?.length > 1"
+            :loop="role.images.length > 1"
             :navigation="true"
             :pagination="{ clickable: true }"
             :speed="700"
             class="showcase-gallery"
         >
-            <SwiperSlide
-                v-for="(image, index) in role.images"
-                :key="index"
+            <SwiperSlide 
+                v-for="image in role.images" 
+                :key="image"
             >
                 <img
                     :src="image"
-                    :alt="`${role.basic.title} ${index + 1}`"
+                    :alt="`${role.basic.title} ${Number(index) + 1}`"
                     class="showcase-image"
+                    loading="lazy"
+                    tabindex="0"
                     @click="$emit('open-lightbox', image)"
+                    @keydown.enter="$emit('open-lightbox', image)"
                 >
             </SwiperSlide>
         </Swiper>
