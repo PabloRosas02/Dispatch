@@ -1,22 +1,17 @@
 {
   "compilerOptions": {
-    /* Módulos y Entorno */
-    "target": "ES2022",                  // Versión de JS de salida (soportada nativamente por versiones recientes de Node)
-    "module": "CommonJS",                // Formato de módulos estándar para Node.js
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     
-    /* Rutas de Archivos */
-    "rootDir": "./",                     // Carpeta donde está tu código fuente (cámbiala a "./src" si usas esa estructura)
-    "outDir": "./dist",                  // Carpeta donde se guardará el JavaScript compilado
+    "rootDir": "./",
+    "outDir": "./dist",
     
-    /* Interoperabilidad */
-    "esModuleInterop": true,             // Permite importar módulos CommonJS como si fueran ES Modules (vital para Express)
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    
-    /* Verificación de Tipos estricta */
-    "strict": true,                      // Habilita todas las comprobaciones estrictas de TS
-    "skipLibCheck": true                 // Acelera la compilación ignorando los tipos de node_modules
+    "strict": true,
+    "skipLibCheck": true
   },
-  "include": ["**/*.ts"],                // Incluye todos los archivos TS...
-  "exclude": ["node_modules", "dist"]    // ...pero ignora estas carpetas
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
