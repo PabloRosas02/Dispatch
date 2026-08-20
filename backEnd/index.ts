@@ -1,4 +1,7 @@
-// api/index.ts (ubicado en la raíz del repositorio)
-import app from '../backEnd/src/server';
+import app from './src/server';
 
-export default app;
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor local corriendo en el puerto ${PORT}`);
+});
