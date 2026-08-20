@@ -1,4 +1,3 @@
-<!-- src/components/rules/RulesPage.vue -->
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { RPServer } from "@/types/serverTypes";
@@ -13,8 +12,6 @@ const props = defineProps<{
     serverData: RPServer;
 }>();
 
-const isInitVBS = ref(true); 
-
 const selectedSection = ref(0);
 
 const currentSection = computed(() =>
@@ -23,16 +20,19 @@ const currentSection = computed(() =>
 
 const totalRules = computed(() =>
     props.serverData.sections.reduce(
-        (total, section) => total + section.rules.length,
+        (total: number, section: any) => total + section.rules.length,
         0
     )
 );
 
 const serverService = useServerService();
-
 const roles = serverService.getAllServers();
-
 const selectedRole = ref(props.serverData.basic.id);
+
+// Función que maneja la conversión de forma segura para TypeScript
+const formatIndex = (index: string | number) => {
+    return String(Number(index) + 1).padStart(2, '0');
+};
 </script>
 
 <template>
@@ -41,7 +41,6 @@ const selectedRole = ref(props.serverData.basic.id);
         :style="{ '--server-color': serverData.addit.color }"
     >
         <HeroBanner
-            v-if="isInitVBS"
             :banner-image="serverData.banner.bannerImage"
             :banner-label="serverData.basic.subtitle"
             title="NORMATIVA"
@@ -89,7 +88,7 @@ const selectedRole = ref(props.serverData.basic.id);
                     <RuleCard
                         v-for="(rule, rIndex) in currentSection.rules"
                         :key="rIndex"
-                        :index="String(Number(rIndex) + 1).padStart(2, '0')"
+                        :index="formatIndex(rIndex)"
                         :title="rule.title"
                         :description="rule.description"
                         :example="rule.example"

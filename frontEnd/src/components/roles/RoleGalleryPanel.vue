@@ -42,8 +42,8 @@ defineEmits<{
             class="showcase-gallery"
         >
             <SwiperSlide 
-                v-for="image in role.images" 
-                :key="image"
+                v-for="(image, index) in role.images" 
+                :key="index"
             >
                 <img
                     :src="image"
