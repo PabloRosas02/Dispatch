@@ -236,7 +236,7 @@ const mapTransformStyle = computed<CSSProperties>(() => {
       <div class="map-header-content">
         <h2>Mapa Interactivo</h2>
         <p>
-          Explora todas las zonas residenciales disponibles dentro de Kinsfolk Roleplay.
+          Explora todas las zonas residenciales disponibles dentro de Dispatch Roleplay.
         </p>
       </div>
 

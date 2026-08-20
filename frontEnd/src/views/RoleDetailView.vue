@@ -4,60 +4,44 @@ import { useRoute } from 'vue-router';
 
 import NotFound from '@/components/miscellaneous/NotFound.vue';
 import BuilderToolbar from '@/components/editor/BuilderToolbar.vue';
-import ImageGalleryManager from '@/components/editor/ImageGalleryManager.vue';
 
-// Importamos nuestros nuevos componentes refactorizados
-import RolePolaroid from '@/components/role/RolePolaroid.vue';
-import RoleHeaderInfo from '@/components/role/RoleHeaderInfo.vue';
-import RoleActionButtons from '@/components/role/RoleActionButtons.vue';
+import RoleHeroPanel from '@/components/roles/RoleHeroPanel.vue';
+import RoleOverviewPanel from '@/components/roles/RoleOverviewPanel.vue';
+import RoleGalleryPanel from '@/components/roles/RoleGalleryPanel.vue';
 
-// Composables
 import { useDesigner } from '@/composables/useDesigner';
 import { useRoleDetail } from '@/composables/useRoleDetail';
 import { useServerService } from '@/services/serverService';
-
-// Importamos la autenticación global
-import { useAuth } from '@/composables/useAuth';
 
 const route = useRoute();
 
 const containerRef = ref<HTMLElement | null>(null);
 
-const routeServerId = Array.isArray(route.params.serverId)
-  ? route.params.serverId[0]
-  : route.params.serverId;
-const currentServerId = routeServerId || 'leo';
+const currentServerId: string = Array.isArray(route.params.serverId)
+    ? route.params.serverId[0] ?? 'leo'
+    : route.params.serverId ?? 'leo';
 
-// Lógica de datos
-const { initBasic } = useServerService();
 const {
     role,
     bLoading,
     activeLightboxImage,
-    fetchRoleData,
-    handleAddImage,
-    removeImageAtIndex
+    fetchRoleData
 } = useRoleDetail(currentServerId);
 
-// Lógica del Diseñador
-const cacheKeyStr = `server_page_config_${currentServerId}`;
-const designer = useDesigner({ cacheKey: cacheKeyStr });
+const { initBasic } = useServerService();
+const cacheKey = `server_page_config_${currentServerId}`;
 
-// Validación de seguridad centralizada (reemplaza la verificación por URL)
-const { isAuthenticated } = useAuth();
-const isAuthorizedDesigner = computed(() => isAuthenticated.value);
+const designer = useDesigner({ cacheKey });
+const isAuthorizedDesigner = computed(() => route.query.mode === 'admin-designer');
 
 onMounted(async () => {
     await initBasic();
-    await initRules();
     await fetchRoleData();
 });
 
 const handleWheelScroll = (event: WheelEvent) => {
     if (!containerRef.value || event.deltaY === 0) return;
-
     event.preventDefault();
-
     containerRef.value.scrollBy({
         left: event.deltaY * 2.8,
         behavior: 'auto'
@@ -65,7 +49,6 @@ const handleWheelScroll = (event: WheelEvent) => {
 };
 
 const handleSaveOrEdit = async () => {
-
     if (!role.value) return;
 
     designer.toggleEdit(role, {
@@ -77,59 +60,32 @@ const handleSaveOrEdit = async () => {
     if (designer.isEditing.value) return;
 
     try {
-
         await nextTick();
-
         bLoading.value = true;
 
-        const payload = {
-            key: cacheKey,
-            value: role.value
-        };
-
+        const payload = { key: cacheKey, value: role.value };
         let response = await fetch(`/api/cache/${cacheKey}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-
-            response = await fetch(`/api/cache/${cacheKey}`, {
+            await fetch(`/api/cache/${cacheKey}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: cacheKey,
-                    data: role.value
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: cacheKey, data: role.value })
             });
-
         }
-
     } catch (error) {
-
         console.error('[RoleDetailView]', error);
-
     } finally {
-
         bLoading.value = false;
-
     }
 };
-
-const postalImage = computed(() => {
-    if (!role.value?.basic.filename) return '';
-
-    return `/icons/${role.value.basic.filename}`;
-});
 </script>
 
 <template>
-
     <BuilderToolbar
         v-if="isAuthorizedDesigner && designer.isEditing.value"
         :designer="designer"
@@ -145,163 +101,224 @@ const postalImage = computed(() => {
     </button>
 
     <template v-if="role">
-
         <main
             ref="containerRef"
             class="detail-page-panoramic"
-            :style="{ '--bg-gradient': role.addit.color }"
+            :style="{ '--bg-gradient': role?.addit?.color || '#1e3a8a' }" 
             @wheel="handleWheelScroll"
         >
-
-            <RouterLink
-                to="/roles"
-                class="back-button"
-            >
+            <RouterLink to="/roles" class="back-button">
                 ← Back
             </RouterLink>
 
-      <div class="panoramic-track">
-        <div class="content-container-original">
-          
-          <!-- COMPONENTE 1: Polaroid -->
-          <RolePolaroid 
-            :imageSrc="role.images && role.images[0]" 
-            :altText="role.basic.title" 
-          />
+            <div class="panoramic-track">
+                <!-- PANEL 1: HERO -->
+                <RoleHeroPanel 
+                    :role="role" 
+                    :designer="designer" 
+                />
 
-          <!-- COMPONENTE 2: Textos y Editables -->
-          <RoleHeaderInfo :role="role" :isEditing="designer.isEditing.value">
-            
-            <!-- COMPONENTE 3: Botones y Enlace de Discord Inyectados -->
-            <RoleActionButtons :role="role" :isEditing="designer.isEditing.value" />
-          
-          </RoleHeaderInfo>
+                <!-- PANEL 2: OVERVIEW -->
+                <RoleOverviewPanel 
+                    :role="role" 
+                />
 
-        </div>
+                <!-- PANEL 3: GALLERY -->
+                <RoleGalleryPanel 
+                    :role="role" 
+                    @open-lightbox="activeLightboxImage = $event" 
+                />
+            </div>
+        </main>
+    </template>
 
-        <!-- ZONA DE GALERÍA -->
-        <div class="gallery-safe-zone">
-          <ImageGalleryManager
-            v-if="role.images"
-            v-model:images="role.images"
-            :isEditing="designer.isEditing.value"
-            variant="collage"
-            @open-lightbox="activeLightboxImage = $event"
-            @add-image="handleAddImage"
-            @remove-image="removeImageAtIndex"
-          />
-        </div>
+    <NotFound v-else-if="!bLoading" />
 
-      </div>
-    </main>
-  </div>
-
-  <div v-else-if="!bLoading">
-    <NotFound />
-  </div>
-
-  <div v-else class="loading-state">
-    <p>Decryption of Server Directives in progress...</p>
-    <div class="loading-spinner"></div>
-  </div>
-
-  <!-- LIGHTBOX MODAL -->
-  <Transition name="fade">
-    <div v-if="activeLightboxImage" class="image-lightbox-modal" @click="activeLightboxImage = null">
-      <button class="lightbox-close-btn" @click="activeLightboxImage = null">✕</button>
-      <div class="lightbox-content" @click.stop>
-        <img :src="activeLightboxImage" class="lightbox-full-image" alt="Visualización ampliada" />
-      </div>
+    <div v-else class="loading-state">
+        <div class="loading-spinner"/>
     </div>
-  </Transition>
+
+    <!-- MODAL LIGHTBOX -->
+    <Transition name="fade">
+        <div
+            v-if="activeLightboxImage"
+            class="image-lightbox-modal"
+            @click="activeLightboxImage = null"
+        >
+            <button class="lightbox-close-btn" @click="activeLightboxImage = null">
+                ✕
+            </button>
+            <div class="lightbox-content" @click.stop>
+                <img :src="activeLightboxImage" class="lightbox-full-image">
+            </div>
+        </div>
+    </Transition>
 </template>
 
-<style scoped>
-/* ==========================================================================
-   INTERFAZ LIGHTBOX Y LAYOUT PRINCIPAL
-   ========================================================================== */
-.image-lightbox-modal {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(4, 10, 15, 0.96); backdrop-filter: blur(10px);
-  z-index: 99999; display: flex; align-items: center; justify-content: center;
-}
-.lightbox-content { max-width: 90%; max-height: 85%; display: flex; align-items: center; justify-content: center; }
-.lightbox-full-image { max-width: 100%; max-height: 100vh; object-fit: contain; border-radius: 4px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8); }
-.lightbox-close-btn { position: absolute; top: 30px; right: 40px; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; transition: color 0.2s; }
-.lightbox-close-btn:hover { color: var(--color-accent); }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-.designer-trigger {
-  position: fixed; top: 24px; right: 24px; z-index: 10000;
-  background: rgba(236, 175, 68, 0.12); color: var(--color-accent);
-  border: 1px solid var(--color-accent); padding: 10px 20px;
-  border-radius: 8px; cursor: pointer; font-weight: 600;
-  backdrop-filter: blur(8px); transition: all 0.2s;
-}
-.designer-trigger:hover { background: var(--color-accent); color: #111; }
-
+<style>
 .detail-page-panoramic {
-  width: 100vw; height: 100vh;
-  background: linear-gradient(135deg, var(--bg-gradient) 0%, var(--color-primary) 100%), var(--color-primary);
-  overflow-y: hidden; overflow-x: auto; display: flex; align-items: center; box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--bg-gradient, var(--color-primary)) 0%, var(--color-primary) 100%);
+    font-family: "Exo 2", sans-serif;
 }
-.panoramic-track { display: flex; flex-direction: row; align-items: center; height: 100%; width: 100%; padding-right: 80px; }
-.content-container-original {
-  display: flex; flex-direction: row; width: 1200px; align-items: center;
-  justify-content: space-between; gap: 80px; flex-shrink: 0; margin-left: calc(50vw - 600px);
+.detail-page-panoramic::-webkit-scrollbar {
+    display: none;
+}
+.panoramic-track {
+    display: flex;
+    align-items: center;
+    gap: 180px;
+    padding: 0 120px;
+    min-width: max-content;
+    font-family: "Exo 2", sans-serif;
+}
+.panel {
+    width: 1100px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+    flex-shrink: 0;
 }
 .back-button {
-  position: absolute; top: 40px; left: 40px; display: inline-flex; align-items: center; gap: 10px;
-  background-color: var(--color-light); color: var(--color-primary); padding: 12px 24px;
-  border-radius: 30px; font-weight: 700; text-decoration: none; z-index: 100;
+    position: fixed;
+    top: 90px;
+    left: 30px;
+    z-index: 100;
+    padding: 12px 24px;
+    border-radius: 30px;
+    text-decoration: none;
+    background: white;
+    color: var(--color-primary);
+    font-weight: 700;
 }
 
-/* CARGA */
+/* LIGHTBOX */
+.image-lightbox-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8,12,18,0.94);
+    backdrop-filter: blur(10px);
+    z-index: 99999;
+}
+.lightbox-content {
+    max-width: 90%;
+    max-height: 90%;
+}
+.lightbox-full-image {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.65);
+}
+.lightbox-close-btn {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    cursor: pointer;
+    font-size: 1.3rem;
+    transition: 0.25s;
+}
+.lightbox-close-btn:hover {
+    background: var(--color-accent);
+    color: #111;
+}
+.fade-enter-active, .fade-leave-active {
+    transition: 0.25s;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+
+/* DESIGNER / LOADING */
+.designer-trigger {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--color-accent);
+    background: rgba(0,0,0,0.4);
+    color: var(--color-accent);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+}
+.editable-container {
+    outline: none;
+    border: 1px dashed var(--color-accent);
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+}
 .loading-state {
-  height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: var(--color-accent); font-weight: bold; background-color: var(--color-primary); gap: 15px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
 }
 .loading-spinner {
-  width: 40px; height: 40px; border: 4px solid rgba(236, 175, 68, 0.2);
-  border-top-color: var(--color-accent); border-radius: 50%; animation: spin 1s linear infinite;
+    width: 42px;
+    height: 42px;
+    border: 4px solid rgba(255,255,255,0.15);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 
-/* ==========================================================================
-   DISEÑO "BENTO BOX" (ESCRITORIO)
-   ========================================================================== */
-.gallery-safe-zone { width: 100%; margin-top: 20px; box-sizing: border-box; }
-.gallery-safe-zone :deep(ul) {
-  display: grid !important; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-  grid-auto-rows: 240px !important; grid-auto-flow: dense !important; gap: 16px !important;
-  padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; min-width: 600px;
-}
-.gallery-safe-zone :deep(li), .gallery-safe-zone :deep(.gallery-item) {
-  position: relative !important; top: auto !important; left: auto !important; transform: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; display: block !important; background: transparent !important; border: none !important; overflow: hidden !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; border-radius: 12px !important;
-}
-.gallery-safe-zone :deep(li *), .gallery-safe-zone :deep(.gallery-item *) { overflow: visible !important; }
-.gallery-safe-zone :deep(li:nth-child(3n+1)), .gallery-safe-zone :deep(.gallery-item:nth-child(3n+1)) { grid-row: span 2 !important; }
-.gallery-safe-zone :deep(li:nth-child(5n)), .gallery-safe-zone :deep(.gallery-item:nth-child(5n)) { grid-column: span 2 !important; }
-.gallery-safe-zone :deep(img) {
-  display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; transform: none !important; transition: transform 0.3s ease, filter 0.3s ease !important; cursor: pointer;
-}
-.gallery-safe-zone :deep(img:hover) { transform: scale(1.05) !important; filter: brightness(1.1) !important; }
-
-/* MEDIA QUERIES (MÓVIL) */
 @media (max-width: 1024px) {
-  .detail-page-panoramic { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; display: block; padding-bottom: 60px; }
-  .panoramic-track { flex-direction: column; height: auto; padding: 100px 20px 40px 20px !important; gap: 40px; }
-  .content-container-original { flex-direction: column; width: 100%; text-align: center; margin-left: 0 !important; gap: 30px; }
-  .back-button { position: absolute; top: 20px; left: 20px; }
-
-  /* Ajustes Galería Móvil */
-  .gallery-safe-zone { margin-top: 40px; padding-bottom: 60px; width: 100%; display: block; }
-  .gallery-safe-zone :deep(*) { position: relative !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; transform: none !important; transition: none !important; }
-  .gallery-safe-zone :deep(ul) { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-auto-rows: auto !important; gap: 12px !important; width: 100% !important; padding: 0 !important; margin: 0 !important; min-width: unset !important; }
-  .gallery-safe-zone :deep(li), .gallery-safe-zone :deep(.gallery-item) { display: block !important; grid-row: span 1 !important; grid-column: span 1 !important; width: 100% !important; height: auto !important; aspect-ratio: 1 / 1 !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: none !important; box-shadow: none !important; overflow: hidden !important; border-radius: 12px !important; }
-  .gallery-safe-zone :deep(li:nth-child(3n)), .gallery-safe-zone :deep(.gallery-item:nth-child(3n)) { grid-column: span 2 !important; aspect-ratio: 2 / 1 !important; }
-  .gallery-safe-zone :deep(li div), .gallery-safe-zone :deep(.gallery-item div), .gallery-safe-zone :deep(li a) { display: contents !important; }
-  .gallery-safe-zone :deep(img) { display: block !important; width: 100% !important; height: 100% !important; max-width: none !important; margin: 0 !important; object-fit: cover !important; border-radius: 0 !important; }
+    .detail-page-panoramic {
+        width: 100%;
+        height: 100dvh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: block;
+        scroll-behavior: smooth;
+    }
+    .panoramic-track {
+        display: flex;
+        flex-direction: column;
+        min-width: 100%;
+        width: 100%;
+        gap: 100px;
+        padding: 100px 20px 60px;
+        box-sizing: border-box;
+    }
+    .panel {
+        width: 100%;
+        min-height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+    }
+    .back-button {
+        top: 85px;
+        left: 20px;
+        padding: 10px 18px;
+    }
 }
 </style>

@@ -249,33 +249,33 @@ export class ServerService {
     return arrayAdditInfo;
   }
 
-  public getAllServersRules(): ServerRules[] {
-    const result: ServerRules[] = [];
+public getAllServersRules(): ServerRules[] {
+  const result: ServerRules[] = [];
 
-    for (const srv of this.servers.values()) {
-      if (srv) {
-        result.push({
-          id: srv.basic?.id || '',
-          banner: srv.banner || {
-            bannerImage: '',
-            bannerLabel: '',
-            bannerDescription: ''
-          },
-          ver: srv.ver || {
-            version: '',
-            lastUpdate: '',
-            status: ''
-          },
-          sections: srv.sections || [],
-          images: srv.images || []
-        });
-      }
-      console.log('SERVER:', srv.basic.id);
-      console.log('IMAGES:', srv.images);
+  for (const srv of this.servers.values()) {
+    if (srv) {
+      result.push({
+        id: srv.basic?.id || '',
+        banner: srv.banner || {
+          bannerImage: '',
+          bannerLabel: '',
+          bannerDescription: ''
+        },
+        ver: srv.ver || {
+          version: '',
+          lastUpdate: '',
+          status: ''
+        },
+        sections: srv.sections || [],
+        images: srv.images || []
+      });
     }
-
-    return result;
+    console.log('SERVER:', srv.basic.id);
+    console.log('IMAGES:', srv.images);
   }
+
+  return result;
+}
 
   public getAllServers(): RPServer[] {
     return Array.from(this.servers.values());

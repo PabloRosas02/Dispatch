@@ -121,7 +121,7 @@ const selectImage = (index: number) => {
           Este interior está disponible dentro de la zona
           <strong>{{ interior.zone }}</strong>. Cuenta con un diseño cómodo y
           funcional, ideal para comenzar o ampliar tu patrimonio dentro de
-          Kinsfolk Roleplay.
+          Dispatch Roleplay.
         </p>
 
       </div>

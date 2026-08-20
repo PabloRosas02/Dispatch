@@ -46,7 +46,7 @@ const bannerStyle = computed(() => ({
         {{ title || "NORMATIVA" }}
       </h1>
 
-      <h2>
+      <h2 v-if="subtitle">
         {{ subtitle }}
       </h2>
 

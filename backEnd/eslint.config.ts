@@ -18,7 +18,7 @@ export default defineConfig({
     parserOptions: {
       // This links ESLint to your TypeScript setup
       project: './tsconfig.json',
-      tsconfigRootDir: __dirname,
+      tsconfigRootDir: import.meta.dirname,
     },
     globals: {
       ...globals.node,
