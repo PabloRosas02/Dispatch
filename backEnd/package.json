@@ -1,7 +1,6 @@
 {
   "name": "cache-backend-ts",
   "version": "1.0.0",
-  "type": "module",
   "description": "Backend con cache interna en TypeScript con soporte para RPServer",
   "main": "dist/server.js",
   "scripts": {
