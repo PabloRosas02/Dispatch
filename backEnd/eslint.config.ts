@@ -32,7 +32,7 @@ export default defineConfig({
       varsIgnorePattern: '^_'
     }],
     '@typescript-eslint/no-inferrable-types': ['error', {
-      ignoreParameters: true, // 👈 This prevents warnings on default arguments!
+      ignoreParameters: true, 
       ignoreProperties: false, // (Optional) set to true if you also want to allow it on class properties
     }],
 
