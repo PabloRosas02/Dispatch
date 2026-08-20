@@ -6,7 +6,6 @@ import { serverImages } from '@/config/serverImages';
 export interface ExtendedRPServer extends ServerType.RPServer {
   images?: string[];
 }
-}
 
 // Almacén global temporal para evitar peticiones repetitivas entre navegaciones.
 const fetchedServers: Record<string, ExtendedRPServer> = {};
